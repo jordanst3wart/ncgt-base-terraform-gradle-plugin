@@ -17,6 +17,13 @@ include::parts/bootstrap.adoc[]
 
 include::parts/platform-installation-support.adoc[]
 
-//include::parts/PackerExtension.adoc[]
+include::parts/terraform-lock.adoc[]
 
-//include::parts/PackerBuilder.adoc[]
+include::parts/specifying-plugins.adoc[]
+
+
+//include::parts/TerraformExtension.adoc[]
+
+//include::parts/TerraformExtension.adoc[]
+
+//include::parts/TerraformFreeTask.adoc[]

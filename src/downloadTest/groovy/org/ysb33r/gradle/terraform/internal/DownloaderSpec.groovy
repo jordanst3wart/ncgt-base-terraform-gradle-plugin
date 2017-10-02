@@ -28,16 +28,16 @@ class DownloaderSpec extends DownloadTestSpecification {
     Project project = ProjectBuilder.builder().build()
 
     @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
-    def "Download a Packer distribution" () {
-        given: "A requirement to download Packer #PACKER_VERSION"
-        Downloader dwn = new Downloader(DownloadTestSpecification.PACKER_VERSION,project)
+    def "Download a Terraform distribution" () {
+        given: "A requirement to download Terraform #TERRAFORM_VERSION"
+        Downloader dwn = new Downloader(DownloadTestSpecification.TERRAFORM_VERSION,project)
         dwn.downloadRoot = new File(project.buildDir,'download')
-        dwn.baseURI = DownloadTestSpecification.PACKER_CACHE_DIR.toURI()
+        dwn.baseURI = new File(DownloadTestSpecification.TERRAFORM_CACHE_DIR,'terraform').toURI()
 
         when: "The distribution root is requested"
         File gotIt = dwn.distributionRoot
 
-        String binaryName = DownloadTestSpecification.OS.windows ? 'packer.exe' : 'packer'
+        String binaryName = DownloadTestSpecification.OS.windows ? 'terraform.exe' : 'terraform'
 
         then: "The distribution is downloaded and unpacked"
         gotIt != null
@@ -49,7 +49,7 @@ class DownloaderSpec extends DownloadTestSpecification {
         when: "The executable is run to display the help page"
         OutputStream output = new ByteArrayOutputStream()
         ExecResult result = project.exec {
-            executable dwn.packerExecutablePath
+            executable dwn.terraformExecutablePath
             args '--help'
             standardOutput output
         }
@@ -58,12 +58,6 @@ class DownloaderSpec extends DownloadTestSpecification {
         result.assertNormalExitValue()
 
         and: "The expected help information is displayed"
-        output.toString().contains('''Available commands are:
-    build       build image(s) from template
-    fix         fixes templates from old versions of packer
-    inspect     see components of a template
-    push        push a template and supporting files to a Packer build service
-    validate    check that a template is valid
-    version     Prints the Packer version''')
+        output.toString().startsWith('''Usage: terraform [--version] [--help] <command> [args]''')
     }
 }

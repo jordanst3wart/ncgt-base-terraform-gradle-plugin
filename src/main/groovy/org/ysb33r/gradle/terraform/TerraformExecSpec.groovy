@@ -16,8 +16,8 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.ysb33r.gradle.olifant.exec.AbstractCommandExecSpec
-import org.ysb33r.gradle.olifant.exec.ExternalExecutable
+import org.ysb33r.grolifant.api.exec.AbstractCommandExecSpec
+import org.ysb33r.grolifant.api.exec.ExternalExecutable
 
 /** An execution specification for {@code Packer}.
  *

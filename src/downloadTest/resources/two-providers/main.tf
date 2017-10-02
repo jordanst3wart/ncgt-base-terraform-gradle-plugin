@@ -1,0 +1,8 @@
+provider "local" {
+
+}
+
+provider "aws" {
+
+}
+

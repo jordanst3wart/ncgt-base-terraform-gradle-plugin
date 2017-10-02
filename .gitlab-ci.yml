@@ -1,37 +1,69 @@
 stages:
   - build
+  - test
   - release
+
+cache:
+  paths:
+    - $HOME/.gradle
 
 jdk8:
   stage: build
-  image: java:8
-  script: ./gradlew build -i -s
+  image: openjdk:8
+  script: ./gradlew build -i -s -x gradleTest
   artifacts:
     paths:
-    - build/reports
-    expire_in: 1 week
-  cache:
-    paths:
-    - $HOME/.gradle
-    - build/terraform-binaries
+      - .gradle/
+      - build/
+    expire_in: 60 min
   except:
-  - pages
+    - pages
+
+jdk11:
+  stage: build
+  image: openjdk:11
+  script: ./gradlew -i -s assemble
+  artifacts:
+    paths:
+      - .gradle/
+      - build/
+    expire_in: 60 min
+  except:
+    - pages
+
+test:gradle4:
+  stage: test
+  image: openjdk:8
+  except:
+    - pages
+  dependencies:
+    - jdk8
+  script: ./gradlew -i -s gradleTest -DgradleTest.versions=4.3,4.9
+
+test:gradle5:
+  stage: test
+  image: openjdk:8
+  except:
+    - pages
+  dependencies:
+    - jdk8
+  script: ./gradlew -i -s gradleTest -DgradleTest.versions=5.0,5.6.2
 
 publish:
   stage: release
-  image: java:8
+  image: openjdk:8
   script: ./gradlew installDocs publishPlugins gitPublishPush -i -Dgradle.publish.key=$GRADLE_PORTAL_KEY -Dgradle.publish.secret=$GRADLE_PORTAL_SECRET -Dorg.ajoberstar.grgit.auth.username=$PAGES_PUBLISH_USER -Dorg.ajoberstar.grgit.auth.password=$PAGES_PUBLISH_KEY -Dorg.ajoberstar.grgit.auth.force=hardcoded
   dependencies:
-  - jdk8
+    - jdk8
   only:
-  - release
+    - release
 
 pages:
   stage: release
   script: ls -la
   artifacts:
     paths:
-    - public
+      - public
   only:
-  - pages
+    - pages
 

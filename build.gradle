@@ -10,7 +10,8 @@ buildscript {
 plugins {
     id 'groovy'
     id 'maven'
-    id 'org.ysb33r.gradletest' version '1.0-beta11'
+    id 'java-gradle-plugin'
+    id 'org.ysb33r.gradletest' version '1.0'
     id 'org.asciidoctor.convert' version '1.5.3'
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'com.github.hierynomus.license' version '0.14.0'
@@ -18,13 +19,13 @@ plugins {
     id "org.ajoberstar.git-publish" version '0.2.1'
 }
 
-version = '0.2-SNAPSHOT'
+version = '0.1-SNAPSHOT'
 group = 'org.ysb33r.gradle'
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
 ext {
-    grolifantVer = '0.4'
+    grolifantVer = '0.12'
     spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/,'')
     notSnapshot = { !version.endsWith('-SNAPSHOT') }
 }
@@ -43,24 +44,25 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
     compile "org.ysb33r.gradle:grolifant:${grolifantVer}"
+    compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
 
-    testCompile ("org.spockframework:spock-core:1.1-groovy-${spockGroovyVer}") {
+    testCompile ("org.spockframework:spock-core:1.2-groovy-${spockGroovyVer}") {
         exclude module : 'groovy-all'
     }
     testCompile gradleTestKit()
-
+//    testCompile "org.ysb33r.gradle:grolifant:${grolifantVer}"
 }
 
 test {
-    systemProperties PACKER_VERSION    : packerTestVersions[0]
+    systemProperties TERRAFORM_VERSION    : terraformTestVersions[0]
 }
 
 gradleTest {
     // tag::gradleTestVersions[]
-    versions '2.8', '3.3', '3.5', '4.0'
+    versions '4.3', '4.10.3', '5.6.2'
     // end::gradleTestVersions[]
 
-    systemProperties 'org.ysb33r.gradle.packer.uri'  : packerTestCacheDir.absoluteFile.toURI()
+    systemProperties 'org.ysb33r.gradle.terraform.uri'  : terraformTestCacheDir.absoluteFile.toURI()
     dependsOn jar
 
 }
@@ -72,7 +74,7 @@ license {
     mapping {
         groovy ='DOUBLESLASH_STYLE'
     }
-    ext.year = '2017'
+    ext.year = '2017-2019'
     excludes([
             '**/*.adoc', '**/*.md',
             '**/*.properties',
@@ -83,21 +85,15 @@ license {
 
 task landingPage( type :  org.asciidoctor.gradle.AsciidoctorTask )
 
-apply from : 'gradle/build-documentation.gradle'
-apply from : 'gradle/publish-plugins.gradle'
+//apply from : 'gradle/build-documentation.gradle'
+//apply from : 'gradle/publish-plugins.gradle'
 
-publishPlugins.mustRunAfter installDocs
+//publishPlugins.mustRunAfter installDocs
 
 task release {
     group "Release"
     description "Lifecycle task for release a new version"
     onlyIf notSnapshot
     onlyIf {!gradle.startParameter.offline}
-    dependsOn build, publishPlugins, installDocs
-}
-
-if(GradleVersion.current() >= GradleVersion.version('4.0')) {
-    sourceSets.main.output.classesDir = new File(buildDir, "classes/main")
-    sourceSets.test.output.classesDir = new File(buildDir, "classes/test")
-    sourceSets.downloadTest.output.classesDir = new File(buildDir, "classes/downloadTest")
+    dependsOn build //, publishPlugins, installDocs
 }

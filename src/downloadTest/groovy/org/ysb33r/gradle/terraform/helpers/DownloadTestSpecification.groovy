@@ -14,15 +14,15 @@
 
 package org.ysb33r.gradle.terraform.helpers
 
-import org.ysb33r.gradle.olifant.OperatingSystem
+import org.ysb33r.grolifant.api.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformExtension
 import spock.lang.Specification
 
 
 class DownloadTestSpecification extends Specification {
 
-    static final String PACKER_VERSION = System.getProperty('PACKER_VERSION') ?: TerraformExtension.TERRAFORM_DEFAULT
-    static final File PACKER_CACHE_DIR = new File( System.getProperty('PACKER_CACHE_DIR') ?: './build/packer-binaries').absoluteFile
+    static final String TERRAFORM_VERSION = System.getProperty('TERRAFORM_VERSION') ?: TerraformExtension.TERRAFORM_DEFAULT
+    static final File TERRAFORM_CACHE_DIR = new File( System.getProperty('TERRAFORM_CACHE_DIR') ?: './build/terraform-binaries').absoluteFile
     static final File RESOURCES_DIR = new File (System.getProperty('RESOURCES_DIR') ?: './src/downloadTest/resources')
 
     static final OperatingSystem OS = OperatingSystem.current()

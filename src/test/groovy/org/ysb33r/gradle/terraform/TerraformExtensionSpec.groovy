@@ -39,7 +39,7 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvedPackerExecutable() != null
+        project.terraform.getResolvableExecutable() != null
     }
 
     def 'Configure terraform executable using a path'() {
@@ -57,7 +57,7 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvedPackerExecutable() != null
+        project.terraform.getResolvableExecutable() != null
     }
 
     def 'Configure terraform executable using a search path'() {
@@ -75,7 +75,7 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvedPackerExecutable() != null
+        project.terraform.getResolvableExecutable() != null
     }
 
     def 'Cannot configure terraform with more than one option'() {

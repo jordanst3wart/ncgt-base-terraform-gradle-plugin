@@ -10,6 +10,37 @@ ext {
     // Always list the primary test version as the first one in this list.
     terraformTestVersions = [ codedTerraformVersion, '0.10.0' ]
 
+    // These are Terraform plugins we are going to cache, so we don't have to download them everytime.
+    terraformTestPlugins = [
+        [ name : 'local', version : '1.0.0' ],
+        [ name : 'aws', 'version' : '1.0.0']
+    ]
+
+    terraformOsArch = { ->
+        def terraformArch
+        def terraformOS
+
+        if(currentOS.windows) {
+            terraformOS = 'windows'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.linux) {
+            terraformOS = 'linux'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.macOsX) {
+            terraformOS = 'darwin'
+            terraformArch = 'amd64'
+        }
+
+        "${terraformOS}_${terraformArch}".toString()
+    }.call()
 }
 
 configurations {
@@ -37,51 +68,50 @@ task cacheTerraformBinaries {
     enabled = !project.gradle.startParameter.offline
 
     terraformTestVersions.each { ver ->
-        def terraformArch
-        def terraformOS
 
-        if(currentOS.windows) {
-            terraformOS = 'windows'
-            if (System.getProperty('os.arch').contains('64')) {
-                terraformArch = 'amd64'
-            } else {
-                terraformArch = '386'
-            }
-        } else if (currentOS.linux) {
-            terraformOS = 'linux'
-            if (System.getProperty('os.arch').contains('64')) {
-                terraformArch = 'amd64'
-            } else {
-                terraformArch = '386'
-            }
-        } else if (currentOS.macOsX) {
-            terraformOS = 'darwin'
-            terraformArch = 'amd64'
-        }
-
-        File target = file("${terraformTestCacheDir}/${ver}/terraform_${ver}_${terraformOS}_${terraformArch}.zip")
+        final String relativePath = "terraform/${ver}/terraform_${ver}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
         outputs.file target
         onlyIf { !target.exists() }
 
         doLast {
-            mkdir new File(terraformTestCacheDir,ver)
+            mkdir target.parentFile
             vfs {
-                cp "https://releases.hashicorp.com/terraform/${ver}/terraform_${ver}_${terraformOS}_${terraformArch}.zip",
-                    new File(terraformTestCacheDir,ver),
+                cp "https://releases.hashicorp.com/${relativePath}",
+                    target,
                     overwrite : true, recursive : false
             }
         }
     }
+
+    terraformTestPlugins.each { plugin ->
+        final String relativePath = "terraform-provider-${plugin.name}/${plugin.version}/terraform-provider-${plugin.name}_${plugin.version}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
+
+        outputs.file target
+        onlyIf { !target.exists() }
+
+        doLast {
+            mkdir target.parentFile
+            vfs {
+                cp "https://releases.hashicorp.com/${relativePath}",
+                    target,
+                    overwrite : true, recursive : false
+            }
+        }
+
+    }
 }
 
 task downloadTest(type: Test, dependsOn: jar) {
-    testClassesDir = sourceSets.downloadTest.output.classesDir
+    testClassesDirs = sourceSets.downloadTest.output.classesDirs
     classpath = sourceSets.downloadTest.runtimeClasspath
     reports.html.destination = file("${reporting.baseDir}/downloadTest")
 
     systemProperties TERRAFORM_CACHE_DIR  : terraformTestCacheDir.absolutePath
     systemProperties TERRAFORM_VERSION    : terraformTestVersions[0]
     systemProperties RESOURCES_DIR        : file('src/downloadTest/resources').absolutePath
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri' : terraformTestCacheDir.absoluteFile.toURI()
 
     mustRunAfter test
     dependsOn cacheTerraformBinaries

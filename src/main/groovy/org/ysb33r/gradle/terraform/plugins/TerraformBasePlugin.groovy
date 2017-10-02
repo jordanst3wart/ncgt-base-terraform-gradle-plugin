@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.ysb33r.gradle.terraform.TerraformExtension
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of Terraform distributions
@@ -26,8 +27,21 @@ import org.ysb33r.gradle.terraform.TerraformExtension
  */
 @CompileStatic
 class TerraformBasePlugin implements Plugin<Project> {
+    static final String DEPENDENCY_EXTENSION = 'terraformProvider'
+    static final String TERRAFORM_CONFIGURATION = 'terraform'
+
     void apply(Project project) {
-        project.extensions.create(TerraformExtension.NAME,TerraformExtension,project)
+        project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
+
+//        project.extensions.extraProperties.set(DEPENDENCY_EXTENSION, { final String providerName, final String ver = '+' ->
+//            DependencyFactory.newSelfResolvingDependency(TerraformProviderDependency,project,providerName,ver)
+//        })
+
+        project.configurations.create(TERRAFORM_CONFIGURATION) { Configuration cfg ->
+            cfg.setVisible(false)
+            cfg.setTransitive(false)
+            cfg.setCanBeConsumed(false)
+        }
     }
 
 }

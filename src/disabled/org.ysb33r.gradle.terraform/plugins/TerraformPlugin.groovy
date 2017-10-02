@@ -17,6 +17,9 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
+import org.ysb33r.gradle.terraform.internal.Generator
+import TerraformInit
 
 /** Terraform conventions plugin.
  *
@@ -28,5 +31,9 @@ class TerraformPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.apply plugin : 'org.ysb33r.terraform.base'
 
+        Copy generator = Generator.create(project,'terraform')
+        project.tasks.create('terraformInit',TerraformInit) { TerraformInit task ->
+            task.source.generatedBy(generator)
+        }
     }
 }

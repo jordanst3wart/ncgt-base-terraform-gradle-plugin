@@ -16,12 +16,13 @@ package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.ysb33r.gradle.olifant.AbstractDistributionInstaller
-import org.ysb33r.gradle.olifant.OperatingSystem
-import org.ysb33r.gradle.olifant.errors.DistributionFailedException
+import org.ysb33r.grashicorp.HashicorpUtils
+import org.ysb33r.grolifant.api.AbstractDistributionInstaller
+import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.errors.DistributionFailedException
 
-import static org.ysb33r.gradle.olifant.OperatingSystem.Arch.X86
-import static org.ysb33r.gradle.olifant.OperatingSystem.Arch.X86_64
+import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86
+import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
 
 /** Downloads specific versions of {@code Terraform}.
  *
@@ -40,10 +41,9 @@ import static org.ysb33r.gradle.olifant.OperatingSystem.Arch.X86_64
  */
 @CompileStatic
 class Downloader extends AbstractDistributionInstaller {
-    static final OperatingSystem OS = OperatingSystem.current()
-    static final OperatingSystem.Arch ARCH = OS.getArch()
-
-    static String baseURI = System.getProperty('org.ysb33r.gradle.terraform.uri') ?: 'https://releases.hashicorp.com/terraform'
+    public static final OperatingSystem OS = OperatingSystem.current()
+    public static final OperatingSystem.Arch ARCH = OS.getArch()
+    public static final String baseURI = HashicorpUtils.getDownloadBaseUri('terraform')
 
     /** Creates a downloader
      *
@@ -69,39 +69,8 @@ class Downloader extends AbstractDistributionInstaller {
      */
     @Override
     URI uriFromVersion(final String ver) {
-        String variant
-        String osname
-        if(OS.windows) {
-            osname = 'windows'
-            variant = (OS.arch == X86) ? '386' : 'amd64'
-        } else if(OS.linux) {
-            osname = 'linux'
-            switch(ARCH) {
-                case X86_64:
-                    variant = 'amd64'
-                    break
-                case X86:
-                    variant = '386'
-                    break
-            }
-        } else if(OS.macOsX) {
-            osname = 'darwin'
-            variant = 'amd64'
-        }  else if(OS.solaris) {
-            osname = 'solaris'
-            variant = 'amd64'
-        } else if(OS.freeBSD) {
-            osname = 'freebsd'
-            switch(ARCH) {
-                case X86_64:
-                    variant = 'amd64'
-                    break
-                case X86:
-                    variant = '386'
-                    break
-            }
-        }
-        variant ? "${baseURI}/${ver}/terraform_${ver}_${osname}_${variant}.zip".toURI() : null
+        final String osArch = HashicorpUtils.osArch(OS)
+        osArch ? "${baseURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
     }
 
     /** Returns the path to the {@code terraform} executable.
@@ -124,7 +93,7 @@ class Downloader extends AbstractDistributionInstaller {
      * @param distributionDescription A descriptive name of the distribution
      * @return {@code distDir} as {@code Packer} distributions contains only a single executable.
      *
-     * @throw {@link org.ysb33r.gradle.olifant.DistributionFailedException} if distribution failed to meet criteria.
+     * @throw {@link org.ysb33r.grolifant.api.errors.DistributionFailedException} if distribution failed to meet criteria.
      */
     @Override
     protected File getAndVerifyDistributionRoot(File distDir, String distributionDescription) {
