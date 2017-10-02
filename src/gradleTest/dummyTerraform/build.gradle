@@ -1,0 +1,6 @@
+apply plugin : 'org.ysb33r.terraform.base'
+
+
+task runGradleTest  {
+    dependsOn packerBuild
+}

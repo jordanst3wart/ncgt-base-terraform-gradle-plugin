@@ -1,0 +1,33 @@
+== Bootstrapping
+
+These plugins are available from the plugin portal. Add the appropriate plugin identifiers to your `build.gradle` file depending on the type of functionality you require.
+
+.build.gradle
+[source,groovy,subs="attributes,callouts"]
+----
+plugins {
+  id 'org.ysb33r.terraform.base'  version '{revnumber}'  // <1>
+  id 'org.ysb33r.terraform'       version '{revnumber}'  // <2>
+}
+----
+<1> Base plugin
+<2> Conventions for `packer`
+
+NOTE: You need at least Gradle 3.3 to use these plugins.
+
+=== Base plugin
+
+The base plugin provides:
+
+* An <<TerraformExtension,extension>> named `terraform`.
+* A <<TerraformTask>> task type
+* Ability to download and use `terraform` distributions.
+
+=== Terraform plugin
+
+//The Terraform plugin provides:
+//
+//* An instance of <<PackerBuilder>> named `packerBuild`.
+
+Applying the Terraform plugin will apply the base plugin.
+

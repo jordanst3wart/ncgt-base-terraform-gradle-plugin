@@ -1,0 +1,103 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'commons-httpclient:commons-httpclient:3.1'
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'maven'
+    id 'org.ysb33r.gradletest' version '1.0-beta11'
+    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'com.gradle.plugin-publish' version '0.9.7'
+    id 'com.github.hierynomus.license' version '0.14.0'
+    id 'org.ysb33r.vfs' version '1.0'
+    id "org.ajoberstar.git-publish" version '0.2.1'
+}
+
+version = '0.2-SNAPSHOT'
+group = 'org.ysb33r.gradle'
+targetCompatibility = 1.7
+sourceCompatibility = 1.7
+
+ext {
+    grolifantVer = '0.4'
+    spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/,'')
+    notSnapshot = { !version.endsWith('-SNAPSHOT') }
+}
+
+apply from : 'gradle/download-tests.gradle'
+
+repositories {
+    jcenter()
+
+    if(!notSnapshot()) {
+        mavenLocal()
+    }
+}
+
+dependencies {
+    compile localGroovy()
+    compile gradleApi()
+    compile "org.ysb33r.gradle:grolifant:${grolifantVer}"
+
+    testCompile ("org.spockframework:spock-core:1.1-groovy-${spockGroovyVer}") {
+        exclude module : 'groovy-all'
+    }
+    testCompile gradleTestKit()
+
+}
+
+test {
+    systemProperties PACKER_VERSION    : packerTestVersions[0]
+}
+
+gradleTest {
+    // tag::gradleTestVersions[]
+    versions '2.8', '3.3', '3.5', '4.0'
+    // end::gradleTestVersions[]
+
+    systemProperties 'org.ysb33r.gradle.packer.uri'  : packerTestCacheDir.absoluteFile.toURI()
+    dependsOn jar
+
+}
+
+license {
+    header = rootProject.file('config/HEADER')
+    strictCheck = true
+    ignoreFailures = false
+    mapping {
+        groovy ='DOUBLESLASH_STYLE'
+    }
+    ext.year = '2017'
+    excludes([
+            '**/*.adoc', '**/*.md',
+            '**/*.properties',
+            '**/*CompatibilitySpec.groovy',
+            '**/*.json'
+    ])
+}
+
+task landingPage( type :  org.asciidoctor.gradle.AsciidoctorTask )
+
+apply from : 'gradle/build-documentation.gradle'
+apply from : 'gradle/publish-plugins.gradle'
+
+publishPlugins.mustRunAfter installDocs
+
+task release {
+    group "Release"
+    description "Lifecycle task for release a new version"
+    onlyIf notSnapshot
+    onlyIf {!gradle.startParameter.offline}
+    dependsOn build, publishPlugins, installDocs
+}
+
+if(GradleVersion.current() >= GradleVersion.version('4.0')) {
+    sourceSets.main.output.classesDir = new File(buildDir, "classes/main")
+    sourceSets.test.output.classesDir = new File(buildDir, "classes/test")
+    sourceSets.downloadTest.output.classesDir = new File(buildDir, "classes/downloadTest")
+}

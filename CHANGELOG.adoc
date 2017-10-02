@@ -1,0 +1,15 @@
+= Changelog
+
+== v0.1
+
+// tag::changelog[]
+
+=== Features
+
+* Bootstrap Terraform without installation
+* Base task for running Terraform tasks
+
+
+// end::changelog[]
+
+

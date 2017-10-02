@@ -1,0 +1,6 @@
+[[alternatives]]
+== Alternative solutions
+
+This is not the only solution. You might also want to look at
+
+* https://github.com/FIDATA/gradle-packer-plugin[Packer plugin for Gradle by FIDATA]. It is a very good wrapper and even parses templates to create tasks in Gradle.

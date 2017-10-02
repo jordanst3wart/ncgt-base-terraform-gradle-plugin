@@ -1,0 +1,8 @@
+public/
+build/
+.gradle/
+out/
+.idea/
+TMP/
+*.iml
+.project
