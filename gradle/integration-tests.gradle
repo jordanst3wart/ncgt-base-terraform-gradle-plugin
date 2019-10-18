@@ -2,25 +2,25 @@ ext {
 
     codedTerraformVersion = (file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy').readLines().grep {
         it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/
-    })[0].replaceFirst(~/^(.+?["'])/,'').replaceFirst(~/(["'].*)$/,'')
+    })[0].replaceFirst(~/^(.+?["'])/, '').replaceFirst(~/(["'].*)$/, '')
 
-    currentOS =  org.gradle.internal.os.OperatingSystem.current()
+    currentOS = org.gradle.internal.os.OperatingSystem.current()
     terraformTestCacheDir = file("${buildDir}/terraform-binaries")
 
     // Always list the primary test version as the first one in this list.
-    terraformTestVersions = [ codedTerraformVersion, '0.10.0' ]
+    terraformTestVersions = [codedTerraformVersion, '0.10.0']
 
     // These are Terraform plugins we are going to cache, so we don't have to download them everytime.
     terraformTestPlugins = [
-        [ name : 'local', version : '1.0.0' ],
-        [ name : 'aws', 'version' : '1.0.0']
+        [name: 'local', version: '1.0.0'],
+        [name: 'aws', 'version': '1.0.0']
     ]
 
     terraformOsArch = { ->
         def terraformArch
         def terraformOS
 
-        if(currentOS.windows) {
+        if (currentOS.windows) {
             terraformOS = 'windows'
             if (System.getProperty('os.arch').contains('64')) {
                 terraformArch = 'amd64'
@@ -44,22 +44,22 @@ ext {
 }
 
 configurations {
-    downloadTestCompile {
+    integrationTestCompile {
         extendsFrom testCompile
     }
-    downloadTestRuntime {
-        extendsFrom downloadTestCompile, testRuntime
+    integrationTestRuntime {
+        extendsFrom integrationTestCompile, testRuntime
     }
 
 }
 
 sourceSets {
-    downloadTest {
-        java.srcDir file("src/downloadTest/java")
-        groovy.srcDir file("src/downloadTest/groovy")
-        resources.srcDir file("src/downloadTest/resources")
-        compileClasspath = sourceSets.main.output +  configurations.downloadTestCompile
-        runtimeClasspath = output + compileClasspath + configurations.downloadTestRuntime
+    integrationTest {
+        java.srcDir file("src/integrationTest/java")
+        groovy.srcDir file("src/integrationTest/groovy")
+        resources.srcDir file("src/integrationTest/resources")
+        compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
+        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
     }
 }
 
@@ -72,14 +72,15 @@ task cacheTerraformBinaries {
         final String relativePath = "terraform/${ver}/terraform_${ver}_${terraformOsArch}.zip"
         final File target = file("${terraformTestCacheDir}/${relativePath}")
         outputs.file target
-        onlyIf { !target.exists() }
 
         doLast {
-            mkdir target.parentFile
-            vfs {
-                cp "https://releases.hashicorp.com/${relativePath}",
-                    target,
-                    overwrite : true, recursive : false
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
             }
         }
     }
@@ -89,29 +90,29 @@ task cacheTerraformBinaries {
         final File target = file("${terraformTestCacheDir}/${relativePath}")
 
         outputs.file target
-        onlyIf { !target.exists() }
-
         doLast {
-            mkdir target.parentFile
-            vfs {
-                cp "https://releases.hashicorp.com/${relativePath}",
-                    target,
-                    overwrite : true, recursive : false
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
             }
         }
 
     }
 }
 
-task downloadTest(type: Test, dependsOn: jar) {
-    testClassesDirs = sourceSets.downloadTest.output.classesDirs
-    classpath = sourceSets.downloadTest.runtimeClasspath
-    reports.html.destination = file("${reporting.baseDir}/downloadTest")
+task integrationTest(type: Test, dependsOn: jar) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    reports.html.destination = file("${reporting.baseDir}/integrationTest")
 
-    systemProperties TERRAFORM_CACHE_DIR  : terraformTestCacheDir.absolutePath
-    systemProperties TERRAFORM_VERSION    : terraformTestVersions[0]
-    systemProperties RESOURCES_DIR        : file('src/downloadTest/resources').absolutePath
-    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri' : terraformTestCacheDir.absoluteFile.toURI()
+    systemProperties TERRAFORM_CACHE_DIR: terraformTestCacheDir.absolutePath
+    systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
+    systemProperties RESOURCES_DIR: file('src/integrationTest/resources').absolutePath
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
 
     mustRunAfter test
     dependsOn cacheTerraformBinaries
@@ -120,5 +121,5 @@ task downloadTest(type: Test, dependsOn: jar) {
 }
 
 
-check.dependsOn downloadTest
+check.dependsOn integrationTest
 

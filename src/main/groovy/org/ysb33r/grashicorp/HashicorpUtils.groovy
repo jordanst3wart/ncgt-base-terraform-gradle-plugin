@@ -85,7 +85,6 @@ class HashicorpUtils {
      * @param provider
      * @return Latest version or {@code null}
      */
-    @Nullable
     static String getLatestTerraformProviderVersion(final String provider) {
 
         final String name = "terraform-provider-${provider}"

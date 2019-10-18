@@ -22,10 +22,16 @@ import spock.lang.Specification
 class DownloadTestSpecification extends Specification {
 
     static final String TERRAFORM_VERSION = System.getProperty('TERRAFORM_VERSION') ?: TerraformExtension.TERRAFORM_DEFAULT
-    static final File TERRAFORM_CACHE_DIR = new File( System.getProperty('TERRAFORM_CACHE_DIR') ?: './build/terraform-binaries').absoluteFile
+    static final File TERRAFORM_CACHE_DIR = new File(
+        System.getProperty('TERRAFORM_CACHE_DIR') ?: './build/terraform-binaries',
+        'terraform'
+    ).absoluteFile
     static final File RESOURCES_DIR = new File (System.getProperty('RESOURCES_DIR') ?: './src/downloadTest/resources')
 
     static final OperatingSystem OS = OperatingSystem.current()
     static final boolean SKIP_TESTS = !(OS.isMacOsX() || OS.isLinux() || OS.isWindows() || OS.isFreeBSD())
 
+    void setup() {
+        System.setProperty('org.ysb33r.gradle.terraform.uri',TERRAFORM_CACHE_DIR.toURI().toString())
+    }
 }

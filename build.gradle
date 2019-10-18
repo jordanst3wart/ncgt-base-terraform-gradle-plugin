@@ -11,7 +11,7 @@ plugins {
     id 'groovy'
     id 'maven'
     id 'java-gradle-plugin'
-    id 'org.ysb33r.gradletest' version '1.0'
+    id 'org.ysb33r.gradletest' version '2.0-rc.5'
     id 'org.asciidoctor.convert' version '1.5.3'
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'com.github.hierynomus.license' version '0.14.0'
@@ -19,18 +19,15 @@ plugins {
     id "org.ajoberstar.git-publish" version '0.2.1'
 }
 
-version = '0.1-SNAPSHOT'
-group = 'org.ysb33r.gradle'
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 ext {
-    grolifantVer = '0.12'
     spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/,'')
     notSnapshot = { !version.endsWith('-SNAPSHOT') }
 }
 
-apply from : 'gradle/download-tests.gradle'
+apply from : 'gradle/integration-tests.gradle'
 
 repositories {
     jcenter()
@@ -46,7 +43,7 @@ dependencies {
     compile "org.ysb33r.gradle:grolifant:${grolifantVer}"
     compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
 
-    testCompile ("org.spockframework:spock-core:1.2-groovy-${spockGroovyVer}") {
+    testCompile ("org.spockframework:spock-core:1.3-groovy-${spockGroovyVer}") {
         exclude module : 'groovy-all'
     }
     testCompile gradleTestKit()

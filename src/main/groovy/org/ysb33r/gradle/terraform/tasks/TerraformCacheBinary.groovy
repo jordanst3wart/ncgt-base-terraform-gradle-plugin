@@ -1,32 +1,22 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.TerraformExtension
-
-import java.util.concurrent.Callable
+import org.ysb33r.grolifant.api.wrapper.script.AbstractCacheBinaryTask
 
 @CompileStatic
-class TerraformCacheBinary extends DefaultTask {
+class TerraformCacheBinary extends AbstractCacheBinaryTask {
 
     public static final String LOCATION_PROPERTIES_DEFAULT = 'terraform.properties'
 
     TerraformCacheBinary() {
+        super(LOCATION_PROPERTIES_DEFAULT)
         this.terraformExtension = project.extensions.getByType(TerraformExtension)
-        this.locationPropertiesFile = project.providers.provider({
-            new File(
-                project.gradle.startParameter.projectCacheDir ?: project.file("${project.projectDir}/.gradle"),
-                LOCATION_PROPERTIES_DEFAULT
-            )
-        } as Callable<File>)
     }
 
-    @Input
-    String getBinaryVersion() {
+    @Override
+    protected String getBinaryVersion() {
         switch (terraformExtension.resolvableExecutableType.type) {
             case 'version':
                 return terraformExtension.resolvableExecutableType.value.get()
@@ -35,35 +25,13 @@ class TerraformCacheBinary extends DefaultTask {
         }
     }
 
-    @OutputFile
-    Provider<File> getLocationPropertiesFile() {
-        this.locationPropertiesFile
+    @Override
+    protected String getPropertiesDescription() {
+        "Describes the Terraform usage for the ${project.name} project"
     }
 
-    void setLocationPropertiesFile(Object o) {
-        switch (o) {
-            case Provider:
-                this.locationPropertiesFile = (Provider<File>) o
-                break
-            default:
-                this.locationPropertiesFile = project.providers.provider({
-                    project.file(o)
-                } as Callable<File>)
-        }
-    }
-
-    @TaskAction
-    void exec() {
-        File propsFile = locationPropertiesFile.get()
-        Properties props = new Properties()
-        props['location'] = binaryLocation
-        props['binaryVersion'] = binaryVersion
-        propsFile.withWriter { Writer w ->
-            props.store(w, "Describes the Terraform usage for the ${project.name} project")
-        }
-    }
-
-    private String getBinaryLocation() {
+    @Override
+    protected String getBinaryLocation() {
         terraformExtension.resolvableExecutable.getExecutable().canonicalPath
     }
 

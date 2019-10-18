@@ -7,11 +7,13 @@ import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
 import org.ysb33r.gradle.terraform.tasks.TerraformCacheBinary
 import spock.lang.IgnoreIf
+import spock.util.environment.RestoreSystemProperties
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.ysb33r.gradle.terraform.plugins.TerraformWrapperPlugin.CACHE_BINARY_TASK_NAME
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
+@RestoreSystemProperties
 class TerraformCacheBinarySpec extends IntegrationSpecification {
 
     void 'Write cache file from version'() {

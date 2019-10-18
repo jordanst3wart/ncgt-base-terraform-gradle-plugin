@@ -19,10 +19,12 @@ import org.gradle.process.ExecResult
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import spock.lang.IgnoreIf
+import spock.util.environment.RestoreSystemProperties
 
 import java.nio.file.Files
 
 
+@RestoreSystemProperties
 class DownloaderSpec extends DownloadTestSpecification {
 
     Project project = ProjectBuilder.builder().build()
@@ -32,7 +34,7 @@ class DownloaderSpec extends DownloadTestSpecification {
         given: "A requirement to download Terraform #TERRAFORM_VERSION"
         Downloader dwn = new Downloader(DownloadTestSpecification.TERRAFORM_VERSION,project)
         dwn.downloadRoot = new File(project.buildDir,'download')
-        dwn.baseURI = new File(DownloadTestSpecification.TERRAFORM_CACHE_DIR,'terraform').toURI()
+//        dwn.baseURI = new File(DownloadTestSpecification.TERRAFORM_CACHE_DIR,'terraform').toURI()
 
         when: "The distribution root is requested"
         File gotIt = dwn.distributionRoot
@@ -58,6 +60,6 @@ class DownloaderSpec extends DownloadTestSpecification {
         result.assertNormalExitValue()
 
         and: "The expected help information is displayed"
-        output.toString().startsWith('''Usage: terraform [--version] [--help] <command> [args]''')
+        output.toString().startsWith('''Usage: terraform [-version] [-help] <command> [args]''')
     }
 }

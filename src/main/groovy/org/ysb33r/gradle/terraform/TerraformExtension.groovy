@@ -56,10 +56,10 @@ class TerraformExtension extends AbstractToolExtension {
      */
     public static final String NAME = 'terraform'
 
-    /** The default version of Packer that will be used on
+    /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.10.6'
+    public static final String TERRAFORM_DEFAULT = '0.12.10'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -92,7 +92,6 @@ class TerraformExtension extends AbstractToolExtension {
     static Map<String, Object> searchPath() {
         TerraformExtension.SEARCH_PATH
     }
-
 
     /** Print a warning message if a new version of {@code terraform} is available.
      *
@@ -141,45 +140,6 @@ class TerraformExtension extends AbstractToolExtension {
         this.workspace = ws
     }
 
-    // -------------------------------------------------------------------
-    ResolvableExecutableType resolvableExecutableType
-    static class ResolvableExecutableType {
-        ResolvableExecutableType(String t, Provider<String> v) {
-            this.type = t
-            this.value = v
-        }
-
-        final String type
-        final Provider<String> value
-    }
-    @Override
-    void executable(Map<String, ?> opts) {
-        if(opts['version']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'version',
-                project.providers.provider({
-                    StringUtils.stringize(opts['version'])
-                } as Callable<String>)
-            )
-        } else if(opts['search']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'search',
-                project.providers.provider({
-                    StringUtils.stringize(opts['search'])
-                } as Callable<String>)
-            )
-        } else if(opts['path']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'path',
-                project.providers.provider({
-                    StringUtils.stringize(opts['path'])
-                } as Callable<String>)
-            )
-        }
-        super.executable(opts)
-    }
-    // -------------------------------------------------------------------
-
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) getProjectExtension()
     }
@@ -189,7 +149,6 @@ class TerraformExtension extends AbstractToolExtension {
     private String workspace
 
     private void addVersionResolver(Project project) {
-
         ResolveExecutableByVersion.DownloaderFactory downloaderFactory = {
             Map<String, Object> options, String version, Project p ->
                 new Downloader(version, p)
