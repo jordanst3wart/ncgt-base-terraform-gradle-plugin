@@ -1,29 +1,26 @@
-//
-// ============================================================================
-// (C) Copyright Schalk W. Cronje 2017
-//
-// This software is licensed under the Apache License 2.0
-// See http://www.apache.org/licenses/LICENSE-2.0 for license details
-//
-// Unless required by applicable law or agreed to in writing, software distributed under the License is
-// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and limitations under the License.
-//
-// ============================================================================
-//
-
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.internal.Downloader
-import org.ysb33r.grolifant.api.StringUtils
 import org.ysb33r.grolifant.api.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
-
-import java.util.concurrent.Callable
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -69,7 +66,7 @@ class TerraformExtension extends AbstractToolExtension {
         super(project)
         if (Downloader.downloadSupported) {
             addVersionResolver(project)
-            executable([version: TERRAFORM_DEFAULT] as Map<String, Object>)
+            executable([version: TERRAFORM_DEFAULT])
         } else {
             executable searchPath()
         }
@@ -117,7 +114,9 @@ class TerraformExtension extends AbstractToolExtension {
     }
 
     File getPluginCacheDir() {
-        (this.pluginCacheDir == null && task != null) ? globalExtension.getPluginCacheDir() : getProject().file(this.pluginCacheDir)
+        (this.pluginCacheDir == null && task != null) ?
+            globalExtension.pluginCacheDir :
+            project.file(this.pluginCacheDir)
     }
 
     void setPluginCacheDir(Object path) {
@@ -141,7 +140,7 @@ class TerraformExtension extends AbstractToolExtension {
     }
 
     private TerraformExtension getGlobalExtension() {
-        (TerraformExtension) getProjectExtension()
+        (TerraformExtension) projectExtension
     }
 
     private Boolean warnOnNewVersion
@@ -155,15 +154,14 @@ class TerraformExtension extends AbstractToolExtension {
         } as ResolveExecutableByVersion.DownloaderFactory
 
         ResolveExecutableByVersion.DownloadedExecutable resolver = { Downloader installer ->
-            installer.getTerraformExecutablePath()
+            installer.terraformExecutablePath
         } as ResolveExecutableByVersion.DownloadedExecutable
 
-        getResolverFactoryRegistry().registerExecutableKeyActions(
+        resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(project, downloaderFactory, resolver)
         )
     }
 
-
-    private static final Map<String, Object> SEARCH_PATH = [search: 'terraform'] as Map<String, Object>
-
+    @SuppressWarnings('UnnecessaryCast')
+    private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
 }

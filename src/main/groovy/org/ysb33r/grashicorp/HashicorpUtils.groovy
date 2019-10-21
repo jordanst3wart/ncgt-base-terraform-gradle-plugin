@@ -1,10 +1,24 @@
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ysb33r.grashicorp
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.cyberneko.html.parsers.SAXParser
 import org.gradle.api.GradleException
-import org.gradle.api.Nullable
 import org.gradle.util.GradleVersion
 import org.ysb33r.grolifant.api.OperatingSystem
 
@@ -16,11 +30,12 @@ import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
  * @since 0.1
  */
 @CompileStatic
+@SuppressWarnings('LineLength')
 class HashicorpUtils {
 
     /** Get the download URI for Hashicorp Releases. Sprecifiy a product to get the specific URI.
      *
-     * <p> Code will check for the existence of a System property  {@code org.ysb33r.gradle.<NAM>.uri} or
+     * <p> Code will check for the existence of a System property  {@code org.ysb33r.gradle.<NAM> .uri} or
      * {@code org.ysb33r.gradle.hashicorp.releases.uri} before returning the default.
      *
      * @param name Name of product or package. Can be null or empty to get baseURI for Hashicorp releases
@@ -28,7 +43,7 @@ class HashicorpUtils {
      * @return
      */
     static String getDownloadBaseUri(final String name) {
-        if(name == null || name.empty) {
+        if (name == null || name.empty) {
             System.getProperty('org.ysb33r.gradle.hashicorp.releases.uri') ?: 'https://releases.hashicorp.com'
         } else {
             System.getProperty("org.ysb33r.gradle.${name}.uri") ?: "${getDownloadBaseUri(null)}/${name}"
@@ -44,36 +59,36 @@ class HashicorpUtils {
      *   Can be {@code null} is setup is not supported.
      */
     static String osArch(final OperatingSystem os) {
-        final OperatingSystem.Arch arch = os.getArch()
+        final OperatingSystem.Arch arch = os.arch
         String variant
         String osname
-        if(os.windows) {
+        if (os.windows) {
             osname = 'windows'
             variant = (os.arch == X86) ? '386' : 'amd64'
-        } else if(os.linux) {
+        } else if (os.linux) {
             osname = 'linux'
-            switch(arch) {
+            switch (arch) {
                 case X86_64:
-                    variant = 'amd64'
+                    variant = VARIANT_64BIT
                     break
                 case X86:
-                    variant = '386'
+                    variant = VARIANT_32BIT
                     break
             }
-        } else if(os.macOsX) {
+        } else if (os.macOsX) {
             osname = 'darwin'
-            variant = 'amd64'
-        }  else if(os.solaris) {
+            variant = VARIANT_64BIT
+        } else if (os.solaris) {
             osname = 'solaris'
-            variant = 'amd64'
-        } else if(os.freeBSD) {
+            variant = VARIANT_64BIT
+        } else if (os.freeBSD) {
             osname = 'freebsd'
-            switch(arch) {
+            switch (arch) {
                 case X86_64:
-                    variant = 'amd64'
+                    variant = VARIANT_64BIT
                     break
                 case X86:
-                    variant = '386'
+                    variant = VARIANT_32BIT
                     break
             }
         }
@@ -86,13 +101,12 @@ class HashicorpUtils {
      * @return Latest version or {@code null}
      */
     static String getLatestTerraformProviderVersion(final String provider) {
-
         final String name = "terraform-provider-${provider}"
         final String host = getDownloadBaseUri(name)
-        if(host.startsWith('file:')) {
-            getLatestVersionFileSystem(host,name)
-        } else if(host.startsWith('http')) {
-            getLatestVersionHttp('terraform-gradle-plugin',host,name)
+        if (host.startsWith('file:')) {
+            getLatestVersionFileSystem(host)
+        } else if (host.startsWith('http')) {
+            getLatestVersionHttp('terraform-gradle-plugin', host, name)
         } else {
             throw new GradleException("${host} is not a supported URI")
         }
@@ -101,32 +115,34 @@ class HashicorpUtils {
     // Assumes physical layout on disk as per Hashicorp cloud.
     // If the cloud path was https://releases.hashicorp.com/terraform-provider-aws/0.1.0/terraform-provider-aws_0.1.0_darwin_amd64.zip,
     // then expect the host to point to a directory above terraform-provider-aws
-    private static getLatestVersionFileSystem(final String host,final String name) {
+    private static getLatestVersionFileSystem(final String host) {
         File baseDir = new File(host.toURI())
         final List<String> versions = baseDir.listFiles(new FileFilter() {
             @Override
             boolean accept(File pathname) {
-                pathname.isDirectory()
+                pathname.directory
             }
-        }).collect { File dirname ->
-            dirname.name
-        }.sort { String a,String b ->
-            GradleVersion.version(b) <=> GradleVersion.version(a)
+        })*.name.sort { a, b ->
+            GradleVersion.version((String)b) <=> GradleVersion.version((String)a)
         }
         versions.empty ? null : versions[0]
     }
 
     @CompileDynamic
-    private static getLatestVersionHttp(final String agentName,final String host,final String name) {
+    private static getLatestVersionHttp(final String agentName, final String host, final String name) {
         SAXParser parser = new SAXParser()
         def page = new XmlSlurper(parser).parseText(host.toURL().getText(requestProperties: ['User-Agent': agentName]))
         List<String> versions = page.depthFirst().findAll {
             it.@href.toString().startsWith("/${name}")
         }.collect {
-            it.toString().replace("${name}_",'')
-        }.sort { a,b ->
+            it.toString().replace("${name}_", '')
+        }.sort { a, b ->
             GradleVersion.version(b) <=> GradleVersion.version(a)
         }
         versions.empty ? null : versions[0]
     }
+
+    private final static String VARIANT_32BIT = '386'
+    private final static String VARIANT_64BIT = 'amd64'
+
 }
