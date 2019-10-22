@@ -35,7 +35,7 @@ class HashicorpUtils {
 
     /** Get the download URI for Hashicorp Releases. Sprecifiy a product to get the specific URI.
      *
-     * <p> Code will check for the existence of a System property  {@code org.ysb33r.gradle.<NAM> .uri} or
+     * <p> Code will check for the existence of a System property  {@code org.ysb33r.gradle.<NAM>  .uri} or
      * {@code org.ysb33r.gradle.hashicorp.releases.uri} before returning the default.
      *
      * @param name Name of product or package. Can be null or empty to get baseURI for Hashicorp releases
@@ -95,6 +95,16 @@ class HashicorpUtils {
         variant ? "${osname}_${variant}" : null
     }
 
+    /** Escapes file paths for safe inclusion in HCL files.
+     *
+     * @param os Operating system to apply this to,
+     * @param path File path to escape
+     * @return Escape file path as a string.
+     */
+    static String escapedFilePath(OperatingSystem os, File path) {
+        os.windows ? path.absolutePath.replaceAll(BACKSLASH, DOUBLE_BACKSLASH) : path.absolutePath
+    }
+
     /** Obtains the latest version of a Terraform provider
      *
      * @param provider
@@ -123,7 +133,7 @@ class HashicorpUtils {
                 pathname.directory
             }
         })*.name.sort { a, b ->
-            GradleVersion.version((String)b) <=> GradleVersion.version((String)a)
+            GradleVersion.version((String) b) <=> GradleVersion.version((String) a)
         }
         versions.empty ? null : versions[0]
     }
@@ -144,5 +154,6 @@ class HashicorpUtils {
 
     private final static String VARIANT_32BIT = '386'
     private final static String VARIANT_64BIT = 'amd64'
-
+    private final static String BACKSLASH = '\\'
+    private final static String DOUBLE_BACKSLASH = BACKSLASH * 2
 }

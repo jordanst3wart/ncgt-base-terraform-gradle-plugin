@@ -29,12 +29,11 @@ package org.ysb33r.gradle.terraform.integrations
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-import org.ysb33r.gradle.terraform.helpers.IntegrationTestBaseSpecification
+import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
+
 import org.ysb33r.grolifant.api.OperatingSystem
-import spock.lang.Specification
 
-
-class IntegrationSpecification extends IntegrationTestBaseSpecification  {
+class IntegrationSpecification extends DownloadTestSpecification  {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final boolean IS_KOTLIN_DSL = false
     public static final boolean IS_GROOVY_DSL = true

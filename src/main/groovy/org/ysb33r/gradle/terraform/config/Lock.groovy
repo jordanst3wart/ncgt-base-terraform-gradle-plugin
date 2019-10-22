@@ -13,24 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform
+package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Project
-import org.ysb33r.grolifant.api.exec.AbstractCommandExecSpec
-import org.ysb33r.grolifant.api.exec.ExternalExecutable
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
-/** An execution specification for {@code Terraform}.
+/** Allows for lock configurations on a task.
  *
  * @since 0.1
  */
 @CompileStatic
-class TerraformExecSpec extends AbstractCommandExecSpec {
-    /** Construct class and attach it to specific project.
-     *
-     * @param project Project this exec spec is attached.
-     */
-    TerraformExecSpec(Project project, ExternalExecutable resolver) {
-        super(project, resolver)
+class Lock implements TerraformTaskConfigExtension {
+    final String name = 'lock'
+
+    boolean enabled = true
+    Integer timeout = 0
+
+    Lock(AbstractTerraformTask task) {
+        this.terraformTask = task
     }
+
+    @Override
+    List<Closure> getInputProperties() {
+        []
+    }
+
+    @Override
+    @SuppressWarnings('UnnecessaryCast')
+    List<String> getCommandLineArgs() {
+        ["-lock=${enabled}", "-lock-timeout=${timeout}s"] as List<String>
+    }
+
+    private final AbstractTerraformTask terraformTask
 }

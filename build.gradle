@@ -49,7 +49,6 @@ dependencies {
         exclude module: 'groovy-all'
     }
     testCompile gradleTestKit()
-//    testCompile "org.ysb33r.gradle:grolifant:${grolifantVer}"
 }
 
 test {
@@ -61,9 +60,8 @@ gradleTest {
     versions '4.3', '4.10.3', '5.6.3'
     // end::gradleTestVersions[]
 
-    systemProperties 'org.ysb33r.gradle.terraform.uri': terraformTestCacheDir.absoluteFile.toURI()
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
     dependsOn jar
-
 }
 
 license {

@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform
+package org.ysb33r.gradle.terraform.errors
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Project
-import org.ysb33r.grolifant.api.exec.AbstractCommandExecSpec
-import org.ysb33r.grolifant.api.exec.ExternalExecutable
+import groovy.transform.InheritConstructors
+import org.gradle.api.GradleException
 
-/** An execution specification for {@code Terraform}.
+/** Thrown when there is an issue locating the {@code terraformrc} file.
  *
- * @since 0.1
+ * @author Schalk W. Cronjé
  */
+@InheritConstructors
 @CompileStatic
-class TerraformExecSpec extends AbstractCommandExecSpec {
-    /** Construct class and attach it to specific project.
-     *
-     * @param project Project this exec spec is attached.
-     */
-    TerraformExecSpec(Project project, ExternalExecutable resolver) {
-        super(project, resolver)
-    }
+class MissingTerraformConfiguration extends GradleException {
 }

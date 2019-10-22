@@ -1,13 +1,13 @@
 package org.ysb33r.gradle.terraform.tasks.base
 
+import Lock
+import State
+import Variables
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import Lock
-import State
-import Variables
 
 /** A base class for {@link org.ysb33r.gradle.terraform.tasks.TerraformPlan} and {@link org.ysb33r.gradle.terraform.tasks.TerraformPlanReport}.
  *
@@ -31,22 +31,22 @@ class AbstractTerraformPlan extends AbstractTerraformTask {
     @Nested
     final Lock lock
 
-    void lock(@DelegatesTo(Lock) final Closure cfg)  {
-        configureNested(this.getLock(),cfg)
+    void lock(@DelegatesTo(Lock) final Closure cfg) {
+        configureNested(this.getLock(), cfg)
     }
 
-    void lock(Action<Lock> a)  {
+    void lock(Action<Lock> a) {
         a.execute(this.getLock())
     }
 
     @Nested
     final State state
 
-    void state(@DelegatesTo(State) final Closure cfg)  {
-        configureNested(this.getState(),cfg)
+    void state(@DelegatesTo(State) final Closure cfg) {
+        configureNested(this.getState(), cfg)
     }
 
-    void state(Action<State> a)  {
+    void state(Action<State> a) {
         a.execute(this.getState())
     }
 
@@ -54,7 +54,7 @@ class AbstractTerraformPlan extends AbstractTerraformTask {
     final Variables variables
 
     void variables(@DelegatesTo(Variables) final Closure cfg) {
-        configureNested(this.variables,cfg)
+        configureNested(this.variables, cfg)
     }
 
     void variables(Action<Variables> a) {
@@ -82,7 +82,7 @@ class AbstractTerraformPlan extends AbstractTerraformTask {
         null
     }
 
-    protected AbstractTerraformPlan( PlanPurpose isReport, PlanType type) {
+    protected AbstractTerraformPlan(PlanPurpose isReport, PlanType type) {
         super()
         setTerraformCommand('plan')
         lock = new Lock()
@@ -102,25 +102,25 @@ class AbstractTerraformPlan extends AbstractTerraformTask {
      */
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        if(planType == PlanType.DESTROY_PLAN) {
+        if (planType == PlanType.DESTROY_PLAN) {
             execSpec.cmdArgs '-destroy'
         }
 
         color(execSpec)
         noInput(execSpec)
-        addMaxParallel(execSpec,getMaxParallel())
-        addBooleanCmdLineOption(execSpec,'refresh',getRefreshMode())
-        addModuleDepthToCmdLine(execSpec,getModuleDepth())
-        addLockOptionsToCmdLine(execSpec,this.lock)
-        addStateOptionsToCmdLine(execSpec,this.state)
-        addTargetsToCmdLine(execSpec,getResourceTargets())
+        addMaxParallel(execSpec, getMaxParallel())
+        addBooleanCmdLineOption(execSpec, 'refresh', getRefreshMode())
+        addModuleDepthToCmdLine(execSpec, getModuleDepth())
+        addLockOptionsToCmdLine(execSpec, this.lock)
+        addStateOptionsToCmdLine(execSpec, this.state)
+        addTargetsToCmdLine(execSpec, getResourceTargets())
 
         execSpec
     }
 
-    int maxParallel=0
+    int maxParallel = 0
     int moduleDepth = -1
-    boolean refreshMode=true
+    boolean refreshMode = true
     final PlanType planType
     final PlanPurpose planPurpose
 }

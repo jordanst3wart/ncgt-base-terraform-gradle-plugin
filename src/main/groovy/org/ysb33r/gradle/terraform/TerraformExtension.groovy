@@ -39,9 +39,11 @@ import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
  *   executable searchPath()
  * </code>
  *
- * If this build runs on a platform that supports downloading of the {@code terraform} executable
+ * If the build runs on a platform that supports downloading of the {@code terraform} executable
  * the default will be to use the version as specified by {@link TerraformExtension#TERRAFORM_DEFAULT},
  * otherwise it will be in search mode.
+ *
+ * @author Schalk W. Cronjé
  *
  * @since 0.1
  */
@@ -71,7 +73,6 @@ class TerraformExtension extends AbstractToolExtension {
             executable searchPath()
         }
         this.warnOnNewVersion = false
-        this.pluginCacheDir = "${project.buildDir}/terraform-providers"
     }
 
     /** Constructs a new extension which is attached to the provided task.
@@ -113,39 +114,36 @@ class TerraformExtension extends AbstractToolExtension {
         this.warnOnNewVersion = value
     }
 
-    File getPluginCacheDir() {
-        (this.pluginCacheDir == null && task != null) ?
-            globalExtension.pluginCacheDir :
-            project.file(this.pluginCacheDir)
-    }
+//    Provider<File> getPluginCacheDir() {
+//        TerraformConfigUtils.locateTerraformRCExtension(this.project).
+//        (this.pluginCacheDir == null && task != null) ?
+//            globalExtension.pluginCacheDir :
+//            project.file(this.pluginCacheDir)
+//    }
 
-    void setPluginCacheDir(Object path) {
-        this.pluginCacheDir = path
-    }
+//    void setPluginCacheDir(Object path) {
+//        this.pluginCacheDir = path
+//    }
 
-    void pluginCacheDir(Object path) {
-        this.pluginCacheDir = path
-    }
+//    void pluginCacheDir(Object path) {
+//        this.pluginCacheDir = path
+//    }
 
-    String getWorkspace() {
-        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace
-    }
-
-    void setWorkspace(final String ws) {
-        this.workspace = ws
-    }
-
-    void workspace(final String ws) {
-        this.workspace = ws
-    }
+//    String getWorkspace() {
+//        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace
+//    }
+//
+//    void setWorkspace(final String ws) {
+//        this.workspace = ws
+//    }
+//
+//    void workspace(final String ws) {
+//        this.workspace = ws
+//    }
 
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) projectExtension
     }
-
-    private Boolean warnOnNewVersion
-    private Object pluginCacheDir
-    private String workspace
 
     private void addVersionResolver(Project project) {
         ResolveExecutableByVersion.DownloaderFactory downloaderFactory = {
@@ -164,4 +162,7 @@ class TerraformExtension extends AbstractToolExtension {
 
     @SuppressWarnings('UnnecessaryCast')
     private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
+
+    private Boolean warnOnNewVersion
+//    private String workspace
 }

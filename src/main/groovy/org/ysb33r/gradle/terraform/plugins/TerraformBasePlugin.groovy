@@ -18,8 +18,11 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -28,22 +31,24 @@ import org.ysb33r.gradle.terraform.TerraformExtension
  */
 @CompileStatic
 class TerraformBasePlugin implements Plugin<Project> {
-    static final String DEPENDENCY_EXTENSION = 'terraformProvider'
-    static final String TERRAFORM_CONFIGURATION = 'terraform'
+    static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
 
     void apply(Project project) {
+        if (project == project.rootProject) {
+            project.apply plugin: TerraformRCPlugin
+        }
+
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
+        project.extensions.create(TERRAFORM_SOURCESETS, TerraformSourceSets, project)
 
-//        project.extensions.extraProperties.set(
-//          DEPENDENCY_EXTENSION, { final String providerName, final String ver = '+' ->
-//            DependencyFactory.newSelfResolvingDependency(TerraformProviderDependency,project,providerName,ver)
-//        })
+        project.pluginManager.withPlugin('org.ysb33r.cloudci') {
+            project.tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t ->
+                t.environment TF_AUTOMATION: 1
+            }
+        }
 
-        project.configurations.create(TERRAFORM_CONFIGURATION) { Configuration cfg ->
-            cfg.visible = false
-            cfg.transitive = false
-            cfg.canBeConsumed = false
+        project.tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t ->
+            t.dependsOn(locateTerraformRCGenerator(t.project))
         }
     }
-
 }
