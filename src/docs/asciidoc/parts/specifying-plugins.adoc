@@ -1,9 +1,0 @@
-[[pluginsdeps,Specifying Terraform Plugins]]
-== Specifying Terraform Plugins
-
-*TBC* `terraformProvider`
-
-[source,groovy]
-----
-TerraformInitIntegrationSpec[tags=adding-dependencies]
-----

@@ -1,4 +1,0 @@
-[[terraformlock]]
-== The Terraform version lock file
-
-*TBC* `terraform.lock`

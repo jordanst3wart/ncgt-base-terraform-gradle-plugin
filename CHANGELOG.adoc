@@ -7,7 +7,8 @@
 === Features
 
 * Bootstrap Terraform without installation
-* Base task for running Terraform tasks
+* Terraform source sets
+* Support for `init`, `apply` and `plan` terraform commands.
 
 
 // end::changelog[]

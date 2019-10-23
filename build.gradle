@@ -13,7 +13,7 @@ plugins {
     id 'codenarc'
     id 'java-gradle-plugin'
     id 'org.ysb33r.gradletest' version '2.0-rc.5'
-    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'org.asciidoctor.jvm.convert' version '2.3.0'
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'org.ysb33r.vfs' version '1.0'
@@ -56,8 +56,12 @@ test {
 }
 
 gradleTest {
+
+    ext {
+        minVersion = '4.3'
+    }
     // tag::gradleTestVersions[]
-    versions '4.3', '4.10.3', '5.6.3'
+    versions minVersion, '4.10.3', '5.6.3'
     // end::gradleTestVersions[]
 
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
@@ -81,17 +85,17 @@ license {
     ])
 }
 
-task landingPage(type: org.asciidoctor.gradle.AsciidoctorTask)
+task landingPage(type: org.asciidoctor.gradle.jvm.AsciidoctorTask)
 
-//apply from : 'gradle/build-documentation.gradle'
-//apply from : 'gradle/publish-plugins.gradle'
+apply from : 'gradle/build-documentation.gradle'
+apply from : 'gradle/publish-plugins.gradle'
 
-//publishPlugins.mustRunAfter installDocs
+publishPlugins.mustRunAfter installDocs
 
 task release {
     group "Release"
     description "Lifecycle task for release a new version"
     onlyIf notSnapshot
     onlyIf { !gradle.startParameter.offline }
-    dependsOn build //, publishPlugins, installDocs
+    dependsOn build, publishPlugins, installDocs
 }

@@ -1,29 +1,20 @@
-= Packer Gradle Plugin
+= Terraform Gradle Plugin
 :author: Schalk W. Cronjé
 :doctype: book
 :toc: right
 :icons: font
 :source-highlighter: coderay
-:sourcedir: {includetopdir}/src/main/groovy/org/ysb33r/gradle/packer
-:testdir: {includetopdir}/src/test/groovy/org/ysb33r/gradle/packer
-:downloadtestdir: {includetopdir}/src/downloadTest/groovy/org/ysb33r/gradle/packer/downloadtest
-:groovydoc: ../api/org/ysb33r/gradle/packer
+:sourcedir: {includetopdir}/src/main/groovy/org/ysb33r/gradle/terraform
+:testdir: {includetopdir}/src/test/groovy/org/ysb33r/gradle/terraform
+:inttestdir: {includetopdir}/src/integrationTest/groovy/org/ysb33r/gradle/terraform
+:gradletestdir: {includetopdir}/src/gradleTest
+:groovydoc: ../api/org/ysb33r/gradle/terraform
 
 include::parts/introduction.adoc[]
-
-//include::parts/alternatives.adoc[]
 
 include::parts/bootstrap.adoc[]
 
 include::parts/platform-installation-support.adoc[]
 
-include::parts/terraform-lock.adoc[]
-
-include::parts/specifying-plugins.adoc[]
-
-
 //include::parts/TerraformExtension.adoc[]
 
-//include::parts/TerraformExtension.adoc[]
-
-//include::parts/TerraformFreeTask.adoc[]
