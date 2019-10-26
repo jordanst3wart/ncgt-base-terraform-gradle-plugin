@@ -11,6 +11,7 @@ plugins {
     id 'groovy'
     id 'maven'
     id 'codenarc'
+    id 'idea'
     id 'java-gradle-plugin'
     id 'org.ysb33r.gradletest' version '2.0-rc.5'
     id 'org.asciidoctor.jvm.convert' version '2.3.0'

@@ -66,6 +66,33 @@ for /f "delims== tokens=1,2 usebackq" %i in (`find location %APP_LOCATION_FILE%`
 @rem If the app is not available, download it first via Gradle
 if not exist %APP_LOCATION% call :run_gradle -q ~~CACHE_TASK_NAME~~
 
+
+@rem If global configuration is disabled which is the default, then
+@rem  point the Terraform config to the generated configuration file
+@rem  if it exists.
+if %TF_CLI_CONFIG_FILE% == "" (
+    for /f "delims== tokens=1,2 usebackq" %i in (`find useGlobalConfig=true %APP_LOCATION_FILE%`) do set cliconfigglobal=1
+    if %cliconfigset%==1 goto cliconfigset
+    for /f "delims== tokens=1,2 usebackq" %i in (`find configLocation %APP_LOCATION_FILE%`) do set CONFIG_LOCATION=%i
+    if exist %$CONFIG_LOCATION% (
+        set TF_CLI_CONFIG_FILE=%CONFIG_LOCATION%
+    ) else (
+        echo Config location specified as %CONFIG_LOCATION%, but file does not exist. 1>&2
+        echo Please run the terraformrc Gradle task before using %APP_BASE_NAME% again 1>&2
+    )
+)
+:cliconfigset
+
+@rem  If we are in a project containing a default Terraform source set
+@rem  then point the data directory to the default location.
+if "%TF_DATA_DIR%" == "" (
+    if exist %CD%\src\tf\main (
+        set TF_DATA_DIR=%CD%\build\tf\main
+        echo %TF_DATA_DIR% will be used as data directory 1>&2
+    )
+)
+
+
 @rem Execute ~~APP_BASE_NAME~~
 %APP_LOCATION% %CMD_LINE_ARGS%
 

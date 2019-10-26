@@ -77,6 +77,8 @@ class TerraformCacheBinarySpec extends IntegrationSpecification {
         verifyAll {
             props.location.endsWith('terraform')
             props.binaryVersion == terraformVersion
+            props.useGlobalConfig == 'false'
+            props.configLocation == new File(projectCacheDir,'.terraformrc').absolutePath
         }
     }
 }

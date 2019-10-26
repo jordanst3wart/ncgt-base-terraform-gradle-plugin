@@ -22,6 +22,8 @@ import org.gradle.api.GradleException
 import org.gradle.util.GradleVersion
 import org.ysb33r.grolifant.api.OperatingSystem
 
+import java.util.regex.Pattern
+
 import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86
 import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
 
@@ -33,7 +35,7 @@ import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
 @SuppressWarnings('LineLength')
 class HashicorpUtils {
 
-    /** Get the download URI for Hashicorp Releases. Sprecifiy a product to get the specific URI.
+    /** Get the download URI for Hashicorp Releases. Specify a product to get the specific URI.
      *
      * <p> Code will check for the existence of a System property  {@code org.ysb33r.gradle.<NAM>  .uri} or
      * {@code org.ysb33r.gradle.hashicorp.releases.uri} before returning the default.
@@ -154,6 +156,6 @@ class HashicorpUtils {
 
     private final static String VARIANT_32BIT = '386'
     private final static String VARIANT_64BIT = 'amd64'
-    private final static String BACKSLASH = '\\'
-    private final static String DOUBLE_BACKSLASH = BACKSLASH * 2
+    private final static Pattern BACKSLASH = ~/\x5C/
+    private final static String DOUBLE_BACKSLASH = '\\\\\\\\'
 }

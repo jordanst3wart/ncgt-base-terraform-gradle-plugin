@@ -37,7 +37,6 @@ class TerraformPlan extends AbstractTerraformTask {
         terraformCommand = 'plan'
         supportsInputs()
         supportsColor()
-        supportsSourceDir()
         withConfigExtensions(Lock, Variables, StateOptions, ResourceFilter)
     }
 
@@ -82,7 +81,7 @@ class TerraformPlan extends AbstractTerraformTask {
         execSpec.identity {
             cmdArgs "-out=${planOutputFile.get()}"
         }
-        if(destructionPlan) {
+        if (destructionPlan) {
             execSpec.cmdArgs '-destroy'
         }
         execSpec

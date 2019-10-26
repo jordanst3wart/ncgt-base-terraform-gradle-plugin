@@ -34,7 +34,6 @@ class TerraformApply extends AbstractTerraformTask {
         terraformCommand = 'apply'
         supportsInputs()
         supportsColor()
-        supportsSourceDir()
         supportsAutoApprove()
         withConfigExtensions(Lock, Variables, StateOptions, ResourceFilter)
     }

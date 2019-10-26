@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grolifant.api.wrapper.script.AbstractCacheBinaryTask
 
 @CompileStatic
@@ -47,6 +48,15 @@ class TerraformCacheBinary extends AbstractCacheBinaryTask {
     @Override
     protected String getBinaryLocation() {
         terraformExtension.resolvableExecutable.executable.canonicalPath
+    }
+
+    @Override
+    protected Map<String, String> getAdditionalProperties() {
+        TerraformRCExtension terraformrc = project.extensions.getByType(TerraformRCExtension)
+        def map = super.additionalProperties
+        map.putAll useGlobalConfig: terraformrc.useGlobalConfig.toString(),
+            configLocation: terraformrc.terraformRC.get().absolutePath
+        map
     }
 
     private final TerraformExtension terraformExtension

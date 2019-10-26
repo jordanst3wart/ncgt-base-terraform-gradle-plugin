@@ -110,6 +110,8 @@ if $cygwin ; then
     esac
 fi
 
+APP_LOCATION_FILE=$DOT_GRADLE_RELATIVE_PATH/~~APP_LOCATION_FILE~~
+
 run_gradle ( ) {
   if  [ -x "$GRADLE_WRAPPER_RELATIVE_PATH/gradlew" ] ; then
     $GRADLE_WRAPPER_RELATIVE_PATH/gradlew "$@"
@@ -118,7 +120,9 @@ run_gradle ( ) {
   fi
 }
 
-APP_LOCATION_FILE=$DOT_GRADLE_RELATIVE_PATH/~~APP_LOCATION_FILE~~
+app_property ( ) {
+    echo `cat $APP_LOCATION_FILE | grep $1 | cut -f2 -d=`
+}
 
 # If the app location is not available, set it first via Gradle
 if [ ! -f $APP_LOCATION_FILE ] ; then
@@ -126,11 +130,36 @@ if [ ! -f $APP_LOCATION_FILE ] ; then
 fi
 
 # Read the location of the wrapped binary from the location file
-APP_LOCATION=`cat $APP_LOCATION_FILE | grep location | cut -f2 -d=`
+APP_LOCATION=`app_property location`
 
 # If the app is not available, download it first via Gradle
 if [ ! -f $APP_LOCATION  ] ; then
   run_gradle -q ~~CACHE_TASK_NAME~~
+fi
+
+# If global configuration is disabled which is the default, then
+# point the Terraform config to the generated configuration file
+# if it exists.
+if [ -z $TF_CLI_CONFIG_FILE ] ; then
+    grep -q 'useGlobalConfig=true' $APP_LOCATION_FILE
+    if [ $? -ne 0 ] ; then
+        CONFIG_LOCATION=`app_property configLocation`
+        if [ -f $CONFIG_LOCATION ] ; then
+            export TF_CLI_CONFIG_FILE=$CONFIG_LOCATION
+        else
+          echo Config location specified as $CONFIG_LOCATION, but file does not exist. >&2
+          echo Please run the terraformrc Gradle task before using $(basename $0) again >&2
+        fi
+    fi
+fi
+
+# If we are in a project containing a default Terraform source set
+# then point the data directory to the default location.
+if [ -z $TF_DATA_DIR ] ; then
+    if [ -f $PWD/src/tf/main ] ; then
+        export TF_DATA_DIR=$PWD/build/tf/main
+        echo $TF_DATA_DIR will be used as data directory >&2
+    fi
 fi
 
 exec $APP_LOCATION "$@"

@@ -50,7 +50,7 @@ class TerraformInit extends AbstractTerraformTask {
      *
      * This option can be set from the command-line with {@code --configure-backends=true}
      */
-    @Option(option='configure-backends',description='Whether backends should be configured')
+    @Option(option = 'configure-backends', description = 'Whether backends should be configured')
     boolean configureBackend = true
 
     // TODO: Other backend settings

@@ -89,7 +89,7 @@ class Variables implements TerraformTaskConfigExtension {
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     *   {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable<?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
      */
     void list(final String name, Object val1, Object... vals) {
         List<Object> inputs = [val1]
@@ -103,7 +103,7 @@ class Variables implements TerraformTaskConfigExtension {
      *
      * @param name Name of variable.
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     *   {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable<?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
      */
     void list(final String name, Iterable<?> vals) {
         vars.put(name, vals as List)
@@ -177,9 +177,9 @@ class Variables implements TerraformTaskConfigExtension {
     @Override
     List<String> getCommandLineArgs() {
         Path root = terraformTask.sourceDir.get().toPath()
-        final List<String> varList = escapedVars.collect { String k, String v ->
-            ['-var',"$k=$v".toString()]
-        }.flatten() as List<String>
+        final List<String> varList = escapedVars.collectMany { String k, String v ->
+            ['-var', "$k=$v".toString()]
+        } as List<String>
         varList.addAll(fileNames.stream().map { String fileName ->
             "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
         }.collect(Collectors.toList()))

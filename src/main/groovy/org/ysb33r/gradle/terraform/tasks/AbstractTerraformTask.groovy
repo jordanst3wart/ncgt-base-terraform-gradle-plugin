@@ -107,7 +107,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     @Internal
     String getLogLevel() {
-        switch(this.terraformLogLevel ?: project.logging.level) {
+        switch (this.terraformLogLevel ?: project.logging.level) {
             case LogLevel.DEBUG:
                 return 'DEBUG'
             case LogLevel.ERROR:
@@ -138,7 +138,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         TerraformExecSpec execSpec = buildExecSpec()
         createPluginCacheDir(project)
 
-        if(logLevel) {
+        if (logLevel) {
             logDir.get().mkdirs()
         }
 
@@ -163,14 +163,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     protected void setTerraformCommand(final String command) {
         this.command = command
-    }
-
-    /**
-     * To be called from tasks where the command supports a source directory to be
-     * added.
-     */
-    protected void supportsSourceDir() {
-//        this.withSourceDir = true
     }
 
     /**
@@ -216,7 +208,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
                 inputs.property "config-extension-${cex.name}-${idx}", eval
             }
-            commandLineProviders.add(project.provider({ -> cex.commandLineArgs }))
+            commandLineProviders.add(project.provider { -> cex.commandLineArgs })
         }
     }
 
@@ -247,7 +239,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     @SuppressWarnings('DuplicateStringLiteral')
     protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
         final String tfcmd = terraformCommand
-        Map<String,String> tfEnv = terraformEnvironment
+        Map<String, String> tfEnv = terraformEnvironment
         logger.info "Using Terraform environment: ${tfEnv}"
         execSpec.identity {
             command tfcmd
@@ -255,10 +247,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             environment tfEnv
             cmdArgs defaultCommandParameters
             addCommandSpecificsToExecSpec(execSpec)
-        }
-
-        if (this.withSourceDir) {
-            execSpec.cmdArgs sourceDir.get()
         }
 
         execSpec.environment(environment)
@@ -270,7 +258,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         final Map<String, String> env = [
             TF_DATA_DIR       : dataDir.get().absolutePath,
             TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
-            TF_LOG_PATH       : new File(logDir.get(),"${name}.log").absolutePath,
+            TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
             TF_LOG            : logLevel ?: ''
         ]
 
@@ -353,10 +341,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     private LogLevel terraformLogLevel
     private Object sourceSetProxy
     private String command
-    private boolean withSourceDir = false
     private final List<String> defaultCommandParameters = []
     private final TerraformExtension terraformExtension
-    private List<Provider<List<String>>> commandLineProviders = []
+    private final List<Provider<List<String>>> commandLineProviders = []
 }
 
 //    /** Force the build to be redone.
