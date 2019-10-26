@@ -59,26 +59,25 @@ set APP_LOCATION_FILE=%DOT_GRADLE_RELATIVE_PATH%/~~APP_LOCATION_FILE~~
 @rem If the app location is not available, set it first via Gradle
 if not exist %APP_LOCATION_FILE% call :run_gradle -q ~~CACHE_TASK_NAME~~
 
-@rem Read the location of the wrapped binary from the location file
-for /f "delims== tokens=1,2 usebackq" %i in (`find location %APP_LOCATION_FILE%`) do set APP_LOCATION=%i
-@rem for /f "delims== tokens=1,2" %i in (%APP_LOCATION_FILE%) do if (%i == "location") set APP_LOCATION=%j
+@rem Read settings in from app location properties
+@rem - APP_LOCATION
+@rem - USE_GLOBAL_CONFIG
+@rem - CONFIG_LOCATION
+call %APP_LOCATION_FILE%
 
 @rem If the app is not available, download it first via Gradle
 if not exist %APP_LOCATION% call :run_gradle -q ~~CACHE_TASK_NAME~~
 
-
 @rem If global configuration is disabled which is the default, then
 @rem  point the Terraform config to the generated configuration file
 @rem  if it exists.
-if %TF_CLI_CONFIG_FILE% == "" (
-    for /f "delims== tokens=1,2 usebackq" %i in (`find useGlobalConfig=true %APP_LOCATION_FILE%`) do set cliconfigglobal=1
-    if %cliconfigset%==1 goto cliconfigset
-    for /f "delims== tokens=1,2 usebackq" %i in (`find configLocation %APP_LOCATION_FILE%`) do set CONFIG_LOCATION=%i
-    if exist %$CONFIG_LOCATION% (
+if "%TF_CLI_CONFIG_FILE%" == "" (
+    if "%USE_GLOBAL_CONFIG%"=="true" goto cliconfigset
+    if exist %CONFIG_LOCATION% (
         set TF_CLI_CONFIG_FILE=%CONFIG_LOCATION%
     ) else (
         echo Config location specified as %CONFIG_LOCATION%, but file does not exist. 1>&2
-        echo Please run the terraformrc Gradle task before using %APP_BASE_NAME% again 1>&2
+        echo Please run the ~~TERRAFORMRC_TASK_NAME~~ Gradle task before using %APP_BASE_NAME% again 1>&2
     )
 )
 :cliconfigset
@@ -92,6 +91,8 @@ if "%TF_DATA_DIR%" == "" (
     )
 )
 
+
+if "%TF_LOG_PATH%"=="" set TF_LOG_PATH=%DIRNAME%\terraform.log
 
 @rem Execute ~~APP_BASE_NAME~~
 %APP_LOCATION% %CMD_LINE_ARGS%
@@ -110,7 +111,7 @@ if "%OS%"=="Windows_NT" endlocal
 exit /b 0
 
 :run_gradle
-if  exists %GRADLE_WRAPPER_RELATIVE_PATH%\gradlew.bat (
+if  exist %GRADLE_WRAPPER_RELATIVE_PATH%\gradlew.bat (
     call %GRADLE_WRAPPER_RELATIVE_PATH%\gradlew.bat %*
 ) else (
     call gradle %*

@@ -31,24 +31,23 @@ import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
-import org.ysb33r.gradle.terraform.tasks.TerraformCacheBinary
-import org.ysb33r.grolifant.api.OperatingSystem
 import spock.lang.IgnoreIf
+import spock.lang.Timeout
 import spock.util.environment.RestoreSystemProperties
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
-import static org.ysb33r.gradle.terraform.plugins.TerraformWrapperPlugin.CACHE_BINARY_TASK_NAME
 import static org.ysb33r.gradle.terraform.plugins.TerraformWrapperPlugin.WRAPPER_TASK_NAME
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
 @RestoreSystemProperties
 class TerraformWrapperSpec extends IntegrationSpecification {
 
+    @Timeout(300)
     void 'Create wrapper'() {
         setup:
         String terraformVersion = TerraformExtension.TERRAFORM_DEFAULT
-        File terraformw = new File(projectDir,'terraformw')
-        File terraformw_bat = new File(projectDir,'terraformw.bat')
+        File terraformw = new File(projectDir, 'terraformw')
+        File terraformw_bat = new File(projectDir, 'terraformw.bat')
 
         GradleRunner gradleRunner = getGradleRunner(
             IS_GROOVY_DSL,
@@ -75,11 +74,24 @@ class TerraformWrapperSpec extends IntegrationSpecification {
         terraformw_bat.exists()
 
         when: 'The Terraform wrapper script is executed'
+        StringWriter err = new StringWriter()
+        StringWriter out = new StringWriter()
         File wrapper = OS.windows ? terraformw_bat : terraformw
-        Process runWrapper = "${wrapper.absolutePath} -version".execute([],wrapper.parentFile)
-        runWrapper.waitFor()
+        List<String> envVars = OS.windows ? ['DEBUG=1', "TEMP=${System.getenv('TEMP')}"] : ['DEBUG=1']
+        Process runWrapper = "${wrapper.absolutePath} -version".execute(envVars, wrapper.parentFile)
+        runWrapper.consumeProcessOutput(out, err)
+        runWrapper.waitForOrKill(1000)
+        int exitCode = runWrapper.exitValue()
+        if (exitCode) {
+            println '---[ stderr ]----------------------------------'
+            println err
+            println '---[ stdout ]----------------------------------'
+            println out
+            println '-----------------------------------------------'
+        }
 
         then: 'The version should be printed'
-        runWrapper.text.contains("Terraform v${terraformVersion}")
+        exitCode == 0
+        out.toString().contains("Terraform v${terraformVersion}")
     }
 }

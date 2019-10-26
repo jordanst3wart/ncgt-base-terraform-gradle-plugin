@@ -50,18 +50,16 @@ class TerraformRCExtensionSpec extends Specification {
         }
 
         def terraformrc = project.extensions.getByType(TerraformRCExtension)
-        def hcl = terraformrc.toHCL(new StringWriter()).toString()
+        def hcl = terraformrc.toHCL(new StringWriter()).toString().replaceAll(~/\r?\n/,'!!')
 
         then:
         terraformrc.pluginCacheDir.get() == new File(project.gradle.gradleUserHomeDir, "caches/terraform.d")
-        verifyAll {
-            hcl.contains("""disable_checkpoint = true
+        hcl == """disable_checkpoint = true
 disable_checkpoint_signature = false
 plugin_cache_dir = "${escapedFilePath(os, terraformrc.pluginCacheDir.get())}"
 credentials "foo.terraform.example" {
   token = "foo.terraform.token"
 }
-""")
-        }
+""".replaceAll(~/\r?\n/,'!!')
     }
 }

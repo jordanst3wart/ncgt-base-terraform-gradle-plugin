@@ -32,6 +32,7 @@ import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
 import org.ysb33r.gradle.terraform.tasks.TerraformCacheBinary
+import org.ysb33r.grolifant.api.OperatingSystem
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 
@@ -68,17 +69,34 @@ class TerraformCacheBinarySpec extends IntegrationSpecification {
 
         when:
         BuildResult result = gradleRunner.build()
-        propsFile.withReader { reader ->
-            props.load(reader)
-        }
+        loadProps(props, propsFile)
 
         then:
         result.task(":${CACHE_BINARY_TASK_NAME}").outcome == SUCCESS
         verifyAll {
-            props.location.endsWith('terraform')
-            props.binaryVersion == terraformVersion
-            props.useGlobalConfig == 'false'
-            props.configLocation == new File(projectCacheDir,'.terraformrc').absolutePath
+            props.APP_LOCATION.endsWith(OS.windows ? 'terraform.exe' : 'terraform')
+            props.APP_VERSION == terraformVersion
+            props.USE_GLOBAL_CONFIG == 'false'
+            props.CONFIG_LOCATION == new File(projectCacheDir, '.terraformrc').absolutePath
+        }
+    }
+
+    void loadProps(Properties props, File propsFile) {
+        if (OperatingSystem.current().windows) {
+            String contents = propsFile.text
+                .replaceAll('set ', '') // Remove leading set keyword
+            .replaceAll('@rem ', '# ') // Switch comment style
+                .replaceAll('\\\\', '\\\\\\\\') // Replace \ with \\
+                .replaceAll(':', '\\\\:') // Replace : with \:
+                .replaceFirst('="', '=') // Strip leading quote
+                .replaceAll(~/(?m)"$/, '') // Strip final quote
+            new StringReader(contents).withReader { reader ->
+                props.load(reader)
+            }
+        } else {
+            propsFile.withReader { reader ->
+                props.load(reader)
+            }
         }
     }
 }

@@ -22,6 +22,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -254,6 +255,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     @SuppressWarnings('DuplicateStringLiteral')
+    @Input
     protected Map<String, String> getTerraformEnvironment() {
         final Map<String, String> env = [
             TF_DATA_DIR       : dataDir.get().absolutePath,
@@ -298,6 +300,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     @Override
+    @Internal
     protected TerraformExtension getToolExtension() {
         this.terraformExtension
     }
@@ -316,6 +319,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         execSpec
     }
 
+    @Internal
     protected String getTerraformCommand() {
         if (this.command == null) {
             throw new ExecutionException('Terraform command was not set')
@@ -329,6 +333,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             [
                 TEMP        : System.getenv('TEMP'),
                 TMP         : System.getenv('TMP'),
+                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
+                HOMEPATH    : System.getenv('HOMEPATH'),
+                USERPROFILE : System.getenv('USERPROFILE'),
                 (OS.pathVar): System.getenv(OS.pathVar)
             ] as Map<String, Object>
         } else {
@@ -345,155 +352,3 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
 }
-
-//    /** Force the build to be redone.
-//     *
-//     * <p> False by default unless Gradle was run with {@code --rerun-tasks} in which case the default is {@b true}.
-//     */
-//    @Internal
-//    boolean force = false
-//
-//    /** Build images in parallel.
-//     *
-//     * <p> True by default
-//     */
-//    @Internal
-//    boolean parallel = true
-//
-//    /** Images to exclude from template file.
-//     *
-//     * @return List of images to exclude. Default is to exclude nothing.
-//     */
-//    @Internal
-//    Iterable<String> getExcludes() {
-//        this.excludes
-//    }
-//
-//    /** Replace current exclude list with a new list.
-//     *
-//     * @param args New exclusion list
-//     */
-//    void setExcludes(Iterable<String> args) {
-//        this.excludes.clear()
-//        this.excludes.addAll(args)
-//    }
-//
-//    /** Add additional images to exclude.
-//     *
-//     * @param args List of excluded images.
-//     */
-//    void excludes(Iterable<String> args) {
-//        this.excludes.addAll(args)
-//    }
-//
-//    /** Add additional images to exclude.
-//     *
-//     * @param args List of excluded images.
-//     */
-//    void excludes(String... args) {
-//        excludes(args as List)
-//    }
-//
-//    /** Images to include from template file.
-//     *
-//     * @return List of images to include. Default is to inlude everything.
-//     */
-//    @Internal
-//    Iterable<String> getIncludes() {
-//        this.includes
-//    }
-//
-//    /** Replace current include list with a new list.
-//     *
-//     * @param args New inclusion list
-//     */
-//    void setIncludes(Iterable<String> args) {
-//        this.includes.clear()
-//        this.includes.addAll(args)
-//    }
-//
-//    /** Add additional images to included.
-//     *
-//     * @param args List of included images.
-//     */
-//    void includes(Iterable<String> args) {
-//        this.includes.addAll(args)
-//    }
-//
-//    /** Add additional images to include.
-//     *
-//     * @param args List of included images.
-//     */
-//    void includes(String... args) {
-//        includes(args as List)
-//    }
-//
-//    /** Variables to pass to {@code Packer}.
-//     *
-//     * <p> Calling this will resolve all lazy-values in the variable map.
-//     *
-//     * @return List of variables that will be passed.
-//     */
-//    @Input
-//    Map<String,String> getVars() {
-//        MapUtils.stringizeValues(this.vars)
-//    }
-//
-//    /** Replace current variable property list with a new list.
-//     *
-//     * @param args New variable key-value set of properties.
-//     */
-//    void setVars(Map<String,?> args) {
-//        this.vars.clear()
-//        this.vars.putAll((Map<String,Object>)args)
-//    }
-//
-//    /** Add variables to be passed to {@code Packer}.
-//     *
-//     * @param args Variable key-value set of additional properties.
-//     */
-//    void vars(Map<String,?> args) {
-//        this.vars.putAll((Map<String,Object>)args)
-//    }
-//
-//    /** The template file to use for the images.
-//     *
-//     * @return Resolved template file
-//     */
-//    @InputFile
-//    File getTemplate() {
-//        project.file(templateFile)
-//    }
-//
-//    /** Set template file to use.
-//     *
-//     * @param template Anything that can be resolved by {@code project.file}
-//     */
-//    void setTemplate(Object templateFile) {
-//        this.templateFile = templateFile
-//    }
-//
-//    /** Set template file to use.
-//     *
-//     * @param template Anything that can be resolved by {@code project.file}
-//     */
-//    void template(Object templateFile) {
-//        this.templateFile = templateFile
-//    }
-//
-//    /** The output directory to use for artifacts where applicable for image types.
-//     *
-//     * @return Output directory.
-//     */
-//    File getOutputDir() {
-//        project.file(this.outputDir)
-//    }
-//
-//    /** Set the output directory to use for artifacts where applicable for image types.
-//     *
-//     * @param template Anything that can be resolved by {@code project.file}
-//     */
-//    void setOutputDir(Object outDir) {
-//        this.outputDir = outDir
-//    }
-//

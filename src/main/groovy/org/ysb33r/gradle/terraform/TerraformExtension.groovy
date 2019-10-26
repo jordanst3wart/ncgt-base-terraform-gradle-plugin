@@ -58,7 +58,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.12.10'
+    public static final String TERRAFORM_DEFAULT = '0.12.13'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -113,21 +113,6 @@ class TerraformExtension extends AbstractToolExtension {
     void warnOnNewVersion(boolean value) {
         this.warnOnNewVersion = value
     }
-
-//    Provider<File> getPluginCacheDir() {
-//        TerraformConfigUtils.locateTerraformRCExtension(this.project).
-//        (this.pluginCacheDir == null && task != null) ?
-//            globalExtension.pluginCacheDir :
-//            project.file(this.pluginCacheDir)
-//    }
-
-//    void setPluginCacheDir(Object path) {
-//        this.pluginCacheDir = path
-//    }
-
-//    void pluginCacheDir(Object path) {
-//        this.pluginCacheDir = path
-//    }
 
 //    String getWorkspace() {
 //        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace

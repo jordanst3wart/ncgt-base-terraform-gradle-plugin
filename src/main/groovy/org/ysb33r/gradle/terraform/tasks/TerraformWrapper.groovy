@@ -21,6 +21,8 @@ import org.ysb33r.grolifant.api.wrapper.script.AbstractScriptWrapperTask
 
 import javax.inject.Inject
 
+import static org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin.TERRAFORM_RC_TASK
+
 @CompileStatic
 class TerraformWrapper extends AbstractScriptWrapperTask {
 
@@ -55,7 +57,8 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
             GRADLE_WRAPPER_RELATIVE_PATH: project.relativePath(project.rootDir),
             DOT_GRADLE_RELATIVE_PATH    : project.relativePath(cacheTask.locationPropertiesFile.get().parentFile),
             APP_LOCATION_FILE           : cacheTask.locationPropertiesFile.get().name,
-            CACHE_TASK_NAME             : cacheTask.name
+            CACHE_TASK_NAME             : cacheTask.name,
+            TERRAFORMRC_TASK_NAME       : TERRAFORM_RC_TASK
         ]
     }
 

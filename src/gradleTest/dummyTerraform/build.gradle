@@ -8,13 +8,13 @@ ext {
 
 terraformPlan {
     variables {
-        var 'foofile', fileToBeCreated.absolutePath
+        var 'foofile', terraformPath(fileToBeCreated)
     }
 }
 
 terraformApply {
     variables {
-        var 'foofile', fileToBeCreated.absolutePath
+        var 'foofile', terraformPath(fileToBeCreated)
     }
 }
 

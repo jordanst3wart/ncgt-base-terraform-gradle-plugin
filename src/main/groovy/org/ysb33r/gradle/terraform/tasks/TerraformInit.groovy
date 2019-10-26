@@ -16,6 +16,7 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
@@ -42,8 +43,13 @@ class TerraformInit extends AbstractTerraformTask {
      * This option can be set from the command-line with {@code --upgrade=true}.
      */
     @Option(option = 'upgrade', description = 'Force upgrade of modules and plugins when not offline')
+    @Internal
     boolean upgrade = false
 
+    /**
+     * Skip initialisation of child modules.
+     */
+    @Internal
     boolean skipChildModules = false
 
     /** Whether backends should be configured.
@@ -51,6 +57,7 @@ class TerraformInit extends AbstractTerraformTask {
      * This option can be set from the command-line with {@code --configure-backends=true}
      */
     @Option(option = 'configure-backends', description = 'Whether backends should be configured')
+    @Internal
     boolean configureBackend = true
 
     // TODO: Other backend settings
@@ -58,6 +65,7 @@ class TerraformInit extends AbstractTerraformTask {
     // -reconfigure
     // -backend-config
 
+    @Internal
     boolean verifyPlugins = true
 
     /** Add specific command-line options for the command.

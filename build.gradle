@@ -18,7 +18,8 @@ plugins {
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'org.ysb33r.vfs' version '1.0'
-    id "org.ajoberstar.git-publish" version '0.2.1'
+    id 'org.ajoberstar.git-publish' version '0.2.1'
+    id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5'
 }
 
 targetCompatibility = 1.8
@@ -67,6 +68,7 @@ gradleTest {
 
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
     dependsOn jar
+    shouldRunAfter integrationTest
 }
 
 license {
@@ -81,7 +83,7 @@ license {
     excludes([
         '**/*.adoc', '**/*.md',
         '**/*.properties',
-        '**/*CompatibilitySpec.groovy',
+        '**/*dsl.*Spec.groovy',
         '**/*.json'
     ])
 }

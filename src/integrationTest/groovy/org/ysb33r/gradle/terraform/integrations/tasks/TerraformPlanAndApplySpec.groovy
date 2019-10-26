@@ -19,6 +19,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
+import org.ysb33r.grolifant.api.OperatingSystem
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
@@ -39,6 +40,8 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
         srcDir.mkdirs()
         destFile = createTF()
 
+        String path = destFile.absolutePath
+
         buildFile.text = """
         plugins {
             id 'org.ysb33r.terraform'
@@ -46,14 +49,14 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
         
         terraformPlan {
             variables {
-                var 'foofile', '${destFile.absolutePath}'
+                var 'foofile', '${OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
             }
         }
         
         terraformApply {
         logLevel = 'DEBUG'
             variables {
-                var 'foofile', '${destFile.absolutePath}'
+                var 'foofile', '${OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
             }
         }
         """

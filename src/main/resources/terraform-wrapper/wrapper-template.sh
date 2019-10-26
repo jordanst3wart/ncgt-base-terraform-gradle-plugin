@@ -129,8 +129,11 @@ if [ ! -f $APP_LOCATION_FILE ] ; then
   run_gradle -q ~~CACHE_TASK_NAME~~
 fi
 
+# Now read in the configuration values for later usage
+. $APP_LOCATION_FILE
+
 # Read the location of the wrapped binary from the location file
-APP_LOCATION=`app_property location`
+#APP_LOCATION=`app_property location`
 
 # If the app is not available, download it first via Gradle
 if [ ! -f $APP_LOCATION  ] ; then
@@ -141,14 +144,14 @@ fi
 # point the Terraform config to the generated configuration file
 # if it exists.
 if [ -z $TF_CLI_CONFIG_FILE ] ; then
-    grep -q 'useGlobalConfig=true' $APP_LOCATION_FILE
-    if [ $? -ne 0 ] ; then
+#    grep -q 'useGlobalConfig=true' $APP_LOCATION_FILE
+    if [ $USE_GLOBAL_CONFIG == 'false' ] ; then
         CONFIG_LOCATION=`app_property configLocation`
         if [ -f $CONFIG_LOCATION ] ; then
             export TF_CLI_CONFIG_FILE=$CONFIG_LOCATION
         else
           echo Config location specified as $CONFIG_LOCATION, but file does not exist. >&2
-          echo Please run the terraformrc Gradle task before using $(basename $0) again >&2
+          echo Please run the ~~TERRAFORMRC_TASK_NAME~~ Gradle task before using $(basename $0) again >&2
         fi
     fi
 fi

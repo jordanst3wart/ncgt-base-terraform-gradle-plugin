@@ -54,10 +54,6 @@ class IntegrationSpecification extends DownloadTestSpecification  {
         List<String> eventualTaskNames = []
         eventualTaskNames.addAll(taskNames)
 
-        if (OS.windows) {
-            eventualTaskNames.add '--no-daemon'
-        }
-
         GradleRunner runner = GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(eventualTaskNames)

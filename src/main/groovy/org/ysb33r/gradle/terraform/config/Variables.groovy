@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.grolifant.api.OperatingSystem
 import org.ysb33r.grolifant.api.StringUtils
 
 import java.nio.file.Path
@@ -184,6 +185,17 @@ class Variables implements TerraformTaskConfigExtension {
             "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
         }.collect(Collectors.toList()))
         varList
+    }
+
+    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
+     * platform.
+     *
+     * @param file Object that can be converted using {@code project.file}.
+     * @return String version adapted on a per-platform basis
+     */
+    String terraformPath(Object file) {
+        String path = terraformTask.project.file(file).absolutePath
+        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, '/') : path
     }
 
     private final AbstractTerraformTask terraformTask

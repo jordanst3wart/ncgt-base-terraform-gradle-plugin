@@ -134,11 +134,13 @@ class TerraformConfigUtils {
         } else {
             File rc = terraformrc.pluginCacheDir.get()
             rc.mkdirs()
-            Files.setPosixFilePermissions(rc.toPath(), [
-                OWNER_READ, OWNER_WRITE, OWNER_EXECUTE,
-                GROUP_READ, GROUP_WRITE, GROUP_EXECUTE,
-                OTHERS_READ, OTHERS_EXECUTE
-            ].toSet())
+            if (OperatingSystem.current().unix) {
+                Files.setPosixFilePermissions(rc.toPath(), [
+                    OWNER_READ, OWNER_WRITE, OWNER_EXECUTE,
+                    GROUP_READ, GROUP_WRITE, GROUP_EXECUTE,
+                    OTHERS_READ, OTHERS_EXECUTE
+                ].toSet())
+            }
             Optional.of(rc)
         }
     }

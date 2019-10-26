@@ -31,11 +31,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createSou
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
-//    static final String DEPENDENCY_EXTENSION = 'terraformProvider'
-//    static final String TERRAFORM_CONFIGURATION = 'terraform'
-//    static final String TERRAFORM_FIND_CONFIG = 'findTerraformConfiguration'
-//    static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
-
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
 

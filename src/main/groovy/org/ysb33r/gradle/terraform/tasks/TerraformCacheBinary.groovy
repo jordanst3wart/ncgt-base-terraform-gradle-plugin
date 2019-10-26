@@ -18,12 +18,14 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.grolifant.api.OperatingSystem
 import org.ysb33r.grolifant.api.wrapper.script.AbstractCacheBinaryTask
 
 @CompileStatic
 class TerraformCacheBinary extends AbstractCacheBinaryTask {
 
-    public static final String LOCATION_PROPERTIES_DEFAULT = 'terraform.properties'
+    public static final String LOCATION_PROPERTIES_DEFAULT =
+        "terraform.properties.${OperatingSystem.current().windows ? 'bat' : 'sh'}"
 
     TerraformCacheBinary() {
         super(LOCATION_PROPERTIES_DEFAULT)
@@ -54,8 +56,10 @@ class TerraformCacheBinary extends AbstractCacheBinaryTask {
     protected Map<String, String> getAdditionalProperties() {
         TerraformRCExtension terraformrc = project.extensions.getByType(TerraformRCExtension)
         def map = super.additionalProperties
-        map.putAll useGlobalConfig: terraformrc.useGlobalConfig.toString(),
-            configLocation: terraformrc.terraformRC.get().absolutePath
+        map.putAll APP_VERSION: binaryVersion,
+            APP_LOCATION: binaryLocation,
+            USE_GLOBAL_CONFIG: terraformrc.useGlobalConfig.toString(),
+            CONFIG_LOCATION: terraformrc.terraformRC.get().absolutePath
         map
     }
 

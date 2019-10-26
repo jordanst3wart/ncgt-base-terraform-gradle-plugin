@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
@@ -40,9 +41,10 @@ class TerraformPlan extends AbstractTerraformTask {
         withConfigExtensions(Lock, Variables, StateOptions, ResourceFilter)
     }
 
-    /** Set to {@code true} is a plan to destroy all resources must be produced.
+    /** Set to {@code true} if a plan to destroy all resources must be produced.
      *
      */
+    @Input
     boolean destructionPlan = false
 
     /** Where the plan file will be written to.
