@@ -1,32 +1,39 @@
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.DefaultTask
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.TerraformExtension
-
-import java.util.concurrent.Callable
+import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.wrapper.script.AbstractCacheBinaryTask
 
 @CompileStatic
-class TerraformCacheBinary extends DefaultTask {
+class TerraformCacheBinary extends AbstractCacheBinaryTask {
 
-    public static final String LOCATION_PROPERTIES_DEFAULT = 'terraform.properties'
+    public static final String LOCATION_PROPERTIES_DEFAULT =
+        "terraform.properties.${OperatingSystem.current().windows ? 'bat' : 'sh'}"
 
     TerraformCacheBinary() {
+        super(LOCATION_PROPERTIES_DEFAULT)
         this.terraformExtension = project.extensions.getByType(TerraformExtension)
-        this.locationPropertiesFile = project.providers.provider({
-            new File(
-                project.gradle.startParameter.projectCacheDir ?: project.file("${project.projectDir}/.gradle"),
-                LOCATION_PROPERTIES_DEFAULT
-            )
-        } as Callable<File>)
     }
 
-    @Input
-    String getBinaryVersion() {
+    @Override
+    protected String getBinaryVersion() {
         switch (terraformExtension.resolvableExecutableType.type) {
             case 'version':
                 return terraformExtension.resolvableExecutableType.value.get()
@@ -35,38 +42,26 @@ class TerraformCacheBinary extends DefaultTask {
         }
     }
 
-    @OutputFile
-    Provider<File> getLocationPropertiesFile() {
-        this.locationPropertiesFile
+    @Override
+    protected String getPropertiesDescription() {
+        "Describes the Terraform usage for the ${project.name} project"
     }
 
-    void setLocationPropertiesFile(Object o) {
-        switch (o) {
-            case Provider:
-                this.locationPropertiesFile = (Provider<File>) o
-                break
-            default:
-                this.locationPropertiesFile = project.providers.provider({
-                    project.file(o)
-                } as Callable<File>)
-        }
+    @Override
+    protected String getBinaryLocation() {
+        terraformExtension.resolvableExecutable.executable.canonicalPath
     }
 
-    @TaskAction
-    void exec() {
-        File propsFile = locationPropertiesFile.get()
-        Properties props = new Properties()
-        props['location'] = binaryLocation
-        props['binaryVersion'] = binaryVersion
-        propsFile.withWriter { Writer w ->
-            props.store(w, "Describes the Terraform usage for the ${project.name} project")
-        }
+    @Override
+    protected Map<String, String> getAdditionalProperties() {
+        TerraformRCExtension terraformrc = project.extensions.getByType(TerraformRCExtension)
+        def map = super.additionalProperties
+        map.putAll APP_VERSION: binaryVersion,
+            APP_LOCATION: binaryLocation,
+            USE_GLOBAL_CONFIG: terraformrc.useGlobalConfig.toString(),
+            CONFIG_LOCATION: terraformrc.terraformRC.get().absolutePath
+        map
     }
 
-    private String getBinaryLocation() {
-        terraformExtension.resolvableExecutable.getExecutable().canonicalPath
-    }
-
-    private Provider<File> locationPropertiesFile
     private final TerraformExtension terraformExtension
 }

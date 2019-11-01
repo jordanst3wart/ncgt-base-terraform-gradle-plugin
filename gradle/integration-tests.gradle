@@ -1,0 +1,125 @@
+ext {
+
+    codedTerraformVersion = (file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy').readLines().grep {
+        it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/
+    })[0].replaceFirst(~/^(.+?["'])/, '').replaceFirst(~/(["'].*)$/, '')
+
+    currentOS = org.gradle.internal.os.OperatingSystem.current()
+    terraformTestCacheDir = file("${buildDir}/terraform-binaries")
+
+    // Always list the primary test version as the first one in this list.
+    terraformTestVersions = [codedTerraformVersion, '0.10.0']
+
+    // These are Terraform plugins we are going to cache, so we don't have to download them everytime.
+    terraformTestPlugins = [
+        [name: 'local', version: '1.0.0'],
+        [name: 'aws', 'version': '1.0.0']
+    ]
+
+    terraformOsArch = { ->
+        def terraformArch
+        def terraformOS
+
+        if (currentOS.windows) {
+            terraformOS = 'windows'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.linux) {
+            terraformOS = 'linux'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.macOsX) {
+            terraformOS = 'darwin'
+            terraformArch = 'amd64'
+        }
+
+        "${terraformOS}_${terraformArch}".toString()
+    }.call()
+}
+
+configurations {
+    integrationTestCompile {
+        extendsFrom testCompile
+    }
+    integrationTestRuntime {
+        extendsFrom integrationTestCompile, testRuntime
+    }
+
+}
+
+sourceSets {
+    integrationTest {
+        java.srcDir file("src/integrationTest/java")
+        groovy.srcDir file("src/integrationTest/groovy")
+        resources.srcDir file("src/integrationTest/resources")
+        compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
+        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
+    }
+}
+
+task cacheTerraformBinaries {
+
+    enabled = !project.gradle.startParameter.offline
+
+    terraformTestVersions.each { ver ->
+
+        final String relativePath = "terraform/${ver}/terraform_${ver}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
+        outputs.file target
+
+        doLast {
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
+            }
+        }
+    }
+
+    terraformTestPlugins.each { plugin ->
+        final String relativePath = "terraform-provider-${plugin.name}/${plugin.version}/terraform-provider-${plugin.name}_${plugin.version}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
+
+        outputs.file target
+        doLast {
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
+            }
+        }
+
+    }
+}
+
+task integrationTest(type: Test, dependsOn: jar) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    reports.html.destination = file("${reporting.baseDir}/integrationTest")
+
+    systemProperties TERRAFORM_CACHE_DIR: terraformTestCacheDir.absolutePath
+    systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
+    systemProperties RESOURCES_DIR: file('src/integrationTest/resources').absolutePath
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
+
+    mustRunAfter test
+    dependsOn cacheTerraformBinaries
+
+    enabled = !project.gradle.startParameter.isOffline()
+}
+
+
+check.dependsOn integrationTest
+

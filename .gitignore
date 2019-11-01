@@ -5,4 +5,7 @@ out/
 .idea/
 TMP/
 *.iml
+*.ipr
+*.iws
 .project
+.asciidoctorconfig

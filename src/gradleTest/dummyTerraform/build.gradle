@@ -1,6 +1,29 @@
-apply plugin : 'org.ysb33r.terraform.base'
+plugins {
+    id 'org.ysb33r.terraform'
+}
 
+ext {
+    fileToBeCreated = file("${buildDir}/local.txt")
+}
+
+terraformPlan {
+    variables {
+        var 'foofile', terraformPath(fileToBeCreated)
+    }
+}
+
+terraformApply {
+    variables {
+        var 'foofile', terraformPath(fileToBeCreated)
+    }
+}
 
 task runGradleTest  {
-    dependsOn packerBuild
+    dependsOn terraformInit, terraformPlan, terraformApply
+
+    doLast {
+        assert file('src/tf/main/terraform.tfstate').exists()
+        assert file("${buildDir}/reports/tf/main/main.tf.plan").exists()
+        assert fileToBeCreated.exists()
+    }
 }

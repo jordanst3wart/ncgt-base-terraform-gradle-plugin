@@ -10,32 +10,33 @@ buildscript {
 plugins {
     id 'groovy'
     id 'maven'
+    id 'codenarc'
+    id 'idea'
     id 'java-gradle-plugin'
-    id 'org.ysb33r.gradletest' version '1.0'
-    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'org.ysb33r.gradletest' version '2.0-rc.5'
+    id 'org.asciidoctor.jvm.convert' version '2.3.0'
     id 'com.gradle.plugin-publish' version '0.9.7'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'org.ysb33r.vfs' version '1.0'
-    id "org.ajoberstar.git-publish" version '0.2.1'
+    id 'org.ajoberstar.git-publish' version '0.2.1'
+    id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5'
 }
 
-version = '0.1-SNAPSHOT'
-group = 'org.ysb33r.gradle'
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 ext {
-    grolifantVer = '0.12'
-    spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/,'')
+    spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
     notSnapshot = { !version.endsWith('-SNAPSHOT') }
 }
 
-apply from : 'gradle/download-tests.gradle'
+apply from: rootProject.file('gradle/integration-tests.gradle')
+apply from: rootProject.file('gradle/codenarc.gradle')
 
 repositories {
     jcenter()
 
-    if(!notSnapshot()) {
+    if (!notSnapshot()) {
         mavenLocal()
     }
 }
@@ -46,54 +47,58 @@ dependencies {
     compile "org.ysb33r.gradle:grolifant:${grolifantVer}"
     compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
 
-    testCompile ("org.spockframework:spock-core:1.2-groovy-${spockGroovyVer}") {
-        exclude module : 'groovy-all'
+    testCompile("org.spockframework:spock-core:1.3-groovy-${spockGroovyVer}") {
+        exclude module: 'groovy-all'
     }
     testCompile gradleTestKit()
-//    testCompile "org.ysb33r.gradle:grolifant:${grolifantVer}"
 }
 
 test {
-    systemProperties TERRAFORM_VERSION    : terraformTestVersions[0]
+    systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
 }
 
 gradleTest {
+
+    ext {
+        minVersion = '4.3'
+    }
     // tag::gradleTestVersions[]
-    versions '4.3', '4.10.3', '5.6.2'
+    versions minVersion, '4.10.3', '5.6.3'
     // end::gradleTestVersions[]
 
-    systemProperties 'org.ysb33r.gradle.terraform.uri'  : terraformTestCacheDir.absoluteFile.toURI()
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
     dependsOn jar
-
+    shouldRunAfter integrationTest
 }
 
 license {
-    header = rootProject.file('config/HEADER')
+    header = rootProject.file('gradle/license/HEADER')
     strictCheck = true
     ignoreFailures = false
     mapping {
-        groovy ='DOUBLESLASH_STYLE'
+        java = 'SLASHSTAR_STYLE'
+        groovy = 'SLASHSTAR_STYLE'
     }
     ext.year = '2017-2019'
     excludes([
-            '**/*.adoc', '**/*.md',
-            '**/*.properties',
-            '**/*CompatibilitySpec.groovy',
-            '**/*.json'
+        '**/*.adoc', '**/*.md',
+        '**/*.properties',
+        '**/*dsl.*Spec.groovy',
+        '**/*.json'
     ])
 }
 
-task landingPage( type :  org.asciidoctor.gradle.AsciidoctorTask )
+task landingPage(type: org.asciidoctor.gradle.jvm.AsciidoctorTask)
 
-//apply from : 'gradle/build-documentation.gradle'
-//apply from : 'gradle/publish-plugins.gradle'
+apply from : 'gradle/build-documentation.gradle'
+apply from : 'gradle/publish-plugins.gradle'
 
-//publishPlugins.mustRunAfter installDocs
+publishPlugins.mustRunAfter installDocs
 
 task release {
     group "Release"
     description "Lifecycle task for release a new version"
     onlyIf notSnapshot
-    onlyIf {!gradle.startParameter.offline}
-    dependsOn build //, publishPlugins, installDocs
+    onlyIf { !gradle.startParameter.offline }
+    dependsOn build, publishPlugins, installDocs
 }

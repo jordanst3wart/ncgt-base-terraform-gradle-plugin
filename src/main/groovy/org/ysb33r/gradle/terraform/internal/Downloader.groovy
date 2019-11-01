@@ -1,17 +1,18 @@
-//
-// ============================================================================
-// (C) Copyright Schalk W. Cronje 2017
-//
-// This software is licensed under the Apache License 2.0
-// See http://www.apache.org/licenses/LICENSE-2.0 for license details
-//
-// Unless required by applicable law or agreed to in writing, software distributed under the License is
-// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and limitations under the License.
-//
-// ============================================================================
-//
-
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
@@ -26,12 +27,12 @@ import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
 
 /** Downloads specific versions of {@code Terraform}.
  *
- * <p> Currently limited to Windows (x86, x86_64), MacOS, Linux (x86, x86_64), Solaris (x86_64) and FreeBSD (x86, x86_64).
- * 
- * <p> There are more
- * binary packages are available from the Terraform site, but currently these are not being tested not implemented.
- * This includes:
- * 
+ * <p> Currently limited to Windows (x86, x86_64), MacOS, Linux (x86, x86_64), Solaris (x86_64) and
+ * FreeBSD (x86, x86_64).
+ *
+ * <p> There are more binary packages are available from the Terraform site, but currently these are not being tested
+ * not implemented. This includes:
+ *
  * <ul>
  *    <li> linux_arm.zip
  *    <li> freebsd_arm.zip
@@ -42,8 +43,9 @@ import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
 @CompileStatic
 class Downloader extends AbstractDistributionInstaller {
     public static final OperatingSystem OS = OperatingSystem.current()
-    public static final OperatingSystem.Arch ARCH = OS.getArch()
-    public static final String baseURI = HashicorpUtils.getDownloadBaseUri('terraform')
+    public static final OperatingSystem.Arch ARCH = OS.arch
+    public static final String BASEURI = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
+    private static final String TOOL_IDENTIFIER = 'terraform'
 
     /** Creates a downloader
      *
@@ -51,7 +53,7 @@ class Downloader extends AbstractDistributionInstaller {
      * @param project Project this is associated with.
      */
     Downloader(final String version, final Project project) {
-        super('terraform',version,'native-binaries/terraform',project)
+        super(TOOL_IDENTIFIER, version, "native-binaries/${TOOL_IDENTIFIER}", project)
     }
 
     /** Tells the system whether downloading can be supported.
@@ -70,7 +72,7 @@ class Downloader extends AbstractDistributionInstaller {
     @Override
     URI uriFromVersion(final String ver) {
         final String osArch = HashicorpUtils.osArch(OS)
-        osArch ? "${baseURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
+        osArch ? "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
     }
 
     /** Returns the path to the {@code terraform} executable.
@@ -79,12 +81,8 @@ class Downloader extends AbstractDistributionInstaller {
      * @return Location of {@code terraform} or null if not a supported operating system.
      */
     File getTerraformExecutablePath() {
-        File root = getDistributionRoot()
-        if(root == null) {
-            return null
-        } else {
-            new File(root,exeName)
-        }
+        File root = distributionRoot
+        root == null ? null : new File(root, exeName)
     }
 
     /** Validates that the unpacked distribution is good.
@@ -93,15 +91,16 @@ class Downloader extends AbstractDistributionInstaller {
      * @param distributionDescription A descriptive name of the distribution
      * @return {@code distDir} as {@code Packer} distributions contains only a single executable.
      *
-     * @throw {@link org.ysb33r.grolifant.api.errors.DistributionFailedException} if distribution failed to meet criteria.
+     * @throw {@link DistributionFailedException} if distribution failed to meet criteria.
      */
     @Override
     protected File getAndVerifyDistributionRoot(File distDir, String distributionDescription) {
+        File checkFor = new File(distDir, exeName)
 
-        File checkFor = new File(distDir,exeName)
-
-        if(!checkFor.exists()) {
-            throw new DistributionFailedException("${checkFor.name} not found in downloaded ${distributionDescription} distribution.")
+        if (!checkFor.exists()) {
+            throw new DistributionFailedException(
+                "${checkFor.name} not found in downloaded ${distributionDescription} distribution."
+            )
         }
 
         distDir

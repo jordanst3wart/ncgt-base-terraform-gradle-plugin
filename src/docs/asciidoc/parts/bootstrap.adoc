@@ -6,28 +6,66 @@ These plugins are available from the plugin portal. Add the appropriate plugin i
 [source,groovy,subs="attributes,callouts"]
 ----
 plugins {
-  id 'org.ysb33r.terraform.base'  version '{revnumber}'  // <1>
-  id 'org.ysb33r.terraform'       version '{revnumber}'  // <2>
+  id 'org.ysb33r.terraform.base'    version '{revnumber}'  // <1>
+  id 'org.ysb33r.terraform'         version '{revnumber}'  // <2>
+  id 'org.ysb33r.terraform.rc'      version '{revnumber}'  // <3>
+  id 'org.ysb33r.terraform.wrapper' version '{revnumber}'  // <4>
 }
 ----
-<1> Base plugin
-<2> Conventions for `packer`
+<1> Base plugin provdes `terraform` extension
+<2> Conventions for `terraform` including source sets and tasks created by convention.
+<3> This plugin is normally not applied directly, but deals specifically with Terraform configuration
+<4> This plugin is usually only applied at the root project and dealks with the creation of `terraformw` wrappers.
 
-NOTE: You need at least Gradle 3.3 to use these plugins.
+NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 
 === Base plugin
 
 The base plugin provides:
 
-* An <<TerraformExtension,extension>> named `terraform`.
-* A <<TerraformTask>> task type
-* Ability to download and use `terraform` distributions.
+* A project <<TerraformExtension,extension>> named `terraform`.
+* Various Terraform task types which tend to map the `terraform` command closely. Fot instance for the `init` command, the appropriate task type is called `TerraformInit`.
+* Ability to download and use `terraform` executables.
+
+When the base plugin is applied to the root project it will automatically apply the `terraformrc` plugin.
 
 === Terraform plugin
 
-//The Terraform plugin provides:
-//
-//* An instance of <<PackerBuilder>> named `packerBuild`.
+The Terraform conventions plugin provides:
+
+* `terraformSourceSets` as a project extension.
+* The default Terraform source set called `main` with default directory `src/tf/main`.
+* A number of tasks including `terraformInit`, `terraformPlan` and `terraformApply` which acts upon the default source set.
 
 Applying the Terraform plugin will apply the base plugin.
 
+=== Terraform RC plugin
+
+The `terraformrc` plugin provies an extension called `terraformrc` which deals with the creation of a configuration file specificaly for use by Terraform within the project.
+
+=== Terraform Wrapper plugin
+
+Provides the `terraformWrapper` and `cacheTerraformBinaries` tasks.
+
+== Quick start
+
+The minimalist project is
+
+[source,groovy]
+----
+plugins {
+  id 'org.ysb33r.terraform' version '{revnumber}'
+}
+----
+
+Now add a `init.tf` file to `src/tf/main` and add some Terraform content to it.
+
+[listing.terminal]
+----
+$ ./gradlew terraformInit <1>
+$ ./gradlew terraformApply <2>
+$ git add src/tf/main/terraform.tfstate <3>
+----
+<1> Initialise your Terraform project environment.
+<2> Apply your changes
+<3> Add your newly created `.tfstate` file to source control. If your Terraform context uses remote state storage, then this last step is not required.

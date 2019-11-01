@@ -1,3 +1,4 @@
+import org.apache.tools.ant.filters.ReplaceTokens
 
 ext {
     websitePublishFolder = file("${buildDir}/website/public")
@@ -59,7 +60,6 @@ landingPage {
     inputs.dir generateDocVersionsTable.targetDir
     sourceDir 'src/docs/landingPage'
     outputDir "${buildDir}/docs/landingPage"
-    separateOutputDirs = false
 
     sources {
         include 'index.adoc'
@@ -76,10 +76,9 @@ asciidoctor {
     description 'Generates the main product documentation & changelog'
     mustRunAfter validateDocVersions
     outputDir "${buildDir}/docs/product"
-    separateOutputDirs = false
     inputs.files sourceSets.main.allSource
     inputs.files sourceSets.test.allSource
-    inputs.files sourceSets.downloadTest.allSource
+    inputs.files sourceSets.integrationTest.allSource
 
     sources {
         include 'product-documentation.adoc'
@@ -87,6 +86,7 @@ asciidoctor {
     }
 
     attributes revnumber: version,
+            'minimum-gradle-version': gradleTest.minVersion,
             includetopdir : projectDir.absolutePath,
             'gradle-javadoc' : "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
             'gradle-dsl' : "https://docs.gradle.org/${gradle.gradleVersion}/dsl"
@@ -139,3 +139,46 @@ gitPublish {
 
 
 gitPublishCommit.dependsOn installDocs, updateGitLabYmlInPages
+
+
+task asciidoctorEditorConfig(type: Copy) {
+
+    ext {
+        pluginTokens = [
+            revnumber: version,
+            rootdir: rootDir.absolutePath,
+            mingradle: gradleTest.minVersion
+        ]
+//        pluginTokens = docProjects.collectEntries { proj ->
+//            ["plugin-${proj}".toString(), file("${pluginProjectDir(proj)}/src").absolutePath]
+//        } + docProjects.collectEntries { proj ->
+//            ["api-${proj}".toString(), file("${pluginProjectDir(proj)}/build/docs/groovydoc").absolutePath]
+//        } + [
+//
+//        ]
+        additionalAttributes = file('src/docs/asciidoc/attributes.adoc')
+    }
+
+    group 'IDE tasks'
+    description 'Renders IDE config for Asciidoctor'
+    inputs.file additionalAttributes
+
+    from rootProject.file('gradle/docs/asciidoctorconfig-template.txt')
+    into rootProject.projectDir
+    rename 'asciidoctorconfig-template.txt', '.asciidoctorconfig'
+
+    // try to keep the token list alphabetical.
+    filter ReplaceTokens, beginToken: '@@', endToken: '@@', tokens: pluginTokens
+
+    doLast {
+        new File(rootProject.projectDir, '.asciidoctorconfig').withWriterAppend { w ->
+            w << additionalAttributes.text
+
+        }
+    }
+}
+
+pluginManager.withPlugin('idea') {
+    tasks.ideaModule.dependsOn asciidoctorEditorConfig
+}
+

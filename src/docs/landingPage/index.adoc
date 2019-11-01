@@ -1,4 +1,4 @@
-= Packer Gradle Plugin
+= Terraform Gradle Plugin
 :imagesdir: images
 :icons: font
 
@@ -21,7 +21,7 @@ include::{gendocdir}/display-versions.adoc[]
 
 == Other links
 
-* https://gitlab.com/ysb33rOrg/packer-gradle-plugin[Fork me on GitLab]
+* https://gitlab.com/ysb33rOrg/terraform-gradle-plugin[Fork me on GitLab]
 
 
 ////

@@ -1,0 +1,9 @@
+// This is purely a template for Asciidoctor attributes
+// which will be substituted with values from the build environment.
+// It's main purpose is to provide context for Asciidoctor preview
+// in IntelliJ.
+//
+// Try to keep this alphabetical for simplified management
+:includetopdir: @@rootdir@@
+:revnumber: @@revnumber@@
+:minimum-gradle-version: @@mingradle@@

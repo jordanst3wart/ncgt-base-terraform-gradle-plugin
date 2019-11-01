@@ -12,23 +12,23 @@ The plugin brings with it a number of subgoals:
 
 WARNING: This is an incubating project. Until is `1.0` released one day, interfaces and DSL may change between `0.x` releases.
 
+NOTE: These documentation pages assume that you have at least a basic working knowledge of Terraform.
+
 == Terraform + Gradle - A mindset change
 
 Integrating these two products delivers a pwerful combination, but also presents a number of operational ways that challenges people that is used to using `terraform` standalone or in scripts.
 
-=== Bootstrapping
-
 Using Terraform with Gradle means that the former no longer needs to be installed. Just specify the version and Gradle will boostrap the correct version. If the version is already in cache (`~/gradle/native-binaries/`), Gradle will just reuse it.
 
-=== Reproducibility
-
-In order to reproduce builds a deployments, Gradle will lock down the versions of Terraform plugins in use. This complements the use of version constraints in Terraform configuration files.
-
-Doing the equivalent of `terraform init -update` is not possible directly. See the section on <<terraformlock,Terraform version lock files>> for more details.
+//=== Reproducibility
+//
+//In order to reproduce builds a deployments, Gradle will lock down the versions of Terraform plugins in use. This complements the use of version constraints in Terraform configuration files.
+//
+//Doing the equivalent of `terraform init -update` is not possible directly. See the section on <<terraformlock,Terraform version lock files>> for more details.
 
 === Caching of plugins
 
-Gradle will cache Terraform plugins in a similar way that it caches normal artifacts. This means that plugins can easily be shared between different Gradle-Terraform projects without additional network load. When used in CI, the caching mechanisms of the specific CI service can be used to keep Terraform plugins between builds.
+Gradle will cache Terraform plugins using the Terraform caching mechanism, but share it between project by using the Gradle user home caching directories. It is possible to override this a have the caching use a per-project basis or purely rely on global Terrafom settings.
 
 
 

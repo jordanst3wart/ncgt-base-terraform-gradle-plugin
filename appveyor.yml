@@ -13,7 +13,6 @@ branches:
   only:
     - master
     - development
-    - release
 
 cache:
   - C:\Users\appveyor\.gradle\native-binaries

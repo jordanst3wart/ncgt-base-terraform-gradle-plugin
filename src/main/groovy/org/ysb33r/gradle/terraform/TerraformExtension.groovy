@@ -1,29 +1,26 @@
-//
-// ============================================================================
-// (C) Copyright Schalk W. Cronje 2017
-//
-// This software is licensed under the Apache License 2.0
-// See http://www.apache.org/licenses/LICENSE-2.0 for license details
-//
-// Unless required by applicable law or agreed to in writing, software distributed under the License is
-// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and limitations under the License.
-//
-// ============================================================================
-//
-
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.internal.Downloader
-import org.ysb33r.grolifant.api.StringUtils
 import org.ysb33r.grolifant.api.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
-
-import java.util.concurrent.Callable
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -42,9 +39,11 @@ import java.util.concurrent.Callable
  *   executable searchPath()
  * </code>
  *
- * If this build runs on a platform that supports downloading of the {@code terraform} executable
+ * If the build runs on a platform that supports downloading of the {@code terraform} executable
  * the default will be to use the version as specified by {@link TerraformExtension#TERRAFORM_DEFAULT},
  * otherwise it will be in search mode.
+ *
+ * @author Schalk W. Cronjé
  *
  * @since 0.1
  */
@@ -56,10 +55,10 @@ class TerraformExtension extends AbstractToolExtension {
      */
     public static final String NAME = 'terraform'
 
-    /** The default version of Packer that will be used on
+    /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.10.6'
+    public static final String TERRAFORM_DEFAULT = '0.12.13'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -69,12 +68,11 @@ class TerraformExtension extends AbstractToolExtension {
         super(project)
         if (Downloader.downloadSupported) {
             addVersionResolver(project)
-            executable([version: TERRAFORM_DEFAULT] as Map<String, Object>)
+            executable([version: TERRAFORM_DEFAULT])
         } else {
             executable searchPath()
         }
         this.warnOnNewVersion = false
-        this.pluginCacheDir = "${project.buildDir}/terraform-providers"
     }
 
     /** Constructs a new extension which is attached to the provided task.
@@ -92,7 +90,6 @@ class TerraformExtension extends AbstractToolExtension {
     static Map<String, Object> searchPath() {
         TerraformExtension.SEARCH_PATH
     }
-
 
     /** Print a warning message if a new version of {@code terraform} is available.
      *
@@ -117,94 +114,40 @@ class TerraformExtension extends AbstractToolExtension {
         this.warnOnNewVersion = value
     }
 
-    File getPluginCacheDir() {
-        (this.pluginCacheDir == null && task != null) ? globalExtension.getPluginCacheDir() : getProject().file(this.pluginCacheDir)
-    }
-
-    void setPluginCacheDir(Object path) {
-        this.pluginCacheDir = path
-    }
-
-    void pluginCacheDir(Object path) {
-        this.pluginCacheDir = path
-    }
-
-    String getWorkspace() {
-        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace
-    }
-
-    void setWorkspace(final String ws) {
-        this.workspace = ws
-    }
-
-    void workspace(final String ws) {
-        this.workspace = ws
-    }
-
-    // -------------------------------------------------------------------
-    ResolvableExecutableType resolvableExecutableType
-    static class ResolvableExecutableType {
-        ResolvableExecutableType(String t, Provider<String> v) {
-            this.type = t
-            this.value = v
-        }
-
-        final String type
-        final Provider<String> value
-    }
-    @Override
-    void executable(Map<String, ?> opts) {
-        if(opts['version']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'version',
-                project.providers.provider({
-                    StringUtils.stringize(opts['version'])
-                } as Callable<String>)
-            )
-        } else if(opts['search']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'search',
-                project.providers.provider({
-                    StringUtils.stringize(opts['search'])
-                } as Callable<String>)
-            )
-        } else if(opts['path']) {
-            resolvableExecutableType = new ResolvableExecutableType(
-                'path',
-                project.providers.provider({
-                    StringUtils.stringize(opts['path'])
-                } as Callable<String>)
-            )
-        }
-        super.executable(opts)
-    }
-    // -------------------------------------------------------------------
+//    String getWorkspace() {
+//        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace
+//    }
+//
+//    void setWorkspace(final String ws) {
+//        this.workspace = ws
+//    }
+//
+//    void workspace(final String ws) {
+//        this.workspace = ws
+//    }
 
     private TerraformExtension getGlobalExtension() {
-        (TerraformExtension) getProjectExtension()
+        (TerraformExtension) projectExtension
     }
 
-    private Boolean warnOnNewVersion
-    private Object pluginCacheDir
-    private String workspace
-
     private void addVersionResolver(Project project) {
-
         ResolveExecutableByVersion.DownloaderFactory downloaderFactory = {
             Map<String, Object> options, String version, Project p ->
                 new Downloader(version, p)
         } as ResolveExecutableByVersion.DownloaderFactory
 
         ResolveExecutableByVersion.DownloadedExecutable resolver = { Downloader installer ->
-            installer.getTerraformExecutablePath()
+            installer.terraformExecutablePath
         } as ResolveExecutableByVersion.DownloadedExecutable
 
-        getResolverFactoryRegistry().registerExecutableKeyActions(
+        resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(project, downloaderFactory, resolver)
         )
     }
 
+    @SuppressWarnings('UnnecessaryCast')
+    private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
 
-    private static final Map<String, Object> SEARCH_PATH = [search: 'terraform'] as Map<String, Object>
-
+    private Boolean warnOnNewVersion
+//    private String workspace
 }
