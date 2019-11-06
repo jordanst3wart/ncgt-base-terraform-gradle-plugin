@@ -18,14 +18,14 @@ task validateDocVersions {
     }
 
     doLast {
-        if(null == versionsFile.readLines().find { it == version }) {
+        if (null == versionsFile.readLines().find { it == version }) {
             throw new GradleException("Current version ${version} is not listed. " +
-                    "Please correct ${versionsFile} before installing.")
+                "Please correct ${versionsFile} before installing.")
         }
     }
 }
 
-task generateDocVersionsTable( type : Copy ) {
+task generateDocVersionsTable(type: Copy) {
 
     ext {
         targetDir = file("${buildDir}/generated-docs")
@@ -37,13 +37,13 @@ task generateDocVersionsTable( type : Copy ) {
 
     from 'src/docs/landingPage', {
         include 'display-versions.txt'
-        rename ~/(.+)\.txt/,'$1.adoc'
+        rename ~/(.+)\.txt/, '$1.adoc'
         filter { String line ->
-            if(line.startsWith('//') || line.startsWith('#')) {
+            if (line.startsWith('//') || line.startsWith('#')) {
                 return null
             }
             final String docsLink = "link:${line}/docs/product-documentation.html[Docs]"
-            final String apiLink  = "link:${line}/api/index.html[Groovydoc]"
+            final String apiLink = "link:${line}/api/index.html[Groovydoc]"
             final String clogLink = "link:${line}/docs/changelog.html[Changelog]"
             return "a|*${line}*|${docsLink}|${apiLink}|${clogLink}"
         }
@@ -65,9 +65,10 @@ landingPage {
         include 'index.adoc'
     }
 
-    attributes gendocdir : file("${generateDocVersionsTable.targetDir}").absolutePath,
-            revnumber : "${version}",
-            includetopdir : projectDir.absolutePath
+    attributes gendocdir: file("${generateDocVersionsTable.targetDir}").absolutePath,
+        revnumber: "${version}",
+        includetopdir: projectDir.absolutePath,
+        'minimum-gradle-version': gradleTest.minVersion
 
 }
 
@@ -86,13 +87,13 @@ asciidoctor {
     }
 
     attributes revnumber: version,
-            'minimum-gradle-version': gradleTest.minVersion,
-            includetopdir : projectDir.absolutePath,
-            'gradle-javadoc' : "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
-            'gradle-dsl' : "https://docs.gradle.org/${gradle.gradleVersion}/dsl"
+        'minimum-gradle-version': gradleTest.minVersion,
+        includetopdir: projectDir.absolutePath,
+        'gradle-javadoc': "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
+        'gradle-dsl': "https://docs.gradle.org/${gradle.gradleVersion}/dsl"
 }
 
-task installDocs( type : Copy ) {
+task installDocs(type: Copy) {
 
     dependsOn validateDocVersions, asciidoctor, landingPage, groovydoc, gitPublishReset
 
@@ -112,7 +113,7 @@ task installDocs( type : Copy ) {
     onlyIf notSnapshot
 }
 
-task updateGitLabYmlInPages( type : Copy ) {
+task updateGitLabYmlInPages(type: Copy) {
     description 'Copies current GitLab CI configuration to pages branch'
     from project.projectDir, {
         include '.gitlab*'
@@ -146,7 +147,7 @@ task asciidoctorEditorConfig(type: Copy) {
     ext {
         pluginTokens = [
             revnumber: version,
-            rootdir: rootDir.absolutePath,
+            rootdir  : rootDir.absolutePath,
             mingradle: gradleTest.minVersion
         ]
 //        pluginTokens = docProjects.collectEntries { proj ->
