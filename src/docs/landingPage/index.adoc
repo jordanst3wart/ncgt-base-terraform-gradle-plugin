@@ -2,9 +2,9 @@
 :imagesdir: images
 :icons: font
 
-A collection of Gradle plugins to deal with the Packer virtual image building too in a very gradlesque way.
+A collection of Gradle plugins to deal with the Terraform infrastructure management tool in a very gradlesque way.
 
-If has been tested using https://github.com/ysb33r/gradleTest[GradleTest] for a wide range of compatibility. The test matrix for this release was
+The minimum supported Gradle version is `{minimum-gradle-version}`. It has also been tested using https://ysb33rorg.gitlab.io/gradleTest[GradleTest] against a wide range of compatibility. The test matrix for this release in addition to `{minimum-gradle-version}` was
 
 .GradleTest version configuration
 [source,groovy]

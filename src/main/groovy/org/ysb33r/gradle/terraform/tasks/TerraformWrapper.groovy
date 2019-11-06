@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.internal.Transform
 import org.ysb33r.grolifant.api.wrapper.script.AbstractScriptWrapperTask
 
 import javax.inject.Inject
@@ -31,7 +32,7 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
         super()
         this.terraformExtension = project.extensions.getByType(TerraformExtension)
         this.cacheTask = cacheTask
-        outputs.files(TEMPLATE_MAPPING.values().collect {
+        outputs.files(Transform.toList(TEMPLATE_MAPPING.values()) {
             new File(project.projectDir, it)
         })
         inputs.file(cacheTask.locationPropertiesFile)
