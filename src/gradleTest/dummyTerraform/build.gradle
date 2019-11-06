@@ -1,5 +1,6 @@
 plugins {
     id 'org.ysb33r.terraform'
+    id 'org.ysb33r.terraform.wrapper'
 }
 
 ext {
@@ -19,7 +20,7 @@ terraformApply {
 }
 
 task runGradleTest  {
-    dependsOn terraformInit, terraformPlan, terraformApply
+    dependsOn terraformInit, terraformPlan, terraformApply, terraformWrapper
 
     doLast {
         assert file('src/tf/main/terraform.tfstate').exists()
