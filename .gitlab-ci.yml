@@ -18,6 +18,7 @@ jdk8:
         expire_in: 60 min
     except:
         - pages
+        - tags
 
 jdk11:
     stage: build
@@ -30,12 +31,14 @@ jdk11:
         expire_in: 60 min
     except:
         - pages
+        - tags
 
 test:gradle_4.7,4.9:
     stage: test
     image: openjdk:8
     except:
         - pages
+        - tags
     dependencies:
         - jdk8
     script: ./run-compatibility-test-on-ci.sh
@@ -45,6 +48,7 @@ test:gradle_5.0,5.6.2:
     image: openjdk:8
     except:
         - pages
+        - tags
     dependencies:
         - jdk8
     script: ./run-compatibility-test-on-ci.sh
