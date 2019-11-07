@@ -35,7 +35,7 @@ class TerraformRCPlugin implements Plugin<Project> {
         TerraformRCExtension terraformrc = project.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, project)
         Task generator = project.tasks.create(TERRAFORM_RC_TASK)
         generator.identity {
-            group = 'Terraform'
+            group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
             description = 'Generates Terraform configuration file'
             onlyIf { !terraformrc.useGlobalConfig }
             inputs.property'details', { ->

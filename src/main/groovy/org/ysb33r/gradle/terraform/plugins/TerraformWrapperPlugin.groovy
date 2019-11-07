@@ -22,6 +22,7 @@ import org.ysb33r.gradle.terraform.tasks.TerraformCacheBinary
 import org.ysb33r.gradle.terraform.tasks.TerraformWrapper
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
+import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
 @CompileStatic
 class TerraformWrapperPlugin implements Plugin<Project> {
@@ -35,5 +36,11 @@ class TerraformWrapperPlugin implements Plugin<Project> {
         TerraformCacheBinary terraformCacheBinary = project.tasks.create(CACHE_BINARY_TASK_NAME, TerraformCacheBinary)
         TerraformWrapper wrapper = project.tasks.create(WRAPPER_TASK_NAME, TerraformWrapper, terraformCacheBinary)
         wrapper.dependsOn(locateTerraformRCGenerator(project))
+
+        terraformCacheBinary.group = TERRAFORM_TASK_GROUP
+        terraformCacheBinary.description = 'Caches Terraform binary'
+
+        wrapper.group = TERRAFORM_TASK_GROUP
+        wrapper.description = 'Generates Terraform wrapper files'
     }
 }

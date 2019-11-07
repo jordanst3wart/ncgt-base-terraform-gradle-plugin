@@ -1,0 +1,23 @@
+== Source Sets
+
+When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceSets` extension which contain the `main` source set. Associated with this source set is the default folder of `src/tf/main` and a number of tasks including:
+
+* `terraformInit`
+* `terraformPlan`
+* `terraformApply`
+
+If additional source sets are needed they can be added by convention i.e.
+
+[source,groovy]
+----
+terraformSourceSets {
+    development // <1>
+    staging {
+        srcDir = file('staging') // <2>
+    }
+}
+----
+<1> Creates a Terraform source set named 'development' with default directory `src/tf/development`
+<2> Creates a Terraform source set named 'release` and set the directory to `staging`.
+
+Tasks for additional source sets follow the `terraform<SourceSetName><TerraformCommand>` format. For instance in the above example the initialisation task for the `development` source set will be called `terraformDevelopmentInit`.

@@ -31,7 +31,8 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTe
  */
 @CompileStatic
 class TerraformBasePlugin implements Plugin<Project> {
-    static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
+    public static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
+    public static final String TERRAFORM_TASK_GROUP = 'Terraform'
 
     void apply(Project project) {
         if (project == project.rootProject) {

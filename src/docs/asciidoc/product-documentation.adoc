@@ -16,6 +16,8 @@ include::parts/bootstrap.adoc[]
 
 include::parts/platform-installation-support.adoc[]
 
+include::parts/sourcesets.adoc[]
+
 //include::parts/TerraformExtension.adoc[]
 
 // include::parts/wrapper.adoc[]
