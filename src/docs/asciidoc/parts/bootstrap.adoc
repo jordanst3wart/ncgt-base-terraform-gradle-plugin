@@ -3,7 +3,7 @@
 These plugins are available from the plugin portal. Add the appropriate plugin identifiers to your `build.gradle` file depending on the type of functionality you require.
 
 .build.gradle
-[source,groovy,subs="attributes,callouts"]
+[source,groovy,subs="attributes+"]
 ----
 plugins {
   id 'org.ysb33r.terraform.base'    version '{revnumber}'  // <1>
@@ -12,7 +12,7 @@ plugins {
   id 'org.ysb33r.terraform.wrapper' version '{revnumber}'  // <4>
 }
 ----
-<1> Base plugin provdes `terraform` extension
+<1> Base plugin provides `terraform` extension.
 <2> Conventions for `terraform` including source sets and tasks created by convention.
 <3> This plugin is normally not applied directly, but deals specifically with Terraform configuration
 <4> This plugin is usually only applied at the root project and dealks with the creation of `terraformw` wrappers.

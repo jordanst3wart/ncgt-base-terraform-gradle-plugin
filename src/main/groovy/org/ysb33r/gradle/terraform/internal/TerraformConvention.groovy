@@ -28,6 +28,8 @@ import org.ysb33r.gradle.terraform.tasks.TerraformApply
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
 
+import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
+
 /** Provide convention naming.
  *
  * @author Schalk W. Cronjé
@@ -60,7 +62,15 @@ class TerraformConvention {
             "Terraform source set for ${sourceSetName}"
     }
 
-    static void createSourceSetConvention(Project project, String sourceSetName) {
+    /** Creates a sourceset using specific conventions
+     *
+     * For any sourceset other than {@code main}, tasks will be named using a pattern such as
+     *   {@code terraform<SourceSetName>Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     *
+     * @param project Project Project to attache source set to.
+     * @param sourceSetName Name of Terraform source set.
+     */
+    static void createSourceSetByConvention(Project project, String sourceSetName) {
         final TerraformSourceSets tss = project.extensions.getByType(TerraformSourceSets)
         if (GradleVersion.current() < GradleVersion.version('4.10')) {
             createSourceSetAndTasks(sourceSetName, project, tss)
@@ -77,14 +87,15 @@ class TerraformConvention {
     ) {
         TerraformSourceDirectorySet sourceSet = tss.create(name)
 
-        DEFAULT_TERRAFORM_TASKS.each { String taskBaseName, Class<? extends AbstractTerraformTask> taskType ->
+        DefaultTerraformTasks.values().each {
             def newTask = (project.tasks.create(
-                taskName(name, taskBaseName),
-                taskType
+                taskName(name, it.name),
+                it.type
             )) as AbstractTerraformTask
             newTask.sourceSet = sourceSet
-
-            if (taskBaseName != TERRAFORM_INIT) {
+            newTask.group = TERRAFORM_TASK_GROUP
+            newTask.description = "${it.description} for '${name}'"
+            if (it != DefaultTerraformTasks.INIT) {
                 newTask.mustRunAfter taskName(name, TERRAFORM_INIT)
             }
         }
@@ -98,15 +109,17 @@ class TerraformConvention {
     ) {
         NamedDomainObjectProvider<TerraformSourceDirectorySet> sourceSet = tss.register(name)
 
-        DEFAULT_TERRAFORM_TASKS.each { String taskBaseName, Class taskType ->
+        DefaultTerraformTasks.values().each {
             project.tasks.register(
-                taskName(name, taskBaseName),
-                taskType,
+                taskName(name, it.name),
+                it.type,
                 new Action<AbstractTerraformTask>() {
                     @Override
                     void execute(AbstractTerraformTask t) {
                         t.sourceSet = sourceSet.get()
-                        if (taskBaseName != TERRAFORM_INIT) {
+                        t.group = TERRAFORM_TASK_GROUP
+                        t.description = "${it.description} for '${name}'"
+                        if (it != DefaultTerraformTasks.INIT) {
                             t.mustRunAfter taskName(name, TERRAFORM_INIT)
                         }
                     }
@@ -115,11 +128,22 @@ class TerraformConvention {
         }
     }
 
-    private static final Map<String, Class<? extends AbstractTerraformTask>> DEFAULT_TERRAFORM_TASKS = [
-        (TERRAFORM_INIT): TerraformInit,
-        plan            : TerraformPlan,
-        apply           : TerraformApply
-    ]
+    private enum DefaultTerraformTasks {
 
-    private static final String TERRAFORM_INIT = 'init'
+        INIT( 'init', TerraformInit, 'Initialises Terraform'),
+        PLAN( 'plan', TerraformPlan, 'Generates Terraform execution plan'),
+        APPLY('apply',TerraformApply,'Builds or changes infrastructure')
+
+        final String name
+        final Class type
+        final String description
+
+        private DefaultTerraformTasks(String name, Class type, String description) {
+            this.name = name
+            this.type = type
+            this.description = description
+        }
+    }
+
+    private static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.name
 }

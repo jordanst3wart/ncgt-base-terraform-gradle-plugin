@@ -22,7 +22,7 @@ import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createSourceSetConvention
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createSourceSetByConvention
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -36,11 +36,11 @@ class TerraformPlugin implements Plugin<Project> {
 
         TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
 
-        createSourceSetConvention(project, DEFAULT_SOURCESET_NAME)
+        createSourceSetByConvention(project, DEFAULT_SOURCESET_NAME)
         terraformSourceSets.addRule('Add source set', new Action<String>() {
             @Override
             void execute(String requestedName) {
-                terraformSourceSets.create(requestedName)
+                createSourceSetByConvention(project, requestedName)
             }
         })
     }
