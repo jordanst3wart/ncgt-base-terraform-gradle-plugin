@@ -86,6 +86,8 @@ asciidoctor {
         include 'changelog.adoc'
     }
 
+    baseDirFollowsSourceDir()
+
     attributes revnumber: version,
         'minimum-gradle-version': gradleTest.minVersion,
         includetopdir: projectDir.absolutePath,
