@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
-import org.ysb33r.gradle.terraform.config.StateOptions
+import org.ysb33r.gradle.terraform.config.StateOptionsFull
 import org.ysb33r.gradle.terraform.config.Variables
 
 /** Equivalent of {@code terraform apply}.
@@ -35,7 +35,7 @@ class TerraformApply extends AbstractTerraformTask {
         supportsInputs()
         supportsColor()
         supportsAutoApprove()
-        withConfigExtensions(Lock, Variables, StateOptions, ResourceFilter)
+        withConfigExtensions(Lock, Variables, StateOptionsFull, ResourceFilter)
     }
 
     @Option(option = 'targets', description = 'List of resources to target')

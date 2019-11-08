@@ -13,7 +13,7 @@ If additional source sets are needed they can be added by convention i.e.
 terraformSourceSets {
     development // <1>
     staging {
-        srcDir = file('staging') // <2>
+        srcDir = 'staging' // <2>
     }
 }
 ----

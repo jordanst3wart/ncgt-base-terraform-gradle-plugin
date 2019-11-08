@@ -1,6 +1,6 @@
 = Changelog
 
-== v0.1.1
+== v0.1.3
 
 // tag::changelog[]
 
@@ -8,7 +8,7 @@
 
 * Bootstrap Terraform without installation
 * Terraform source sets
-* Support for `init`, `apply` and `plan` terraform commands.
+* Support for `init`, `apply`, `plan` and `import` terraform commands.
 
 
 // end::changelog[]
