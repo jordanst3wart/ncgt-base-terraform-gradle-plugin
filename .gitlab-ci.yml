@@ -53,6 +53,16 @@ test:gradle_5.0,5.6.2:
         - jdk8
     script: ./run-compatibility-test-on-ci.sh
 
+test:gradle_6.0:
+    stage: test
+    image: openjdk:11
+    except:
+        - pages
+        - tags
+    dependencies:
+        - jdk8
+    script: ./run-compatibility-test-on-ci.sh
+
 publish:
     stage: release
     image: openjdk:8

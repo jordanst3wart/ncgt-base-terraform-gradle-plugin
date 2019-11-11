@@ -150,7 +150,8 @@ task asciidoctorEditorConfig(type: Copy) {
         pluginTokens = [
             revnumber: version,
             rootdir  : rootDir.absolutePath,
-            mingradle: gradleTest.minVersion
+            mingradle: gradleTest.minVersion,
+            includetopdir: rootDir.absolutePath
         ]
 //        pluginTokens = docProjects.collectEntries { proj ->
 //            ["plugin-${proj}".toString(), file("${pluginProjectDir(proj)}/src").absolutePath]

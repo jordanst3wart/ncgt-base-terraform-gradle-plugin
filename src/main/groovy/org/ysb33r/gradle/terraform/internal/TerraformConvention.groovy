@@ -25,6 +25,7 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
+import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
 
@@ -132,7 +133,8 @@ class TerraformConvention {
 
         INIT( 'init', TerraformInit, 'Initialises Terraform'),
         PLAN( 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-        APPLY('apply',TerraformApply,'Builds or changes infrastructure')
+        APPLY('apply',TerraformApply,'Builds or changes infrastructure'),
+        IMPORT('import', TerraformImport,'Imports a resource')
 
         final String name
         final Class type

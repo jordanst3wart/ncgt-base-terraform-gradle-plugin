@@ -23,13 +23,12 @@ import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
  * @since 0.1
  */
 @CompileStatic
-class StateOptions implements TerraformTaskConfigExtension {
+class StateOptionsConcurrency implements TerraformTaskConfigExtension {
     final String name = 'stateOptions'
 
-    boolean refresh = true
     Integer maxParallel = 10
 
-    StateOptions(AbstractTerraformTask task) {
+    StateOptionsConcurrency(AbstractTerraformTask task) {
         this.terraformTask = task
     }
 
@@ -42,7 +41,6 @@ class StateOptions implements TerraformTaskConfigExtension {
     List<String> getCommandLineArgs() {
         [
             "-parallelism=${maxParallel}".toString(),
-            "-refresh=${refresh}".toString()
         ]
     }
 

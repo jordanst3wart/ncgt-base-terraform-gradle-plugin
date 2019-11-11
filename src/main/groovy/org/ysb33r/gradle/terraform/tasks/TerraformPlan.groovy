@@ -23,8 +23,9 @@ import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
-import org.ysb33r.gradle.terraform.config.StateOptions
-import org.ysb33r.gradle.terraform.config.Variables
+import org.ysb33r.gradle.terraform.config.StateOptionsFull
+
+import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 
 /** Equivalent of {@code terraform plan}.
  *
@@ -34,11 +35,13 @@ import org.ysb33r.gradle.terraform.config.Variables
 class TerraformPlan extends AbstractTerraformTask {
 
     TerraformPlan() {
-        super()
-        terraformCommand = 'plan'
+        super(
+            'plan',
+            [Lock, StateOptionsFull, ResourceFilter],
+            [VARIABLES]
+        )
         supportsInputs()
         supportsColor()
-        withConfigExtensions(Lock, Variables, StateOptions, ResourceFilter)
     }
 
     /** Set to {@code true} if a plan to destroy all resources must be produced.

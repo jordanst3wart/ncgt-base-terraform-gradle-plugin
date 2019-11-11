@@ -1,16 +1,22 @@
 = Changelog
 
-== v0.1.1
+== v0.2
 
 // tag::changelog[]
 
 === Features
 
-* Bootstrap Terraform without installation
-* Terraform source sets
-* Support for `init`, `apply` and `plan` terraform commands.
-
+* Variables can be defined at global, source set and task level. Where variables are the same, values at task level overrides source set and in turn source set overrides global. Task can also specify that source set and global variables can be ignored completely.
+* Environment can be defined at global and at task level.
 
 // end::changelog[]
+
+== v0.1.3
+
+=== Features
+
+* Bootstrap Terraform without installation
+* Terraform source sets
+* Support for `init`, `apply`, `plan` and `import` terraform commands.
 
 

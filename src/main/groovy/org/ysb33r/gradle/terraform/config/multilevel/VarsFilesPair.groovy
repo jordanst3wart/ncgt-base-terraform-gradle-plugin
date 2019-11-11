@@ -1,0 +1,45 @@
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.ysb33r.gradle.terraform.config.multilevel
+
+import groovy.transform.CompileStatic
+
+/** Keeps a collection of variables and variable files.
+ *
+ *
+ * @since 0.2
+ */
+@CompileStatic
+class VarsFilesPair {
+    final Map<String, Object> vars = [:]
+    final List<Object> files = []
+
+    void clear() {
+        this.vars.clear()
+        this.files.clear()
+    }
+
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return a string representation of the object.
+     */
+    @Override
+    String toString() {
+        "vars=${vars.toString()}, files=${files.toString()}"
+    }
+}
+

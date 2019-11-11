@@ -18,6 +18,10 @@ include::parts/platform-installation-support.adoc[]
 
 include::parts/sourcesets.adoc[]
 
-//include::parts/TerraformExtension.adoc[]
+include::parts/TerraformExtension.adoc[]
+
+include::parts/variables.adoc[]
+
+include::parts/environment.adoc[]
 
 // include::parts/wrapper.adoc[]

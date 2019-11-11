@@ -7,3 +7,4 @@
 :includetopdir: @@rootdir@@
 :revnumber: @@revnumber@@
 :minimum-gradle-version: @@mingradle@@
+:includetopdir: @@includetopdir@@
