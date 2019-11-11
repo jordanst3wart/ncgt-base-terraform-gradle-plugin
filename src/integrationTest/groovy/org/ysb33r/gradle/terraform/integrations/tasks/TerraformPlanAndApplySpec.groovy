@@ -40,7 +40,7 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
         srcDir.mkdirs()
         destFile = createTF()
 
-        String path = destFile.absolutePath
+        String path = destFile.canonicalPath
 
         buildFile.text = """
         plugins {
@@ -50,7 +50,7 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
         terraformSourceSets {
             main {
                 variables {
-                    var 'foofile', '${OS.windows ? path.replaceAll(~/\\x5C/, '/') : path}'
+                    var 'foofile', '${OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
                 }
             }
         }
