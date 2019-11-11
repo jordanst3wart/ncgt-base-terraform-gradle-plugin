@@ -33,9 +33,10 @@ import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
+import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
+import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.StringUtils
-import org.ysb33r.grolifant.api.errors.ExecutionException
 import org.ysb33r.grolifant.api.exec.AbstractExecWrapperTask
 
 import java.util.concurrent.Callable
@@ -51,6 +52,7 @@ import static org.ysb33r.grolifant.api.StringUtils.stringize
  * @since 0.1
  */
 @CompileStatic
+@SuppressWarnings('MethodCount')
 abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension> {
 
     /**
@@ -134,6 +136,47 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.terraformLogLevel = lvl
     }
 
+    /** Replace current environment with new one.
+     *
+     * Calling this will also remove any project extension environment from this task.
+     *
+     * @param args New environment key-value map of properties.
+     */
+    @Override
+    void setEnvironment(Map<String, ?> args) {
+        noProjectEnvironment = true
+        super.setEnvironment(defaultEnvironment)
+        environment(args)
+    }
+
+    /** Environment for running the exe
+     *
+     * <p> Calling this will resolve all lazy-values in the variable map.
+     *
+     * @return Map of environmental variables that will be passed.
+     */
+    @Override
+    Map<String, String> getEnvironment() {
+        if (noProjectEnvironment) {
+            super.environment
+        } else {
+            Map<String, String> combinedEnv = [:]
+            combinedEnv.putAll(project.extensions.getByType(TerraformExtension).environment)
+            combinedEnv.putAll(super.environment)
+            combinedEnv
+        }
+    }
+
+    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
+     * platform.
+     *
+     * @param file Object that can be converted using {@code project.file}.
+     * @return String version adapted on a per-platform basis
+     */
+    String terraformPath(Object file) {
+        TerraformUtils.terraformPath(project, file)
+    }
+
     @Override
     void exec() {
         TerraformExecSpec execSpec = buildExecSpec()
@@ -152,18 +195,28 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         result.assertNormalExitValue()
     }
 
-    protected AbstractTerraformTask() {
-        super()
-        environment(defaultEnvironment)
-        terraformExtension = extensions.create(TerraformExtension.NAME, TerraformExtension, this)
-    }
-
-    /** Set the command to be executed by {@code terraform}.
+    /**
      *
      * @param command Command to be executed. See https://www.terraform.io/docs/commands/index.html for details.
+     * @param configExtensions Configuration extensions to be added to this task.
+     * @param terraformConfigExtensions Configuration extensions that are added to the terraform task extension.
      */
-    protected void setTerraformCommand(final String command) {
-        this.command = command
+    protected AbstractTerraformTask(
+        String cmd,
+        List<Class> configExtensions,
+        List<TerraformExtensionConfigTypes> terraformConfigExtensions
+    ) {
+        super()
+        this.command = cmd
+        terraformExtension = extensions.create(
+            TerraformExtension.NAME,
+            TerraformExtension,
+            this,
+            terraformConfigExtensions
+        )
+        withConfigExtensions(configExtensions)
+        withTerraformConfigExtensions(terraformConfigExtensions)
+        environment(defaultEnvironment)
     }
 
     /**
@@ -195,21 +248,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     protected void supportsForce() {
         if (project.gradle.startParameter.rerunTasks) {
             defaultCommandParameters.add '-force'
-        }
-    }
-    /** To be called subclass contructor for defining specific configuration extensions that are
-     * supported.
-     *
-     * @param configExtensions
-     */
-    protected void withConfigExtensions(Class... configExtensions) {
-        for (Class it : configExtensions) {
-            TerraformTaskConfigExtension cex = it.newInstance(this)
-            extensions.add(cex.name, cex)
-            cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
-                inputs.property "config-extension-${cex.name}-${idx}", eval
-            }
-            commandLineProviders.add(project.provider { -> cex.commandLineArgs })
         }
     }
 
@@ -321,14 +359,42 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
 
     @Internal
     protected String getTerraformCommand() {
-        if (this.command == null) {
-            throw new ExecutionException('Terraform command was not set')
-        }
         this.command
+    }
+
+    /** To be called subclass constructor for defining specific configuration extensions that are
+     * supported.
+     *
+     * @param configExtensions
+     */
+    private void withConfigExtensions(List<Class> configExtensions) {
+        for (Class it : configExtensions) {
+            TerraformTaskConfigExtension cex = it.newInstance(this)
+            extensions.add(cex.name, cex)
+            cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
+                inputs.property "config-extension-${cex.name}-${idx}", eval
+            }
+            commandLineProviders.add(project.provider { -> cex.commandLineArgs })
+        }
+    }
+
+    private void withTerraformConfigExtensions(
+        List<TerraformExtensionConfigTypes> configExtensions
+    ) {
+        configExtensions.eachWithIndex { TerraformExtensionConfigTypes cfgType, Integer idx ->
+            inputs.property "${TerraformExtension.NAME}-extension-${idx}", {
+                -> cfgType.accessor.apply(terraformExtension).toString()
+            }
+
+            commandLineProviders.add(project.provider { ->
+                cfgType.accessor.apply(terraformExtension).commandLineArgs
+            })
+        }
     }
 
     @SuppressWarnings('UnnecessaryCast')
     static private Map<String, Object> getDefaultEnvironment() {
+        // tag::default-environment[]
         if (OS.windows) {
             [
                 TEMP        : System.getenv('TEMP'),
@@ -343,12 +409,15 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
                 (OS.pathVar): System.getenv(OS.pathVar)
             ] as Map<String, Object>
         }
+        // end::default-environment[]
     }
 
     private LogLevel terraformLogLevel
     private Object sourceSetProxy
-    private String command
+    private boolean noProjectEnvironment = false
+    private final String command
     private final List<String> defaultCommandParameters = []
     private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
+
 }

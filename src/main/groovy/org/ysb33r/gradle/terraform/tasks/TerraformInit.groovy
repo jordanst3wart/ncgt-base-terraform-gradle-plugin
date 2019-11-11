@@ -29,11 +29,9 @@ import org.ysb33r.gradle.terraform.config.Lock
 class TerraformInit extends AbstractTerraformTask {
 
     TerraformInit() {
-        super()
-        terraformCommand = 'init'
+        super('init', [Lock], [])
         supportsInputs()
         supportsColor()
-        withConfigExtensions(Lock)
     }
 
     // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option

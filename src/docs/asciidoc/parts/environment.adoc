@@ -1,0 +1,38 @@
+== Environmental Variables
+
+Gradle execution environment is not passed down to Terraform by default with the exception of specific platform-dependent variables as defubded by the following logic:
+
+[source,groovy]
+----
+include::{sourcedir}/tasks/AbstractTerraformTask.groovy[tags=default-environment,indent=0]
+----
+
+Environmental variables can be defined at two levels:
+
+* Project level via `terraform` project extension
+* On the task itself.
+
+[source,groovy]
+----
+terraform {
+    environment = [:] // <1>
+    setEnvironment([:]) // <2>
+    environment AWS_SHARED_CREDENTIALS_FILE : '/path/shared.creds' // <3>
+}
+
+terraformInit {
+    environment = [ AWS_SECRET_ACCESS_KEY : '12345' ] // <4>
+    setEnvironment([]) // <5>
+    environment AWS_SHARED_CREDENTIALS_FILE : '/path/shared.creds' // <6>
+}
+----
+<1> Clear all project environment settings and replace with empty set.
+<2> Alternative setter.
+<3> Add a project-level environmental variable.
+<4> Clear all task-level environmental variables (in this example the `terraformInit` task) and replace with a new set. Clearing the environmental variable set will not remove the efault environmental variables. If you need to have them changed, set them explicitly
+<5> Alternative task-level setter.
+<6> Add environmental variable to the task only.
+
+
+NOTE: It is possible to call the `environment` method on the task's `terraform` extension, but those methods will simply forward to the methods on the task itself.
+

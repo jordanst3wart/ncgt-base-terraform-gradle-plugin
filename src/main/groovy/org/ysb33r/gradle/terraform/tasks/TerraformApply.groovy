@@ -20,7 +20,8 @@ import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
-import org.ysb33r.gradle.terraform.config.Variables
+
+import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 
 /** Equivalent of {@code terraform apply}.
  *
@@ -30,12 +31,14 @@ import org.ysb33r.gradle.terraform.config.Variables
 class TerraformApply extends AbstractTerraformTask {
 
     TerraformApply() {
-        super()
-        terraformCommand = 'apply'
+        super(
+            'apply',
+            [Lock, StateOptionsFull, ResourceFilter],
+            [VARIABLES]
+        )
         supportsInputs()
         supportsColor()
         supportsAutoApprove()
-        withConfigExtensions(Lock, Variables, StateOptionsFull, ResourceFilter)
     }
 
     @Option(option = 'targets', description = 'List of resources to target')

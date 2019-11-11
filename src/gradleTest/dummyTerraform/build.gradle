@@ -7,13 +7,7 @@ ext {
     fileToBeCreated = file("${buildDir}/local.txt")
 }
 
-terraformPlan {
-    variables {
-        var 'foofile', terraformPath(fileToBeCreated)
-    }
-}
-
-terraformApply {
+terraform {
     variables {
         var 'foofile', terraformPath(fileToBeCreated)
     }

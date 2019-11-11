@@ -47,17 +47,19 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
             id 'org.ysb33r.terraform'
         }
         
-        terraformPlan {
-            variables {
-                var 'foofile', '${OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
+        terraformSourceSets {
+            main {
+                variables {
+                    var 'foofile', '${OS.windows ? path.replaceAll(~/\\x5C/, '/') : path}'
+                }
             }
+        }
+
+        terraformPlan {
         }
         
         terraformApply {
-        logLevel = 'DEBUG'
-            variables {
-                var 'foofile', '${OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
-            }
+            logLevel = 'DEBUG'
         }
         """
 

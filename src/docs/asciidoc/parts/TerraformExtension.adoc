@@ -1,16 +1,8 @@
-[[PackerExtension]]
-== Packer Extension
+[[TerraformExtension]]
+== Terraform Extension
 
-The `packer` project extension configures a method of obtaining a `packer` executable. On <<platforms,supported platforms>> it offers the option of configuring a Packer version, which Gradle will then download, cache and use.
+The `terraform` project extension configures a method of obtaining a `terraform` executable. On <<platforms,supported platforms>> it offers the option of configuring a Terraform version, which Gradle will then download, cache and use. THe project extension also allows for the definition of variables at a global level.
 
-[source,groovy]
-----
-include::{testdir}/PackerExtensionSpec.groovy[tags=configure-with-tag,indent=0]
+Each Terraform task also has a `terraform` extension which can be used to override any settings from the project extension on a per-task basis.
 
-include::{testdir}/PackerExtensionSpec.groovy[tags=configure-with-path,indent=0]
 
-include::{testdir}/PackerExtensionSpec.groovy[tags=configure-with-search-path,indent=0]
-----
-<1> Set a version. On <<platforms,supported platforms>> Gradle will download, cache and use this version.
-<2> Specify a hard-coded path where to find the `packer` executable.
-<3> Tell Gradle to search the system path for the `packer` executable.

@@ -16,14 +16,24 @@
 package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.FileTree
+import org.gradle.api.file.FileTreeElement
 import org.gradle.api.provider.Provider
+import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
+import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.gradle.terraform.config.multilevel.Variables
+import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.grolifant.api.ClosureUtils
 
 import java.util.concurrent.Callable
 
+/** Describes a Terraform source set
+ *
+ */
 @CompileStatic
 class TerraformSourceDirectorySet implements PatternFilterable {
 
@@ -37,6 +47,12 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      */
     final String displayName
 
+    /** Constructs the source set.
+     *
+     * @param project Project this sourcer set is attached to.
+     * @param name Name of source set.
+     * @param displayName Display name of source set.
+     */
     TerraformSourceDirectorySet(Project project, String name, String displayName) {
         this.name = name
         this.displayName = displayName
@@ -53,16 +69,34 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         reportsDir = project.provider({
             project.file("${project.buildDir}/reports/tf/${name}")
         } as Callable<File>)
+
+        vars = new Variables(project.provider({ TerraformSourceDirectorySet it ->
+            it.srcDir.get()
+        }.curry(this)))
     }
 
+    /** The display name is the string reporesentation of the source set.
+     *
+     * @return String representation
+     */
+    @Override
     String toString() {
         this.displayName
     }
 
+    /** Provide for the root directory of the source set,
+     *
+     * @return File provider.
+     */
     Provider<File> getSrcDir() {
         this.sourceDir
     }
 
+    /** Sets the source directory.
+     *
+     * @param dir Directory can be anything convertible using {@link Project#file}.
+     * @return {@code this}.
+     */
     TerraformSourceDirectorySet setSrcDir(Object dir) {
         this.sourceDir = project.provider { ->
             project.file(dir)
@@ -70,10 +104,19 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this
     }
 
+    /** Data directory provider.
+     *
+     * @return File provider.
+     */
     Provider<File> getDataDir() {
         this.dataDir
     }
 
+    /** Sets the Terraform data directory.
+     *
+     * @param dir Directory can be anything convertible using {@link Project#file}.
+     * @return {@code this}.
+     */
     TerraformSourceDirectorySet setDataDir(Object dir) {
         this.dataDir = project.provider { ->
             project.file(dir)
@@ -81,10 +124,19 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this
     }
 
+    /** Log directory provider.
+     *
+     * @return File provider.
+     */
     Provider<File> getLogDir() {
         this.logDir
     }
 
+    /** Sets the log directory.
+     *
+     * @param dir Directory can be anything convertible using {@link Project#file}.
+     * @return {@code this}.
+     */
     TerraformSourceDirectorySet setLogDir(Object dir) {
         this.logDir = project.provider { ->
             project.file(dir)
@@ -92,10 +144,19 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this
     }
 
+    /** Reports directory.
+     *
+     * @return File provider.
+     */
     Provider<File> getReportsDir() {
         this.reportsDir
     }
 
+    /** Sets the reports directory.
+     *
+     * @param dir Directory can be anything convertible using {@link Project#file}.
+     * @return {@code this}.
+     */
     TerraformSourceDirectorySet setReportsDir(Object dir) {
         this.reportsDir = project.provider { ->
             project.file(dir)
@@ -103,20 +164,130 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this
     }
 
+    /** Returns the pattern filter.
+     *
+     * @return Terraform pattern filter.
+     */
     PatternFilterable getFilter() {
         this.patternSet
     }
 
+    /** Returns terraform source tree
+     *
+     * @return SOurce tree as a file tree.
+     */
     FileTree getAsFileTree() {
         project.fileTree(sourceDir).matching(this.patternSet)
     }
 
-    private final Project project
+    /** Sets Terraform variables that are applicable to this source set.
+     *
+     * @param cfg Closure that configures a {@link VariablesSpec}.
+     *
+     * @since 0.2
+     */
+    void variables(@DelegatesTo(VariablesSpec) Closure cfg) {
+        ClosureUtils.configureItem(this.vars, cfg)
+    }
+
+    /** Sets Terraform variables that are applicable to this source set.
+     *
+     * @param cfg Configurating action.
+     *
+     * @since 0.2
+     */
+    void variables(Action<VariablesSpec> cfg) {
+        cfg.execute(this.vars)
+    }
+
+    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
+     * platform.
+     *
+     * @param file Object that can be converted using {@code project.file}.
+     * @return String version adapted on a per-platform basis
+     */
+    String terraformPath(Object file) {
+        TerraformUtils.terraformPath(project, file)
+    }
+
+    /** Get all terraform variables applicable to this source set.
+     *
+     * @param cfg
+     *
+     * @since 0.2
+     */
+    VariablesSpec getVariables() {
+        this.vars
+    }
+
+    @Override
+    PatternFilterable exclude(Closure closure) {
+        patternSet.exclude(closure)
+    }
+
+    @Override
+    PatternFilterable exclude(Spec<FileTreeElement> spec) {
+        patternSet.exclude(spec)
+    }
+
+    @Override
+    PatternFilterable exclude(String... strings) {
+        patternSet.exclude(strings)
+    }
+
+    @Override
+    PatternFilterable exclude(Iterable<String> iterable) {
+        patternSet.exclude(iterable)
+    }
+
+    @Override
+    Set<String> getIncludes() {
+        patternSet.includes
+    }
+
+    @Override
+    Set<String> getExcludes() {
+        patternSet.excludes
+    }
+
+    @Override
+    PatternFilterable setIncludes(Iterable<String> iterable) {
+        patternSet.includes = iterable
+        this
+    }
+
+    @Override
+    PatternFilterable setExcludes(Iterable<String> iterable) {
+        patternSet.excludes = iterable
+        this
+    }
+
+    @Override
+    PatternFilterable include(String... strings) {
+        patternSet.include(strings)
+    }
+
+    @Override
+    PatternFilterable include(Iterable<String> iterable) {
+        patternSet.include(iterable)
+    }
+
+    @Override
+    PatternFilterable include(Spec<FileTreeElement> spec) {
+        patternSet.include(spec)
+    }
+
+    @Override
+    PatternFilterable include(Closure closure) {
+        patternSet.include(closure)
+    }
+
     private Provider<File> sourceDir
     private Provider<File> dataDir
     private Provider<File> logDir
     private Provider<File> reportsDir
+    private final Project project
+    private final Variables vars
 
-    @Delegate
-    private final PatternSet patternSet = new PatternSet()
+    final PatternSet patternSet = new PatternSet()
 }

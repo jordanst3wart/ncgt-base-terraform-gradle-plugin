@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.config
+package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.gradle.api.Project
+import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
+import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.grolifant.api.StringUtils
 
+import javax.inject.Inject
 import java.nio.file.Path
 import java.util.stream.Collectors
 
@@ -28,32 +32,35 @@ import static org.ysb33r.grolifant.api.MapUtils.stringizeValues
 /** A configuration building block for tasks that need to pass variables to
  * a {@code terraform task}.
  *
- * >p> To add this to a task
- *
- * <code>
- * void variables(@DelegatesTo(Variables) Closure cfg) {*   configureNested(this.variables,cfg)
- *}*
- * void variables(Action<Variables> a) {*   a.execute(this.variables)
- *}*
- * // At construction time, initialise this with a reference to
- * // the task it is attached to.
- * @Nested
- * final Variables variables
- * </code>
- *
  * @since 0.1
  */
 @CompileStatic
-class Variables implements TerraformTaskConfigExtension {
+class Variables implements TerraformTaskConfigExtension,
+    VariablesSpec, TerraformExtensionEmbeddable, TerraformSourceSetEmbeddable {
 
     final String name = 'variables'
 
-    /** Attached this configuration block to a task at construction time.
+    /** Attach this configuration block to a Terraform extension or source directory set
      *
-     * @param task Associated task
+     * @param rootFileResolver Root file resolver for file that are referenced.
+     *
+     * @since 0.2
      */
-    Variables(AbstractTerraformTask task) {
-        this.terraformTask = task
+    Variables(Provider<File> rootFileResolver) {
+        this.rootDirResolver = rootFileResolver
+    }
+
+    /** Constructs instance from defintiion of files and variables
+     *
+     * @param vfp Definition of files and variables
+     * @param rootFileResolver Root file resolver for file that are referenced.
+     *
+     * @since 0.2
+     */
+    Variables(VarsFilesPair vfp, Provider<File> rootFileResolver) {
+        this.varsFilesPair.files.addAll(vfp.files)
+        this.varsFilesPair.vars.putAll(vfp.vars)
+        this.rootDirResolver = rootFileResolver
     }
 
     /** Adds one variable.
@@ -65,8 +72,9 @@ class Variables implements TerraformTaskConfigExtension {
      * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Object)}
      * is accepted.
      */
+    @Override
     void var(final String name, final Object value) {
-        vars.put(name, value)
+        varsFilesPair.vars.put(name, value)
     }
 
     /** Adds a map as a variable.
@@ -76,11 +84,12 @@ class Variables implements TerraformTaskConfigExtension {
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable.
-     *  Anything resolvable via {@link org.ysb33r.grolifant.api.MapUtils#stringizeValues(Map < String, Object >)}
+     *  Anything resolvable via {@link org.ysb33r.grolifant.api.MapUtils#stringizeValues(Map)}
      * is accepted.
      */
+    @Override
     void map(Map<String, ?> map, final String name) {
-        vars.put(name, map)
+        varsFilesPair.vars.put(name, map)
     }
 
     /** Adds a list as a variable.
@@ -92,10 +101,11 @@ class Variables implements TerraformTaskConfigExtension {
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
      * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
      */
+    @Override
     void list(final String name, Object val1, Object... vals) {
         List<Object> inputs = [val1]
         inputs.addAll(vals)
-        vars.put(name, inputs)
+        varsFilesPair.vars.put(name, inputs)
     }
 
     /** Adds a list as a variable.
@@ -106,8 +116,9 @@ class Variables implements TerraformTaskConfigExtension {
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
      * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
      */
+    @Override
     void list(final String name, Iterable<?> vals) {
-        vars.put(name, vals as List)
+        varsFilesPair.vars.put(name, vals as List)
     }
 
     /** Adds a name of a file containing {@code terraform} variables.
@@ -116,8 +127,16 @@ class Variables implements TerraformTaskConfigExtension {
      * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Object o)} and resolved relative to the appropriate
      * {@link org.ysb33r.gradle.terraform.TerraformSourceDirectorySet}.
      */
+    @Override
     void file(final Object fileName) {
-        files.add fileName
+        varsFilesPair.files.add fileName
+    }
+
+    /** Removes all existing variables and file references.
+     *
+     */
+    void clear() {
+        varsFilesPair.clear()
     }
 
     /** Evaluate all variables and convert them to Terraform-compliant strings, ready to be passed to command-line.
@@ -130,8 +149,8 @@ class Variables implements TerraformTaskConfigExtension {
     @SuppressWarnings('DuplicateStringLiteral')
     Map<String, String> getEscapedVars() {
         Map<String, String> hclMap = [:]
-        for (String key in this.vars.keySet()) {
-            Object var = vars[key]
+        for (String key in this.varsFilesPair.vars.keySet()) {
+            Object var = this.varsFilesPair.vars[key]
             switch (var) {
                 case Map:
                     String joinedMap = stringizeValues((Map) var).collect { String k, String v ->
@@ -159,7 +178,7 @@ class Variables implements TerraformTaskConfigExtension {
      * @return List of filenames.
      */
     Set<String> getFileNames() {
-        StringUtils.stringize(this.files).toSet()
+        StringUtils.stringize(this.varsFilesPair.files).toSet()
     }
 
     @Override
@@ -168,7 +187,7 @@ class Variables implements TerraformTaskConfigExtension {
         [
             { Map m ->
                 stringizeValues(m)
-            }.curry(this.vars),
+            }.curry(this.varsFilesPair.vars),
             { ->
                 fileNames
             }
@@ -177,7 +196,13 @@ class Variables implements TerraformTaskConfigExtension {
 
     @Override
     List<String> getCommandLineArgs() {
-        Path root = terraformTask.sourceDir.get().toPath()
+        Path root = rootDirResolver.orNull?.toPath()
+        if (root == null) {
+            throw new TerraformConfigurationException(
+                'This method can only be called when attached to a task extension or a source set'
+            )
+        }
+
         final List<String> varList = escapedVars.collectMany { String k, String v ->
             ['-var', "$k=$v".toString()]
         } as List<String>
@@ -187,18 +212,24 @@ class Variables implements TerraformTaskConfigExtension {
         varList
     }
 
-    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
-     * platform.
-     *
-     * @param file Object that can be converted using {@code project.file}.
-     * @return String version adapted on a per-platform basis
-     */
-    String terraformPath(Object file) {
-        String path = terraformTask.project.file(file).absolutePath
-        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, '/') : path
+    @Override
+    String toString() {
+        "Terraform variables: ${this.varsFilesPair.toString()}"
     }
 
-    private final AbstractTerraformTask terraformTask
-    private final Map<String, Object> vars = [:]
-    private final List<Object> files = []
+    /** Returns a description of the files and variables
+     *
+     * @return Files vontaining variables as well as explicitly declared variabled/
+     *
+     * @since 0.2
+     */
+    VarsFilesPair getAllVars() {
+        this.varsFilesPair
+    }
+
+    private final VarsFilesPair varsFilesPair = new VarsFilesPair()
+    private final Provider<File> rootDirResolver
+
+    @Inject
+    Project project
 }
