@@ -50,7 +50,7 @@ class TerraformValidate extends AbstractTerraformTask {
         super.addCommandSpecificsToExecSpec(execSpec)
 
         if (json) {
-            execSpec.cmdArgs "-json"
+            execSpec.cmdArgs '-json'
         }
         execSpec
     }
