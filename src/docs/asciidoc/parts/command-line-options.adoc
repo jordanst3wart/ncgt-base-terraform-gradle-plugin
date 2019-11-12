@@ -63,5 +63,3 @@ A number of task types support command-line options.
 |===
 
 NOTE: Just in case this documentation is out-of-date, always run `./gradlew help --task <taskName>` to get a description of supported command-line options.
-
-    @Option(option = 'id', description = 'Identifier of resource to import')
