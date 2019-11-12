@@ -1,6 +1,8 @@
 = Changelog
+:issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
+:mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.2.1
+== v0.2.2
 
 // tag::changelog[]
 
@@ -8,8 +10,11 @@
 
 * Variables can be defined at global, source set and task level. Where variables are the same, values at task level overrides source set and in turn source set overrides global. Task can also specify that source set and global variables can be ignored completely.
 * Environment can be defined at global and at task level.
-* Support for `validate` terraform command.
+* Support for `validate` and `destroy` terraform commands.
 
+=== Bugs
+
+* {issue}1[#1] - Variables block in source sets are creating accidental sourcesets
 // end::changelog[]
 
 == v0.1.3

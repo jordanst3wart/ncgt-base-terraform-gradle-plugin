@@ -357,9 +357,21 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         execSpec
     }
 
+    /** Retunbs the {@code terraform} command this task is implementing.
+     *
+     * @return Terraform command as string
+     */
     @Internal
     protected String getTerraformCommand() {
         this.command
+    }
+
+    /** Adds a command-line provider.
+     *
+     * @param provider
+     */
+    protected void addCommandLineProvider(Provider<List<String>> provider) {
+        this.commandLineProviders.add(provider)
     }
 
     /** To be called subclass constructor for defining specific configuration extensions that are

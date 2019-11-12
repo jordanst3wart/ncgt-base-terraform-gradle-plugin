@@ -16,22 +16,26 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Project
+import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
-import javax.inject.Inject
+import java.util.concurrent.Callable
 
-/** Equivalent of {@code terraform apply}.
+/** A provider of a {@link TerraformPlan} task instance.
  *
- * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retriev most of its configuration.
+ * @author Schalk W. Cronjé
  *
- * @since 0.1
+ * @since 0.2
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformApplyTask {
+class TerraformPlanProvider {
+    @Delegate
+    final Provider<TerraformPlan> plan
 
-    @Inject
-    TerraformApply(TerraformPlanProvider plan) {
-        super(plan, 'apply')
-        supportsAutoApprove()
+    TerraformPlanProvider(Project project, String sourceSetName) {
+        plan = project.provider({ ->
+            project.tasks.getByName(TerraformConvention.taskName(sourceSetName, 'plan'))
+        } as Callable<TerraformPlan>)
     }
 }

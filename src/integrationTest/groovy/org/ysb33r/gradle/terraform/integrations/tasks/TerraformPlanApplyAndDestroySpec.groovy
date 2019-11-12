@@ -28,7 +28,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
 @RestoreSystemProperties
-class TerraformPlanAndApplySpec extends IntegrationSpecification {
+class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
     public static final String FILE_CONTENTS = 'foo!!'
 
@@ -77,7 +77,7 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
         }
 
         when:
-        BuildResult result = getGradleRunner('terraformPlan').build()
+        BuildResult result = getGradleRunner(['terraformPlan']).build()
 
         then:
         result.task(":terraformInit").outcome == SUCCESS
@@ -91,23 +91,31 @@ class TerraformPlanAndApplySpec extends IntegrationSpecification {
 
     void 'Run terraform apply on a local resource'() {
         when:
-        BuildResult result = getGradleRunner('terraformApply').build()
+        BuildResult result = getGradleRunner(['terraformApply']).build()
 
         then:
         result.task(":terraformApply").outcome == SUCCESS
         destFile.text == FILE_CONTENTS
     }
 
-    GradleRunner getGradleRunner(String task) {
+    void 'Run terraform destroy on a local resource'() {
+        when:
+        BuildResult result = getGradleRunner(['terraformApply', 'terraformDestroy', '--approve']).build()
+
+        then:
+        result.task(":terraformDestroy").outcome == SUCCESS
+        !destFile.exists()
+    }
+
+    GradleRunner getGradleRunner(List<String> tasks) {
         getGradleRunner(
             IS_GROOVY_DSL,
             projectDir,
             [
                 'terraformInit',
-                task,
                 '-s',
                 '-i'
-            ]
+            ] + (tasks as List)
         )
     }
 

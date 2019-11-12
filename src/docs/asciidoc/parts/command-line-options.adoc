@@ -16,6 +16,17 @@ A number of task types support command-line options.
 | {nbsp}
 | Select group of resources to apply.
 
+.2+<.^| `terraformDestroy`
+| `--targets`
+| list
+| {nbsp}
+| Select group of resources to apply.
+
+| `--approve`
+| boolean
+| `false`
+| Auto-approve destruction of all mentioned resources.
+
 .3+<.^| `terraformImport`
 | `--type`
 | string
