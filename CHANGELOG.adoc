@@ -1,6 +1,6 @@
 = Changelog
 
-== v0.2
+== v0.2.1
 
 // tag::changelog[]
 
@@ -8,6 +8,7 @@
 
 * Variables can be defined at global, source set and task level. Where variables are the same, values at task level overrides source set and in turn source set overrides global. Task can also specify that source set and global variables can be ignored completely.
 * Environment can be defined at global and at task level.
+* Support for `validate` terraform command.
 
 // end::changelog[]
 

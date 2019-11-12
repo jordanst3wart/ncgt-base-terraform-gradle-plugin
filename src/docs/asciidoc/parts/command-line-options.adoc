@@ -1,0 +1,56 @@
+== Command-line options for tasks
+
+A number of task types support command-line options.
+
+[%header,cols=5*]
+|===
+| Task
+| Option
+| Type
+| Default
+| Purpose
+
+<.^| `terraformApply` / `terraformPlan`
+| `--targets`
+| list
+| {nbsp}
+| Select group of resources to apply.
+
+.3+<.^| `terraformImport`
+| `--type`
+| string
+| {nbsp}
+| Type of resource to import e.g. `aws_ecs_cluster`
+
+| `--name`
+| string
+| {nbsp}
+| Name of resource to import as specified in `.tf` file
+
+| `--id`
+| string
+| {nbsp}
+| Actual identifier to import. Check the Terraform documentation for the specific resource in order to know how to identify this.
+
+.2+<.^| `terraformInit`
+| `--upgrade`
+| boolean
+| `false`
+| Force upgrade of modules
+
+| `--configure-backends`
+| boolean
+| `true`
+| Configure backends
+
+<.^| `terraformValidate`
+| `--json`
+| boolean
+| `false`
+| Write validation output in JSON format.
+
+|===
+
+NOTE: Just in case this documentation is out-of-date, always run `./gradlew help --task <taskName>` to get a description of supported command-line options.
+
+    @Option(option = 'id', description = 'Identifier of resource to import')
