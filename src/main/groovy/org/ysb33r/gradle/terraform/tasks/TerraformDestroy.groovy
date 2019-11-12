@@ -16,22 +16,35 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.tasks.options.Option
 
 import javax.inject.Inject
 
-/** Equivalent of {@code terraform apply}.
+/** Equivalent of {@code terraform destroy}.
  *
  * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retriev most of its configuration.
+ * in order to retrieve most of its configuration.
  *
  * @since 0.1
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformApplyTask {
+class TerraformDestroy extends AbstractTerraformApplyTask {
 
     @Inject
-    TerraformApply(TerraformPlanProvider plan) {
-        super(plan, 'apply')
-        supportsAutoApprove()
+    TerraformDestroy(TerraformPlanProvider plan) {
+        super(plan, 'destroy')
+    }
+
+    /** Set auto-approve mode.
+     *
+     * Once set it cannot be unset for the duration of the Gradle task graph execution.
+     *
+     * @param state {@code true} will auto-approve destruction.
+     */
+    @Option(option = 'approve', description = 'Auto-approve destruction of resources')
+    void setAutoApprove(Boolean state) {
+        if (state) {
+            supportsAutoApprove()
+        }
     }
 }

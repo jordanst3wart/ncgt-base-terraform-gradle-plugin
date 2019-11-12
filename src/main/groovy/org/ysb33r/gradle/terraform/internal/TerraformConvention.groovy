@@ -25,9 +25,11 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
+import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
 import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
+import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
@@ -67,7 +69,7 @@ class TerraformConvention {
     /** Creates a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     *   {@code terraform<SourceSetName>Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName> Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
@@ -89,11 +91,20 @@ class TerraformConvention {
     ) {
         TerraformSourceDirectorySet sourceSet = tss.create(name)
 
-        DefaultTerraformTasks.values().each {
-            def newTask = (project.tasks.create(
-                taskName(name, it.name),
-                it.type
-            )) as AbstractTerraformTask
+        DefaultTerraformTasks.ordered().each {
+            AbstractTerraformTask newTask
+            if (it.dependsOnProvider) {
+                newTask = project.tasks.create(
+                    taskName(name, it.command),
+                    it.type,
+                    it.dependsOnProvider.newInstance(project, name)
+                )
+            } else {
+                newTask = project.tasks.create(
+                    taskName(name, it.command),
+                    it.type
+                )
+            }
             newTask.sourceSet = sourceSet
             newTask.group = TERRAFORM_TASK_GROUP
             newTask.description = "${it.description} for '${name}'"
@@ -111,43 +122,59 @@ class TerraformConvention {
     ) {
         NamedDomainObjectProvider<TerraformSourceDirectorySet> sourceSet = tss.register(name)
 
-        DefaultTerraformTasks.values().each {
-            project.tasks.register(
-                taskName(name, it.name),
-                it.type,
-                new Action<AbstractTerraformTask>() {
-                    @Override
-                    void execute(AbstractTerraformTask t) {
-                        t.sourceSet = sourceSet.get()
-                        t.group = TERRAFORM_TASK_GROUP
-                        t.description = "${it.description} for '${name}'"
-                        if (it != DefaultTerraformTasks.INIT) {
-                            t.mustRunAfter taskName(name, TERRAFORM_INIT)
-                        }
+        DefaultTerraformTasks.ordered().each {
+            def configurator = new Action<AbstractTerraformTask>() {
+                @Override
+                void execute(AbstractTerraformTask t) {
+                    t.sourceSet = sourceSet.get()
+                    t.group = TERRAFORM_TASK_GROUP
+                    t.description = "${it.description} for '${name}'"
+                    if (it != DefaultTerraformTasks.INIT) {
+                        t.mustRunAfter taskName(name, TERRAFORM_INIT)
                     }
                 }
-            )
+            }
+            if (it.dependsOnProvider) {
+                project.tasks.register(
+                    taskName(name, it.command),
+                    it.type,
+                    it.dependsOnProvider.newInstance(project, name)
+                ).configure(configurator)
+            } else {
+                project.tasks.register(
+                    taskName(name, it.command),
+                    it.type
+                ).configure(configurator)
+            }
         }
     }
 
     private enum DefaultTerraformTasks {
+        INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
+        IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
+        PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
+        APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
+        DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
+        VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration')
 
-        APPLY('apply',TerraformApply,'Builds or changes infrastructure'),
-        IMPORT('import', TerraformImport,'Imports a resource'),
-        INIT( 'init', TerraformInit, 'Initialises Terraform'),
-        PLAN( 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-        VALIDATE('validate', TerraformValidate,'Validates the Terraform configuration')
+        static List<DefaultTerraformTasks> ordered() {
+            DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
+        }
 
-        final String name
+        final int order
+        final String command
         final Class type
         final String description
+        final Class dependsOnProvider
 
-        private DefaultTerraformTasks(String name, Class type, String description) {
-            this.name = name
+        private DefaultTerraformTasks(int order, String name, Class type, String description, Class dependsOn = null) {
+            this.order = order
+            this.command = name
             this.type = type
             this.description = description
+            this.dependsOnProvider = dependsOn
         }
     }
 
-    private static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.name
+    private static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.command
 }
