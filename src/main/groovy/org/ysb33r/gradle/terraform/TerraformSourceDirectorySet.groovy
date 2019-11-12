@@ -27,9 +27,10 @@ import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
-import org.ysb33r.grolifant.api.ClosureUtils
 
 import java.util.concurrent.Callable
+
+import static groovy.lang.Closure.DELEGATE_FIRST
 
 /** Describes a Terraform source set
  *
@@ -187,7 +188,9 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @since 0.2
      */
     void variables(@DelegatesTo(VariablesSpec) Closure cfg) {
-        ClosureUtils.configureItem(this.vars, cfg)
+        Closure runner = (Closure) (cfg.dehydrate()).rehydrate(this.vars, project, project)
+        runner.resolveStrategy = DELEGATE_FIRST
+        runner()
     }
 
     /** Sets Terraform variables that are applicable to this source set.

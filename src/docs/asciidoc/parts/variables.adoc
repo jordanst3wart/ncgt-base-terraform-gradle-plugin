@@ -44,11 +44,13 @@ terraformSourceSets {
 }
 
 terraformPlan {
-    variables {
-        var 'foo', 'bar' // <3>
+    terraform {
+        variables {
+            var 'foo', 'bar' // <3>
 
-        global.ignore = true // <4>
-        sourceSet.ignore == true // <5>
+            global.ignore = true // <4>
+            sourceSet.ignore == true // <5>
+        }
     }
 }
 ----

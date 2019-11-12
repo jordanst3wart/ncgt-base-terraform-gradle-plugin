@@ -1,5 +1,5 @@
 [[TerraformExtension]]
-== Terraform Extension
+== Terraform extension
 
 The `terraform` project extension configures a method of obtaining a `terraform` executable. On <<platforms,supported platforms>> it offers the option of configuring a Terraform version, which Gradle will then download, cache and use. THe project extension also allows for the definition of variables at a global level.
 
