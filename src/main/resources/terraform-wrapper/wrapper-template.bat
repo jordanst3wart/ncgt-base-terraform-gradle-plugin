@@ -54,7 +54,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set APP_LOCATION_FILE=%DOT_GRADLE_RELATIVE_PATH%/~~APP_LOCATION_FILE~~
+set APP_LOCATION_FILE=%DIRNAME%\%DOT_GRADLE_RELATIVE_PATH%\~~APP_LOCATION_FILE~~
 
 @rem If the app location is not available, set it first via Gradle
 if not exist %APP_LOCATION_FILE% call :run_gradle -q ~~CACHE_TASK_NAME~~
