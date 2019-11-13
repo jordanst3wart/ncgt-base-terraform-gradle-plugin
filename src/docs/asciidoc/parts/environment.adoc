@@ -29,7 +29,7 @@ terraformInit {
 <1> Clear all project environment settings and replace with empty set.
 <2> Alternative setter.
 <3> Add a project-level environmental variable.
-<4> Clear all task-level environmental variables (in this example the `terraformInit` task) and replace with a new set. Clearing the environmental variable set will not remove the efault environmental variables. If you need to have them changed, set them explicitly
+<4> Clear all task-level environmental variables (in this example the `tfInit` task) and replace with a new set. Clearing the environmental variable set will not remove the efault environmental variables. If you need to have them changed, set them explicitly
 <5> Alternative task-level setter.
 <6> Add environmental variable to the task only.
 

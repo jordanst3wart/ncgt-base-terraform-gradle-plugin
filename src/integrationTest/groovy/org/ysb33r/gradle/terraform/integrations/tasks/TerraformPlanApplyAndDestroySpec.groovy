@@ -55,10 +55,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
             }
         }
 
-        terraformPlan {
-        }
-        
-        terraformApply {
+        tfApply {
             logLevel = 'DEBUG'
         }
         """
@@ -69,41 +66,43 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     void 'Run terraform plan on a local resource (#state)'() {
         setup:
         File planFile = new File(buildDir, 'reports/tf/main/main.tf.plan')
-
+        File textFile = new File(buildDir, "reports/tf/main/main.tf.plan.${json ? 'json' : 'txt'}")
+        def cmdLine = json ? ['--json'] : []
         if (destroy) {
             buildFile.withWriterAppend { w ->
-                w.println 'terraformPlan.destructionPlan = true'
+                w.println 'tfPlan.destructionPlan = true'
             }
         }
 
         when:
-        BuildResult result = getGradleRunner(['terraformPlan']).build()
+        BuildResult result = getGradleRunner(['tfPlan'] + cmdLine).build()
 
         then:
-        result.task(":terraformInit").outcome == SUCCESS
+        result.task(":tfInit").outcome == SUCCESS
         planFile.exists()
+        textFile.exists()
 
         where:
-        destroy | state
-        false   | 'normal'
-        true    | 'destroy'
+        destroy | state     | json
+        false   | 'normal'  | false
+        true    | 'destroy' | true
     }
 
     void 'Run terraform apply on a local resource'() {
         when:
-        BuildResult result = getGradleRunner(['terraformApply']).build()
+        BuildResult result = getGradleRunner(['tfApply']).build()
 
         then:
-        result.task(":terraformApply").outcome == SUCCESS
+        result.task(":tfApply").outcome == SUCCESS
         destFile.text == FILE_CONTENTS
     }
 
     void 'Run terraform destroy on a local resource'() {
         when:
-        BuildResult result = getGradleRunner(['terraformApply', 'terraformDestroy', '--approve']).build()
+        BuildResult result = getGradleRunner(['tfApply', 'tfDestroy', '--approve']).build()
 
         then:
-        result.task(":terraformDestroy").outcome == SUCCESS
+        result.task(":tfDestroy").outcome == SUCCESS
         !destFile.exists()
     }
 
@@ -112,7 +111,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
             IS_GROOVY_DSL,
             projectDir,
             [
-                'terraformInit',
+                'tfInit',
                 '-s',
                 '-i'
             ] + (tasks as List)

@@ -10,13 +10,13 @@ A number of task types support command-line options.
 | Default
 | Purpose
 
-<.^| `terraformApply` / `terraformPlan`
+<.^| `tfApply`
 | `--targets`
 | list
 | {nbsp}
 | Select group of resources to apply.
 
-.2+<.^| `terraformDestroy`
+.2+<.^| `tfDestroy`
 | `--targets`
 | list
 | {nbsp}
@@ -27,7 +27,7 @@ A number of task types support command-line options.
 | `false`
 | Auto-approve destruction of all mentioned resources.
 
-.3+<.^| `terraformImport`
+.3+<.^| `tfImport`
 | `--type`
 | string
 | {nbsp}
@@ -43,7 +43,7 @@ A number of task types support command-line options.
 | {nbsp}
 | Actual identifier to import. Check the Terraform documentation for the specific resource in order to know how to identify this.
 
-.2+<.^| `terraformInit`
+.2+<.^| `tfInit`
 | `--upgrade`
 | boolean
 | `false`
@@ -54,7 +54,24 @@ A number of task types support command-line options.
 | `true`
 | Configure backends
 
-<.^| `terraformValidate`
+.2+<.^| `tfPlan`
+| `--targets`
+| list
+| {nbsp}
+| Select group of resources to apply.
+
+| `--json`
+| boolean
+| `false`
+| Write textual plan in JSON format.
+
+<.^| `tfShowState`
+| `--json`
+| boolean
+| `false`
+| Write validation output in JSON format.
+
+<.^| `tfValidate`
 | `--json`
 | boolean
 | `false`
