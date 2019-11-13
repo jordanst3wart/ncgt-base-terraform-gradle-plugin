@@ -30,6 +30,7 @@ import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
 import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
+import org.ysb33r.gradle.terraform.tasks.TerraformShowState
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
@@ -51,8 +52,8 @@ class TerraformConvention {
      */
     static String taskName(String sourceSetName, String commandType) {
         sourceSetName == DEFAULT_SOURCESET_NAME ?
-            "terraform${commandType.capitalize()}" :
-            "terraform${sourceSetName.capitalize()}${commandType.capitalize()}"
+            "tf${commandType.capitalize()}" :
+            "tf${sourceSetName.capitalize()}${commandType.capitalize()}"
     }
 
     /** Returns the default text used for a Terraform source set
@@ -152,6 +153,7 @@ class TerraformConvention {
     private enum DefaultTerraformTasks {
         INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
         IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
+        SHOW(2, 'showState', TerraformShowState, 'Generates a report on the current state'),
         PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
         APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
         DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
