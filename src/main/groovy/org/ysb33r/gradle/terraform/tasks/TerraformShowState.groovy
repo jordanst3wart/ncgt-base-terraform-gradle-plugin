@@ -27,14 +27,14 @@ import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
  *
- * @since 0.1
+ * @since 0.3
  */
 @CompileStatic
 class TerraformShowState extends AbstractTerraformTask {
 
     TerraformShowState() {
         super('show', [], [])
-        supportsColor()
+        supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
     }
 
@@ -66,6 +66,14 @@ class TerraformShowState extends AbstractTerraformTask {
         project.provider({ ->
             new File(reportsDir.get(), "${sourceSet.name}.tf.status.${json ? 'json' : 'txt'}")
         } as Callable<File>)
+    }
+
+    @Override
+    void exec() {
+        super.exec()
+        logger.lifecycle(
+            "The textual representation of the plan file has been generated into ${statusReportOutputFile.get()}"
+        )
     }
 
     /** Add specific command-line options for the command.

@@ -128,7 +128,7 @@ class TerraformPlan extends AbstractTerraformTask {
     }
 
     private Action<ExecSpec> configureShowCommand(File planFile, OutputStream reportStream) {
-        final List<String> cmdParams = defaultCommandParameters.findAll { it == NO_COLOR }
+        final List<String> cmdParams = [NO_COLOR]
 
         if (jsonReport) {
             cmdParams.add(JSON_FORMAT)
