@@ -34,7 +34,7 @@ class TerraformShowState extends AbstractTerraformTask {
 
     TerraformShowState() {
         super('show', [], [])
-        supportsColor()
+        supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
     }
 

@@ -254,10 +254,11 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      *
      * <p> Will get set if {@code --console=plain was provided to Gradle}
      *
+     * @param withColor If set to {@code false}, the task will always run without color output.
      */
-    protected void supportsColor() {
+    protected void supportsColor(boolean withColor = true) {
         ConsoleOutput mode = project.gradle.startParameter.consoleOutput
-        if (mode == ConsoleOutput.Plain || mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb') {
+        if (mode == ConsoleOutput.Plain || mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb' || !withColor) {
             defaultCommandParameters.add NO_COLOR
         }
     }
