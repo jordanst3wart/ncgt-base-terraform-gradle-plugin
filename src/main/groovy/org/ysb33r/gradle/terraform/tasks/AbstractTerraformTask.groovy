@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
@@ -26,7 +25,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
@@ -182,18 +180,37 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         TerraformExecSpec execSpec = buildExecSpec()
         createPluginCacheDir(project)
 
-        if (logLevel) {
-            logDir.get().mkdirs()
-        }
-
-        ExecResult result = project.exec(new Action<ExecSpec>() {
+        Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
             void execute(ExecSpec spec) {
                 execSpec.copyToExecSpec(spec)
             }
-        })
-        result.assertNormalExitValue()
+        }
+
+        if (logLevel) {
+            logDir.get().mkdirs()
+        }
+
+        logger.info "Using Terraform environment: ${terraformEnvironment}"
+        if (this.stdoutCapture) {
+            this.stdoutCapture.get().withOutputStream { strm ->
+                execSpec.standardOutput(strm)
+                project.exec(runner).assertNormalExitValue()
+            }
+        } else {
+            project.exec(runner).assertNormalExitValue()
+        }
     }
+
+    /** Command-line parameter for no colour.
+     *
+     */
+    protected static final String NO_COLOR = '-no-color'
+
+    /** Command-line parameter for JSON output.
+     *
+     */
+    protected static final String JSON_FORMAT = '-json'
 
     /**
      *
@@ -241,7 +258,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     protected void supportsColor() {
         ConsoleOutput mode = project.gradle.startParameter.consoleOutput
         if (mode == ConsoleOutput.Plain || mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb') {
-            defaultCommandParameters.add '-no-color'
+            defaultCommandParameters.add NO_COLOR
         }
     }
 
@@ -251,10 +268,15 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         }
     }
 
-    // Internal method used for testing
-    @SuppressWarnings('PublicMethodsBeforeNonPublicMethods')
-    @PackageScope
-    TerraformExecSpec buildExecSpec() {
+    /** When command is run, capture the standard output
+     *
+     * @param output Output file
+     */
+    protected void captureStdOutTo(Provider<File> output) {
+        this.stdoutCapture = output
+    }
+
+    protected TerraformExecSpec buildExecSpec() {
         TerraformExecSpec execSpec = createExecSpec()
         addExecutableToExecSpec(execSpec)
         configureExecSpec(execSpec)
@@ -275,17 +297,30 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      * @return Conrfigured specification
      */
     @Override
-    @SuppressWarnings('DuplicateStringLiteral')
     protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
-        final String tfcmd = terraformCommand
+        configureExecSpecForCmd(execSpec, terraformCommand, defaultCommandParameters)
+        addCommandSpecificsToExecSpec(execSpec)
+        execSpec
+    }
+
+    /** Configures execution specification for a specific command.
+     *
+     * @param execSpec Specification to configure.
+     * @param tfcmd Terraform command.
+     * @param cmdParams Default command parameters.
+     * @return Configures specification.
+     */
+    protected TerraformExecSpec configureExecSpecForCmd(
+        TerraformExecSpec execSpec,
+        String tfcmd,
+        List<String> cmdParams
+    ) {
         Map<String, String> tfEnv = terraformEnvironment
-        logger.info "Using Terraform environment: ${tfEnv}"
         execSpec.identity {
             command tfcmd
             workingDir sourceDir
             environment tfEnv
-            cmdArgs defaultCommandParameters
-            addCommandSpecificsToExecSpec(execSpec)
+            cmdArgs cmdParams
         }
 
         execSpec.environment(environment)
@@ -374,6 +409,15 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.commandLineProviders.add(provider)
     }
 
+    /** Returns a list of the default command parameters.
+     *
+     * @return Default command parameters
+     */
+    @Internal
+    protected List<String> getDefaultCommandParameters() {
+        this.defaultCommandParameters
+    }
+
     /** To be called subclass constructor for defining specific configuration extensions that are
      * supported.
      *
@@ -427,9 +471,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     private LogLevel terraformLogLevel
     private Object sourceSetProxy
     private boolean noProjectEnvironment = false
+    private Provider<File> stdoutCapture
     private final String command
     private final List<String> defaultCommandParameters = []
     private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
-
 }

@@ -29,7 +29,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 @RestoreSystemProperties
 class TerraformInitSpec extends IntegrationSpecification {
 
-    String taskName = 'terraformInit'
+    String taskName = 'tfInit'
     File testkitDir
     File srcDir
     GradleRunner gradleRunner

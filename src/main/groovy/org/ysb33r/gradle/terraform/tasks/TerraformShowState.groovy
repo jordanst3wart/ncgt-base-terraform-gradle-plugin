@@ -16,29 +16,57 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-/** Equivalent of {@code terraform validate}.
+import java.util.concurrent.Callable
+
+/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
  *
  * @since 0.1
  */
 @CompileStatic
-class TerraformValidate extends AbstractTerraformTask {
+class TerraformShowState extends AbstractTerraformTask {
 
-    TerraformValidate() {
-        super('validate', [], [])
+    TerraformShowState() {
+        super('show', [], [])
         supportsColor()
+        captureStdOutTo(statusReportOutputFile)
     }
 
     /** Whether output should be in JSON
      *
-     * This option can be set from the command-line with {@code --upgrade=true}.
+     * This option can be set from the command-line with {@code --json}.
      */
     @Option(option = 'json', description = 'Force validate output to be in JSON format')
     @Internal
     boolean json = false
+
+    /** Get location of the terraform state file
+     *
+     * @return File provider
+     */
+    @InputFile
+    Provider<File> getStateFile() {
+        project.provider({ ->
+            new File(sourceDir.get(), 'terraform.tfstate')
+        } as Callable<File>)
+    }
+
+    /** Get the location where the report file needs to be generated.
+     *
+     * @return File provider
+     */
+    @OutputFile
+    Provider<File> getStatusReportOutputFile() {
+        project.provider({ ->
+            new File(reportsDir.get(), "${sourceSet.name}.tf.status.${json ? 'json' : 'txt'}")
+        } as Callable<File>)
+    }
 
     /** Add specific command-line options for the command.
      *
@@ -52,6 +80,8 @@ class TerraformValidate extends AbstractTerraformTask {
         if (json) {
             execSpec.cmdArgs JSON_FORMAT
         }
+
+        execSpec.cmdArgs stateFile.get().absolutePath
         execSpec
     }
 }

@@ -2,9 +2,25 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.2.2
+== v0.3
 
 // tag::changelog[]
+=== Features
+
+* Support for `show` terraform command in the form of `TerraformShowState` task type
+* `TerraformPlan` will now also generate a text or JSON-formatted report.
+
+=== Bugs
+
+* {issue}1[#2] - `terraformw`should pick the correct base directory when ran from anywhere within the Gradle project
+
+=== Breaking changes
+
+* Tasks associated with Terraform commands are now prefixed with `tf` instead of `terraform`.
+
+// end::changelog[]
+
+== v0.2.2
 
 === Features
 
@@ -15,7 +31,6 @@
 === Bugs
 
 * {issue}1[#1] - Variables block in source sets are creating accidental sourcesets
-// end::changelog[]
 
 == v0.1.3
 

@@ -46,8 +46,8 @@ class TerraformPluginSpec extends Specification {
         then:
         tss.getByName('main').srcDir.get() == project.file('foo/bar')
         tss.getByName( 'release').srcDir.get() == project.file('src/tf/release')
-        project.tasks.getByName('terraformReleaseInit') instanceof TerraformInit
-        project.tasks.getByName('terraformReleasePlan') instanceof TerraformPlan
-        project.tasks.getByName('terraformReleaseApply') instanceof TerraformApply
+        project.tasks.getByName('tfReleaseInit') instanceof TerraformInit
+        project.tasks.getByName('tfReleasePlan') instanceof TerraformPlan
+        project.tasks.getByName('tfReleaseApply') instanceof TerraformApply
     }
 }

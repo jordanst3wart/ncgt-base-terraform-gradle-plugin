@@ -16,10 +16,12 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
+import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
@@ -61,16 +63,49 @@ class TerraformPlan extends AbstractTerraformTask {
         }
     }
 
-    @Option(option = 'targets', description = 'List of resources to target')
+    /** Where the textual representation of the plan will be written to.
+     *
+     * @return Location of text file.
+     */
+    @OutputFile
+    Provider<File> getPlanReportOutputFile() {
+        reportsDir.map { File reportDir ->
+            new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
+        }
+    }
+
+    /** Select specific resources.
+     *
+     * @param resourceNames List of resources to target.
+     */
+    @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
+    }
+
+    /** Where to write the report in human-readable or JSON format.
+     *
+     * @param state Set to {@code true} to output in JSON.
+     */
+    @Option(option = 'json', description = 'Output readable plan in JSON')
+    void setJson(boolean state) {
+        this.jsonReport = state
     }
 
     @Override
     void exec() {
         super.exec()
-        File out = planOutputFile.get()
-        logger.lifecycle("The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${out}")
+
+        File planOut = planOutputFile.get()
+        File textOut = planReportOutputFile.get()
+
+        textOut.withOutputStream { OutputStream report ->
+            Action<ExecSpec> showExecSpec = configureShowCommand(planOut, report)
+            project.exec(showExecSpec).assertNormalExitValue()
+        }
+
+        logger.lifecycle("The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut}")
+        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut}")
     }
 
     /** Add specific command-line options for the command.
@@ -91,4 +126,31 @@ class TerraformPlan extends AbstractTerraformTask {
         }
         execSpec
     }
+
+    private Action<ExecSpec> configureShowCommand(File planFile, OutputStream reportStream) {
+        final List<String> cmdParams = defaultCommandParameters.findAll { it == NO_COLOR }
+
+        if (jsonReport) {
+            cmdParams.add(JSON_FORMAT)
+        }
+
+        cmdParams.add(planFile.absolutePath)
+        TerraformExecSpec execSpec = createExecSpec()
+        execSpec.standardOutput(reportStream)
+        addExecutableToExecSpec(execSpec)
+        configureExecSpecForCmd(
+            execSpec,
+            'show',
+            cmdParams
+        )
+
+        new Action<ExecSpec>() {
+            @Override
+            void execute(ExecSpec spec) {
+                execSpec.copyToExecSpec(spec)
+            }
+        }
+    }
+
+    private boolean jsonReport = false
 }

@@ -24,7 +24,7 @@ NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 The base plugin provides:
 
 * A project <<TerraformExtension,extension>> named `terraform`.
-* Various Terraform task types which tend to map the `terraform` command closely. Fot instance for the `init` command, the appropriate task type is called `TerraformInit`.
+* Various Terraform task types which tend to map the `terraform` command closely. For instance for the `init` command, the appropriate task type is called `TerraformInit`.
 * Ability to download and use `terraform` executables.
 
 When the base plugin is applied to the root project it will automatically apply the `terraformrc` plugin.
@@ -35,7 +35,7 @@ The Terraform conventions plugin provides:
 
 * `terraformSourceSets` as a project extension.
 * The default Terraform source set called `main` with default directory `src/tf/main`.
-* A number of tasks including `terraformInit`, `terraformPlan` and `terraformApply` which acts upon the default source set.
+* A number of tasks including `tfInit`, `tfPlan` and `tfApply` which acts upon the default source set.
 
 Applying the Terraform plugin will apply the base plugin.
 
@@ -62,8 +62,8 @@ Now add a `init.tf` file to `src/tf/main` and add some Terraform content to it.
 
 [listing.terminal]
 ----
-$ ./gradlew terraformInit <1>
-$ ./gradlew terraformApply <2>
+$ ./gradlew tfInit <1>
+$ ./gradlew tfApply <2>
 $ git add src/tf/main/terraform.tfstate <3>
 ----
 <1> Initialise your Terraform project environment.

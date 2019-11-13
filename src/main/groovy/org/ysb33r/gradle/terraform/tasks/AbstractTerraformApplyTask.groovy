@@ -53,7 +53,7 @@ class AbstractTerraformApplyTask extends AbstractTerraformTask {
         )
     }
 
-    @Option(option = 'targets', description = 'List of resources to target')
+    @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
     }
