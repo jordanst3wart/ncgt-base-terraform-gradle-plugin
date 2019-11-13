@@ -258,7 +258,10 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     protected void supportsColor(boolean withColor = true) {
         ConsoleOutput mode = project.gradle.startParameter.consoleOutput
-        if (mode == ConsoleOutput.Plain || mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb' || !withColor) {
+        if (mode == ConsoleOutput.Plain ||
+            mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb' ||
+            !withColor
+        ) {
             defaultCommandParameters.add NO_COLOR
         }
     }
