@@ -16,22 +16,28 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-import javax.inject.Inject
-
-/** Equivalent of {@code terraform apply}.
+/** Base classs all {@code terraform state} subcommands.
  *
- * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retriev most of its configuration.
+ * @author Schalk W. Cronjé
  *
- * @since 0.1
+ * @since 0.5.0
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformApplyTask {
+class AbstractTerraformStateTask extends AbstractTerraformTask {
 
-    @Inject
-    TerraformApply(TerraformPlanProvider plan) {
-        super(plan, 'apply')
-        supportsAutoApprove()
+    protected AbstractTerraformStateTask(final String subcmd) {
+        super('state', [], [])
+        this.subcmd = subcmd
     }
+
+    @Override
+    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        execSpec.cmdArgs this.subcmd
+        super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec
+    }
+
+    private final String subcmd
 }

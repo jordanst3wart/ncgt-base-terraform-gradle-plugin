@@ -16,42 +16,50 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-/** Equivalent of {@code terraform validate}.
+/** Base classs all {@code terraform state} subcommands.
  *
- * @since 0.1
+ * @author Schalk W. Cronjé
+ *
+ * @since 0.5.0
  */
 @CompileStatic
-class TerraformValidate extends AbstractTerraformTask {
+class TerraformStateRmTask extends AbstractTerraformStateTask {
 
-    TerraformValidate() {
-        super('validate', [], [])
-        supportsColor()
+    TerraformStateRmTask() {
+        super('rm')
     }
 
-    /** Whether output should be in JSON
-     *
-     * This option can be set from the command-line with {@code --upgrade=true}.
-     */
-    @Option(option = 'json', description = 'Force validate output to be in JSON format')
-    @Internal
-    boolean json = false
+    @Input
+    String getResourceType() {
+        this.type
+    }
 
-    /** Add specific command-line options for the command.
-     *
-     * @param execSpec
-     * @return execSpec
-     */
+    @Input
+    String getResourceName() {
+        this.resourceName
+    }
+
+    @Option(option = 'type', description = 'Type of resource to remove')
+    void setResourceType(String id) {
+        this.type = id
+    }
+
+    @Option(option = 'name', description = 'Name of resource to import')
+    void setResourceName(String id) {
+        this.resourceName = id
+    }
+
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-
-        if (json) {
-            execSpec.cmdArgs JSON_FORMAT
-        }
+        execSpec.cmdArgs "${resourceType}.${resourceName}"
         execSpec
     }
+
+    private String type
+    private String resourceName
 }
