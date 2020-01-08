@@ -71,6 +71,17 @@ A number of task types support command-line options.
 | `false`
 | Write validation output in JSON format.
 
+.2+<.^| `tfStateRm`
+| `--type`
+| string
+| {nbsp}
+| Type of resource to remove e.g. `aws_ecs_cluster`
+
+| `--name`
+| string
+| {nbsp}
+| Name of resource to remove as specified in `.tf` file
+
 <.^| `tfValidate`
 | `--json`
 | boolean
