@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
-import org.ysb33r.grolifant.api.OperatingSystem
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
@@ -59,7 +58,6 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
             logLevel = 'DEBUG'
         }
         """
-
     }
 
     @Unroll
@@ -78,7 +76,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         BuildResult result = getGradleRunner(['tfPlan'] + cmdLine).build()
 
         then:
-        result.task(":tfInit").outcome == SUCCESS
+        result.task(':tfInit').outcome == SUCCESS
         planFile.exists()
         textFile.exists()
 
@@ -93,7 +91,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         BuildResult result = getGradleRunner(['tfApply']).build()
 
         then:
-        result.task(":tfApply").outcome == SUCCESS
+        result.task(':tfApply').outcome == SUCCESS
         destFile.text == FILE_CONTENTS
     }
 
@@ -102,7 +100,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         BuildResult result = getGradleRunner(['tfApply', 'tfDestroy', '--approve']).build()
 
         then:
-        result.task(":tfDestroy").outcome == SUCCESS
+        result.task(':tfDestroy').outcome == SUCCESS
         !destFile.exists()
     }
 

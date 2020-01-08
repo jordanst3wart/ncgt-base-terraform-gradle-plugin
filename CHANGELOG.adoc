@@ -2,14 +2,25 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.4.0
+== v0.5.0
 
 // tag::changelog[]
 === Features
 
-* Support backend config for `TerraformInit`.
+* {issue}5[#5] - Support for `state rm` terraform command in the form of `TerraformStateRm` task type
+
+=== Bugs
+
+* {issue}3[#3] - Task `tfShowState` fails when using remote backend
 
 // end::changelog[]
+
+== v0.4.0
+
+=== Features
+
+* Support backend config for `TerraformInit`.
+
 
 == v0.3.1
 
@@ -20,7 +31,7 @@
 
 === Bugs
 
-* {issue}1[#2] - `terraformw`should pick the correct base directory when ran from anywhere within the Gradle project
+* {issue}2[#2] - `terraformw`should pick the correct base directory when ran from anywhere within the Gradle project
 
 === Breaking changes
 

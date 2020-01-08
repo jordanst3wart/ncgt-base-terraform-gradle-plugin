@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
@@ -102,6 +103,7 @@ class TerraformInit extends AbstractTerraformTask {
      *
      * @since 0.4.0
      */
+    @Input
     Map<String, String> getBackendConfigValues() {
         MapUtils.stringizeValues(this.backendConfigValues)
     }
