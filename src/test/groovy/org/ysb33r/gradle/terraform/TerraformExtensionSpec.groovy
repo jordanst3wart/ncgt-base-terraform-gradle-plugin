@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 // distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 //
-
 package org.ysb33r.gradle.terraform
 
 import org.gradle.api.GradleException
@@ -31,16 +30,13 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
-
 class TerraformExtensionSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
     def 'Configure terraform executable using a version'() {
-
         when: 'A version is configured'
         project.allprojects {
-
             apply plugin : 'org.ysb33r.terraform.base'
 
             // tag::configure-with-tag[]
@@ -51,14 +47,12 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvableExecutable() != null
+        project.terraform.resolvableExecutable != null
     }
 
     def 'Configure terraform executable using a path'() {
-
         when: 'A path is configured'
         project.allprojects {
-
             apply plugin : 'org.ysb33r.terraform.base'
 
             // tag::configure-with-path[]
@@ -69,14 +63,12 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvableExecutable() != null
+        project.terraform.resolvableExecutable != null
     }
 
     def 'Configure terraform executable using a search path'() {
-
         when: 'A search is configured'
         project.allprojects {
-
             apply plugin : 'org.ysb33r.terraform.base'
 
             // tag::configure-with-search-path[]
@@ -87,11 +79,10 @@ class TerraformExtensionSpec extends Specification {
         }
 
         then:
-        project.terraform.getResolvableExecutable() != null
+        project.terraform.resolvableExecutable != null
     }
 
     def 'Cannot configure terraform with more than one option'() {
-
         setup:
         project.apply plugin : 'org.ysb33r.terraform.base'
 
@@ -106,6 +97,5 @@ class TerraformExtensionSpec extends Specification {
 
         then:
         thrown(GradleException)
-
     }
 }

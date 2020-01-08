@@ -17,7 +17,6 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
@@ -45,17 +44,6 @@ class TerraformShowState extends AbstractTerraformTask {
     @Option(option = 'json', description = 'Force validate output to be in JSON format')
     @Internal
     boolean json = false
-
-    /** Get location of the terraform state file
-     *
-     * @return File provider
-     */
-    @InputFile
-    Provider<File> getStateFile() {
-        project.provider({ ->
-            new File(sourceDir.get(), 'terraform.tfstate')
-        } as Callable<File>)
-    }
 
     /** Get the location where the report file needs to be generated.
      *
@@ -89,7 +77,6 @@ class TerraformShowState extends AbstractTerraformTask {
             execSpec.cmdArgs JSON_FORMAT
         }
 
-        execSpec.cmdArgs stateFile.get().absolutePath
         execSpec
     }
 }

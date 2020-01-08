@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,13 +61,13 @@ class TerraformInitSpec extends IntegrationSpecification {
 
         then:
         result.task(":${taskName}").outcome == SUCCESS
-        new File(testkitDir, "caches/terraform.d").exists()
+        new File(testkitDir, 'caches/terraform.d').exists()
     }
 
     void 'Run terraform init on a project with a single plugin'() {
         setup:
         File pluginDir = new File(testkitDir, "caches/terraform.d/${HashicorpUtils.osArch(OS)}")
-        new File(srcDir,'init.tf').text = '''
+        new File(srcDir, 'init.tf').text = '''
 provider "aws" {
   version = "~> 2.0"
   region  = "us-east-1"
