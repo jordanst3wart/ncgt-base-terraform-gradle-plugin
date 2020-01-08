@@ -27,9 +27,9 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
  * @since 0.5.0
  */
 @CompileStatic
-class TerraformStateRmTask extends AbstractTerraformStateTask {
+class TerraformStateRm extends AbstractTerraformStateTask {
 
-    TerraformStateRmTask() {
+    TerraformStateRm() {
         super('rm')
     }
 
