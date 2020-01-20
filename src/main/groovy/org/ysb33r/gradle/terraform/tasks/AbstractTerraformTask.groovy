@@ -41,6 +41,7 @@ import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.grolifant.api.StringUtils.stringize
 
 /** A base class for performing a {@code terraform} execution.
@@ -163,6 +164,14 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             combinedEnv.putAll(super.environment)
             combinedEnv
         }
+    }
+
+    /** Adds AWS environmental variables to Terraform runtime environment.
+     *
+     * @since 0.6.0
+     */
+    void useAwsEnvironment() {
+        environment awsEnvironment()
     }
 
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
@@ -338,7 +347,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             TF_DATA_DIR       : dataDir.get().absolutePath,
             TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
             TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
-            TF_LOG            : logLevel ?: ''
+            TF_LOG            : logLevel ?: '',
         ]
 
         env
@@ -466,6 +475,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             ] as Map<String, Object>
         } else {
             [
+                HOME        : System.getProperty('user.home'),
                 (OS.pathVar): System.getenv(OS.pathVar)
             ] as Map<String, Object>
         }

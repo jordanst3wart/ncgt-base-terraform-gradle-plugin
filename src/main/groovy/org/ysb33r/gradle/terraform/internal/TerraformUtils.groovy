@@ -37,4 +37,12 @@ class TerraformUtils {
         String path = project.file(file).absolutePath
         OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, '/') : path
     }
+
+    /** Get all AWS-related environmental variables.
+     *
+     * @return Map of environmental variables.
+     */
+    static Map<String, String> awsEnvironment() {
+        System.getenv().findAll { k, v -> k.startsWith('AWS_') }
+    }
 }

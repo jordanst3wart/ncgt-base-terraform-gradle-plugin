@@ -57,13 +57,15 @@ class TerraformInit extends AbstractTerraformTask {
     @Internal
     boolean skipChildModules = false
 
-    /** Whether backends should be configured.
+    /** Whether backend configuration should be skipped.
      *
-     * This option can be set from the command-line with {@code --configure-backends=true}
+     * This option can be set from the command-line with {@code --no-configure-backends}
+     *
+     * @since 0.6.0
      */
-    @Option(option = 'configure-backends', description = 'Whether backends should be configured')
+    @Option(option = 'no-configure-backends', description = 'Whether backends should not be configured')
     @Internal
-    boolean configureBackend = true
+    boolean skipConfigureBackends = false
 
     // TODO: Other backend settings
     // -force-copy
@@ -173,7 +175,7 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs "-get=${!skipChildModules}"
         }
 
-        execSpec.cmdArgs "-backend=${configureBackend}"
+        execSpec.cmdArgs "-backend=${!skipConfigureBackends}"
         execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
 
         getBackendConfigValues().each { String k, String v ->

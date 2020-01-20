@@ -8,6 +8,7 @@ When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceS
 * `tfInit`
 * `tfPlan`
 * `tfShowState`
+* `tfStateMv` (`terraform state mv`)
 * `tfStateRm` (`terraform state rm`)
 * `tfValidate`
 

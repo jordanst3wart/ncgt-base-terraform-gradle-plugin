@@ -5,4 +5,18 @@ The `terraform` project extension configures a method of obtaining a `terraform`
 
 Each Terraform task also has a `terraform` extension which can be used to override any settings from the project extension on a per-task basis.
 
+=== Setting Terraform version
+
+It is possible to select another version of Terraform than the default that the plugin will use.
+
+[source,groovy,role="primary"]
+----
+terraform {
+    executable version : '1.2.3' // <1>
+    executable path : '/path/to/terraform' // <2>
+}
+----
+<1> Set new Terraform version
+<2> Do not bootstrap Terraform, but rather use the binary at the specified location.
+
 
