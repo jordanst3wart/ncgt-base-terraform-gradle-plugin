@@ -36,3 +36,19 @@ terraformInit {
 
 NOTE: It is possible to call the `environment` method on the task's `terraform` extension, but those methods will simply forward to the methods on the task itself.
 
+=== AWS environmental variables
+
+It is possible to add all AWS-related environemtnal variables to the Terraform runtime environment via short-cuts
+
+[source,groovy]
+----
+terraform {
+    useAwsEnvironment() // <1>
+}
+
+terraformInit {
+    useAwsEnvironment() // <2>
+}
+----
+<1> Set at project level
+<2> Set at task-specific level

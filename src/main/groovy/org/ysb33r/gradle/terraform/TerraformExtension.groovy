@@ -38,6 +38,7 @@ import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
 import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.getAwsEnvironment
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -233,6 +234,14 @@ class TerraformExtension extends AbstractToolExtension {
         } else {
             this.env.putAll((Map<String, Object>) args)
         }
+    }
+
+    /** Adds AWS environmental variables to Terraform runtime environment.
+     *
+     * @since 0.6.0
+     */
+    void useAwsEnvironment() {
+        environment awsEnvironment
     }
 
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
