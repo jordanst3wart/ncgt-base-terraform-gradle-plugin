@@ -38,7 +38,7 @@ import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
 import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.getAwsEnvironment
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *

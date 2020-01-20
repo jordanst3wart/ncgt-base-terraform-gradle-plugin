@@ -71,6 +71,17 @@ A number of task types support command-line options.
 | `false`
 | Write validation output in JSON format.
 
+.2+<.^| `tfStateMv`
+| `--from-path`
+| string
+| {nbsp}
+| Source item to move i.e. `packet_device.worker` or `module.app`.
+
+| `--to-path`
+| string
+| {nbsp}
+| Destination item i.e. `packet_device.helper` or `module.parent.module.app`.
+
 .2+<.^| `tfStateRm`
 | `--type`
 | string

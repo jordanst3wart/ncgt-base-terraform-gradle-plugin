@@ -8,6 +8,8 @@
 === Features
 
 * {issue}6[#6] - Bump Terraform version to 0.12.19
+* {issue}7[#7] - Use `useAwsEnvironment()` as sort-cut to add all AWS-related environmental variables to Terraform execution environment. Also on non-Windows platforms add `HOME` to Terraform environment.
+* {issue}9[#9] - Support for `state mv` terraform command in the form of `TerraformStateMv` task type
 
 === Breaking changes
 

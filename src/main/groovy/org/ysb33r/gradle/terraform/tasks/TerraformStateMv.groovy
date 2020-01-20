@@ -20,46 +20,58 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-/** The {@code terraform state rm} command.
+/** The {@code terraform state mv} command.
  *
  * @author Schalk W. Cronjé
  *
- * @since 0.5.0
+ * @since 0.6.0
  */
 @CompileStatic
-class TerraformStateRm extends AbstractTerraformStateTask {
+class TerraformStateMv extends AbstractTerraformStateTask {
 
-    TerraformStateRm() {
-        super('rm')
+    TerraformStateMv() {
+        super('mv')
     }
 
+    /** The source path.
+     *
+     * Can be like {@code packet_device.worker}, {@code module.app} or even {@code module.parent.module.app}.
+     *
+     * @return Source path.
+     */
     @Input
-    String getResourceType() {
-        this.type
+    String getSourcePath() {
+        this.source
     }
 
+    /** The destination path.
+     *
+     * Can be like {@code packet_device.worker}, {@code module.app} or even {@code module.parent.module.app}.
+     *
+     * @return Destination path.
+     */
     @Input
-    String getResourceName() {
-        this.resourceName
+    String getDestinationPath() {
+        this.destination
     }
 
-    @Option(option = 'type', description = 'Type of resource to remove')
-    void setResourceType(String id) {
-        this.type = id
+    @Option(option = 'from-path', description = 'Source item (dotted-path) to move')
+    void setSourcePath(String id) {
+        this.source = id
     }
 
-    @Option(option = 'name', description = 'Name of resource to import')
-    void setResourceName(String id) {
-        this.resourceName = id
+    @Option(option = 'to-path', description = 'Destination for item (dotted-path)')
+    void setDestinationPath(String id) {
+        this.destination = id
     }
 
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs "${resourceType}.${resourceName}"
+        execSpec.cmdArgs "${sourcePath}.${destinationPath}"
         execSpec
     }
 
-    private String type
-    private String resourceName
+    private String source
+    private String destination
 }
