@@ -171,7 +171,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      * @since 0.6.0
      */
     void useAwsEnvironment() {
-        environment awsEnvironment
+        environment awsEnvironment()
     }
 
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
