@@ -338,7 +338,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             TF_DATA_DIR       : dataDir.get().absolutePath,
             TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
             TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
-            TF_LOG            : logLevel ?: ''
+            TF_LOG            : logLevel ?: '',
         ]
 
         env
@@ -466,6 +466,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             ] as Map<String, Object>
         } else {
             [
+                HOME        : System.getProperty('user.home'),
                 (OS.pathVar): System.getenv(OS.pathVar)
             ] as Map<String, Object>
         }
