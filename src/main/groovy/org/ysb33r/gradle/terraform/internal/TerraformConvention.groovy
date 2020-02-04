@@ -31,6 +31,8 @@ import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
 import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
 import org.ysb33r.gradle.terraform.tasks.TerraformShowState
+import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
+import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
 import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
@@ -71,7 +73,7 @@ class TerraformConvention {
     /** Creates a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>  Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>   Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
@@ -159,7 +161,9 @@ class TerraformConvention {
         APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
         DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
         VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
-        STATE_RM(30, 'stateRm', TerraformStateRm, 'Removes a resource from state')
+        STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
+        STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
+        STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state')
 
         static List<DefaultTerraformTasks> ordered() {
             DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
