@@ -33,6 +33,10 @@ class TerraformDestroy extends AbstractTerraformApplyTask {
     @Inject
     TerraformDestroy(TerraformPlanProvider plan) {
         super(plan, 'destroy')
+
+        doLast {
+            plan.get().internalTrackerFile.get().delete()
+        }
     }
 
     /** Set auto-approve mode.

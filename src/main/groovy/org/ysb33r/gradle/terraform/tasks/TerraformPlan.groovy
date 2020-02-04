@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.gradle.process.ExecSpec
@@ -26,6 +27,8 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
+
+import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 
@@ -72,6 +75,17 @@ class TerraformPlan extends AbstractTerraformTask {
         reportsDir.map { File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
         }
+    }
+
+    /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
+     *
+     * @return Location of tracker file.
+     */
+    @Internal
+    Provider<File> getInternalTrackerFile() {
+        project.provider({ ->
+            new File(reportsDir.get(), '.tracker')
+        } as Callable<File>)
     }
 
     /** Select specific resources.
