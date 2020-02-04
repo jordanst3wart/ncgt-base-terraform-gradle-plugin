@@ -82,6 +82,12 @@ A number of task types support command-line options.
 | {nbsp}
 | Destination item i.e. `packet_device.helper` or `module.parent.module.app`.
 
+<.^| `tfStatePush`
+| `--state-file`
+| string
+| {nbsp}
+| Local state file path (relative to Terraform source directory) to push to remote state.
+
 .2+<.^| `tfStateRm`
 | `--type`
 | string

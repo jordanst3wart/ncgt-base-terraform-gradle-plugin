@@ -1,5 +1,6 @@
 # List versions in order that they should appear on the landing page
 #
+0.7.0
 0.6.0
 0.5.1
 0.4.0

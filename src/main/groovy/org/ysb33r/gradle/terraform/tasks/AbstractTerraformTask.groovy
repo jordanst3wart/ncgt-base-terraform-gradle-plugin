@@ -391,10 +391,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.terraformExtension
     }
 
-//    protected void addModuleDepthToCmdLine(TerraformExecSpec execSpec, int moduleDepth) {
-//        execSpec.cmdArgs "-module-depth=${moduleDepth}"
-//    }
-
+    /** Add specific command-line options for the command.
     /** Add specific command-line options for the command.
      *
      * @param execSpec
