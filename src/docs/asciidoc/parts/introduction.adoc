@@ -18,7 +18,7 @@ NOTE: These documentation pages assume that you have at least a basic working kn
 
 Integrating these two products delivers a pwerful combination, but also presents a number of operational ways that challenges people that is used to using `terraform` standalone or in scripts.
 
-Using Terraform with Gradle means that the former no longer needs to be installed. Just specify the version and Gradle will boostrap the correct version. If the version is already in cache (`~/gradle/native-binaries/`), Gradle will just reuse it.
+Using Terraform with Gradle means that the former no longer needs to be installed. Just specify the version and Gradle will bootstrap the correct version. If the version is already in cache (`~/gradle/native-binaries/`), Gradle will just reuse it.
 
 //=== Reproducibility
 //
