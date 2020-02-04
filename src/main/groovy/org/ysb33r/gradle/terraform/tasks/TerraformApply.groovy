@@ -16,13 +16,16 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Provider
 
 import javax.inject.Inject
+import java.time.LocalDateTime
+import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform apply}.
  *
  * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retriev most of its configuration.
+ * in order to retrieve most of its configuration.
  *
  * @since 0.1
  */
@@ -33,5 +36,17 @@ class TerraformApply extends AbstractTerraformApplyTask {
     TerraformApply(TerraformPlanProvider plan) {
         super(plan, 'apply')
         supportsAutoApprove()
+
+        tracker = project.provider({ ->
+            plan.get().internalTrackerFile.get()
+        } as Callable<File>)
+
+        doLast {
+            tracker.get().text = LocalDateTime.now().toString()
+        }
+
+        outputs.file(tracker).optional()
     }
+
+    private final Provider<File> tracker
 }
