@@ -179,7 +179,7 @@ class TerraformInit extends AbstractTerraformTask {
         execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
 
         getBackendConfigValues().each { String k, String v ->
-            execSpec.cmdArgs "-backend-config=\"$k=$v\""
+            execSpec.cmdArgs "-backend-config=$k=$v"
         }
 
         if (this.backendConfig) {

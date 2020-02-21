@@ -66,7 +66,7 @@ class TerraformCacheBinarySpec extends IntegrationSpecification {
             props.APP_LOCATION.endsWith(OS.windows ? 'terraform.exe' : 'terraform')
             props.APP_VERSION == terraformVersion
             props.USE_GLOBAL_CONFIG == 'false'
-            props.CONFIG_LOCATION == new File(projectCacheDir, '.terraformrc').absolutePath
+            props.CONFIG_LOCATION == new File(projectCacheDir, '.terraformrc').canonicalPath
         }
     }
 
