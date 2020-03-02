@@ -68,7 +68,7 @@ class TerraformStateMv extends AbstractTerraformStateTask {
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs "${sourcePath}.${destinationPath}"
+        execSpec.cmdArgs sourcePath, destinationPath
         execSpec
     }
 

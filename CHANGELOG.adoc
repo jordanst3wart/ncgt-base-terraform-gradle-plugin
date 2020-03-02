@@ -2,9 +2,18 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 0.6.0
+== v0.7.0 / v0.7.1 / v.0.7.2
 
 // tag::changelog[]
+=== Bugs
+
+* {issue}3[#3] - Task `tfShowState` fails when using remote backend.
+* {mr}14[#14] - Remove unnecessary quotes from command line argument.
+
+// end::changelog[]
+
+== v0.6.0
+
 === Features
 
 * {issue}6[#6] - Bump Terraform version to 0.12.19
@@ -15,7 +24,6 @@
 
 * {issue}8[#8] - Instead of ``-configure-backends` use `--no-configure-backends` for a `TerraformInit` task. The task property has also been renamed to `skipConfigureBackends` (from `configureBackend`). This was done becasue a boolean command-line extension does not take a value and rather sets the task property to `true`.
 
-// end::changelog[]
 
 == v0.5.0 / v0.5.1
 
