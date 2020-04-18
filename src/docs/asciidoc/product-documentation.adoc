@@ -2,13 +2,7 @@
 :author: Schalk W. Cronjé
 :doctype: book
 :toc: right
-:icons: font
-:source-highlighter: coderay
-:sourcedir: {includetopdir}/src/main/groovy/org/ysb33r/gradle/terraform
-:testdir: {includetopdir}/src/test/groovy/org/ysb33r/gradle/terraform
-:inttestdir: {includetopdir}/src/integrationTest/groovy/org/ysb33r/gradle/terraform
-:gradletestdir: {includetopdir}/src/gradleTest
-:groovydoc: ../api/org/ysb33r/gradle/terraform
+include::attributes.adoc[]
 
 include::parts/introduction.adoc[]
 
@@ -25,4 +19,8 @@ include::parts/variables.adoc[]
 include::parts/environment.adoc[]
 
 include::parts/command-line-options.adoc[]
+
+include::parts/remote-state-s3.adoc[]
+
+include::parts/alternatives.adoc[]
 // include::parts/wrapper.adoc[]

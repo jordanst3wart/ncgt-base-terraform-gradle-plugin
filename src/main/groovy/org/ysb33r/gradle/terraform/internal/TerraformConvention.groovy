@@ -24,17 +24,6 @@ import org.gradle.util.GradleVersion
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
-import org.ysb33r.gradle.terraform.tasks.TerraformApply
-import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
-import org.ysb33r.gradle.terraform.tasks.TerraformImport
-import org.ysb33r.gradle.terraform.tasks.TerraformInit
-import org.ysb33r.gradle.terraform.tasks.TerraformPlan
-import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
-import org.ysb33r.gradle.terraform.tasks.TerraformShowState
-import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
-import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
-import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
-import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
@@ -46,6 +35,7 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_
 class TerraformConvention {
 
     public static final String DEFAULT_SOURCESET_NAME = 'main'
+    public static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.command
 
     /** Provides a task name
      *
@@ -73,7 +63,7 @@ class TerraformConvention {
     /** Creates a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>   Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>     Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
@@ -116,6 +106,12 @@ class TerraformConvention {
                 newTask.mustRunAfter taskName(name, TERRAFORM_INIT)
             }
         }
+
+        SupplementaryConvention.values().each { SupplementaryConvention doMore ->
+            project.pluginManager.withPlugin(doMore.pluginId) {
+                doMore.createTasks.accept(project, sourceSet)
+            }
+        }
     }
 
     @CompileDynamic
@@ -151,38 +147,12 @@ class TerraformConvention {
                 ).configure(configurator)
             }
         }
-    }
 
-    private enum DefaultTerraformTasks {
-        INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
-        IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
-        SHOW(2, 'showState', TerraformShowState, 'Generates a report on the current state'),
-        PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-        APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
-        DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
-        VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
-        STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
-        STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
-        STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state')
-
-        static List<DefaultTerraformTasks> ordered() {
-            DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
-        }
-
-        final int order
-        final String command
-        final Class type
-        final String description
-        final Class dependsOnProvider
-
-        private DefaultTerraformTasks(int order, String name, Class type, String description, Class dependsOn = null) {
-            this.order = order
-            this.command = name
-            this.type = type
-            this.description = description
-            this.dependsOnProvider = dependsOn
+        SupplementaryConvention.values().each { SupplementaryConvention doMore ->
+            project.pluginManager.withPlugin(doMore.pluginId) {
+                doMore.lazyCreateTasks.accept(project,sourceSet)
+            }
         }
     }
 
-    private static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.command
 }

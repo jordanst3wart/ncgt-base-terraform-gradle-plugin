@@ -1,0 +1,126 @@
+package org.ysb33r.gradle.terraform.internal.remotestate
+
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectProvider
+import org.gradle.api.Project
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
+import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
+import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
+import org.ysb33r.gradle.terraform.tasks.TerraformInit
+
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.TERRAFORM_INIT
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
+import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
+
+/** Conventions for when {@link org.ysb33r.gradle.terraform.plugins.TerraformRemoteStateAwsS3Plugin} is applied.
+ *
+ * @author Schalk W. Cronjé
+ *
+ * @since 0.8.0
+ */
+@CompileStatic
+class S3Conventions {
+    static void taskCreator(Project project, TerraformSourceDirectorySet tdds) {
+        String name = tdds.name
+        String configTaskName = newTaskName(name)
+        RemoteStateAwsS3ConfigGenerator configTask = project.tasks.create(
+            configTaskName,
+            RemoteStateAwsS3ConfigGenerator
+        )
+        defaultRemoteStateName(name).execute(configTask)
+        terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(taskName(name, TERRAFORM_INIT)))
+        addVariables(tdds, configTask.remoteStateName, configTask.awsRegion, configTask.s3BucketName)
+    }
+
+    @CompileDynamic
+    @TypeChecked
+    static void taskLazyCreator(Project project, NamedDomainObjectProvider<TerraformSourceDirectorySet> tsds) {
+        String name = tsds.name
+        String configTaskName = newTaskName(name)
+        TaskProvider<RemoteStateAwsS3ConfigGenerator> configTask = project.tasks.register(
+            configTaskName,
+            RemoteStateAwsS3ConfigGenerator
+        )
+        configTask.configure(defaultRemoteStateName(name))
+        project.tasks.named(taskName(name, TERRAFORM_INIT)).configure(new Action<TerraformInit>() {
+            @Override
+            void execute(TerraformInit init) {
+                terraformInit(configTask.get()).execute(init)
+            }
+        })
+        tsds.configure(new Action<TerraformSourceDirectorySet>() {
+            @Override
+            void execute(TerraformSourceDirectorySet terraformSourceDirectorySet) {
+
+            }
+        })
+        lazyAddVariablesToSourceSet(configTask)
+    }
+
+    private static Action<TerraformSourceDirectorySet> lazyAddVariablesToSourceSet(
+        Provider<RemoteStateAwsS3ConfigGenerator> configTask
+    ) {
+        new Action<TerraformSourceDirectorySet>() {
+            @Override
+            void execute(TerraformSourceDirectorySet tsds) {
+                addVariables(
+                    tsds,
+                    { -> configTask.get().remoteStateName },
+                    { -> configTask.get().awsRegion },
+                    { -> configTask.get().s3BucketName }
+                )
+            }
+        }
+    }
+
+    private static String newTaskName(String sourceSetName) {
+        "create${taskName(sourceSetName, 's3BackendConfiguration').capitalize()}"
+    }
+
+    private static Action<RemoteStateAwsS3ConfigGenerator> defaultRemoteStateName(
+        String sourceSetName
+    ) {
+        new Action<RemoteStateAwsS3ConfigGenerator>() {
+            @Override
+            void execute(RemoteStateAwsS3ConfigGenerator task) {
+                RemoteStateS3 s3 = RemoteStateS3.findExtension(task.project)
+                String folderName = sourceSetName == DEFAULT_SOURCESET_NAME ?
+                    'tfS3BackendConfiguration' :
+                    "tf${sourceSetName.capitalize()}S3BackendConfiguration"
+
+                task.setRemoteStateName({ Project p ->
+                    TerraformRemoteStateExtension remote = findExtension(p)
+                    sourceSetName == DEFAULT_SOURCESET_NAME ? remote.getPrefix().get() :
+                        "${remote.getPrefix().get()}-${sourceSetName}"
+                }.curry(task.project))
+                task.setAwsRegion(s3.region)
+                task.setS3BucketName(s3.bucket)
+                task.setDestinationDir({ Project p ->
+                    new File(p.buildDir, folderName)
+                }.curry(task.project))
+            }
+        }
+    }
+
+    private static Action<TerraformInit> terraformInit(RemoteStateAwsS3ConfigGenerator configTask) {
+
+        new Action<TerraformInit>() {
+            @Override
+            void execute(TerraformInit terraformInit) {
+                terraformInit.dependsOn(configTask)
+                terraformInit.backendConfigFile = configTask.backendConfigFile
+            }
+        }
+    }
+
+    static private void addVariables(TerraformSourceDirectorySet tdds, Object name, Object region, Object bucket) {
+        tdds.variables.map('remote_state', name: name, aws_region: region, 'aws_bucket': bucket)
+    }
+}
