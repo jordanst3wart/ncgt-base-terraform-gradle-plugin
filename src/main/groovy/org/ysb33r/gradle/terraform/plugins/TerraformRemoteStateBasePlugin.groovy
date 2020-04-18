@@ -20,6 +20,10 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
+import org.ysb33r.gradle.terraform.tasks.AbstractRemoteStateConfigGenerator
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
 
 class TerraformRemoteStateBasePlugin implements Plugin<Project> {
     @Override
@@ -28,5 +32,10 @@ class TerraformRemoteStateBasePlugin implements Plugin<Project> {
 
         ((ExtensionAware) project.extensions.getByType(TerraformExtension))
             .extensions.create(TerraformRemoteStateExtension.NAME, TerraformRemoteStateExtension, project)
+
+        project.tasks.withType(AbstractTerraformTask) { AbstractRemoteStateConfigGenerator t ->
+            t.dependsOn(locateTerraformRCGenerator(t.project))
+        }
+
     }
 }

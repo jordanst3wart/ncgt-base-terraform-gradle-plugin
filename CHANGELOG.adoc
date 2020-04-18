@@ -2,13 +2,17 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.8.0
+== v0.8.0 / v0.8.1
 
 // tag::changelog[]
 === Features
 
 * {issue}17[#17] - Remote state in S3 simplified.
-* {issue}18[#18] - Ability to set destruction plan from command-line
+* {issue}18[#18] - Ability to set destruction plan from command-line.
+
+=== Bugs
+
+* {issue}19[#19] - `createTfS3BackendConfiguration` should run after `generateTerraformConfig`.
 
 === Other
 
