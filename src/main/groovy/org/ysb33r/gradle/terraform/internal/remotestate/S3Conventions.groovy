@@ -55,15 +55,10 @@ class S3Conventions {
                 terraformInit(configTask.get()).execute(init)
             }
         })
-        tsds.configure(new Action<TerraformSourceDirectorySet>() {
-            @Override
-            void execute(TerraformSourceDirectorySet terraformSourceDirectorySet) {
-
-            }
-        })
         lazyAddVariablesToSourceSet(configTask)
     }
 
+    @SuppressWarnings('ClosureAsLastMethodParameter')
     private static Action<TerraformSourceDirectorySet> lazyAddVariablesToSourceSet(
         Provider<RemoteStateAwsS3ConfigGenerator> configTask
     ) {
@@ -95,22 +90,21 @@ class S3Conventions {
                     'tfS3BackendConfiguration' :
                     "tf${sourceSetName.capitalize()}S3BackendConfiguration"
 
-                task.setRemoteStateName({ Project p ->
+                task.remoteStateName = { Project p ->
                     TerraformRemoteStateExtension remote = findExtension(p)
-                    sourceSetName == DEFAULT_SOURCESET_NAME ? remote.getPrefix().get() :
-                        "${remote.getPrefix().get()}-${sourceSetName}"
-                }.curry(task.project))
-                task.setAwsRegion(s3.region)
-                task.setS3BucketName(s3.bucket)
-                task.setDestinationDir({ Project p ->
+                    sourceSetName == DEFAULT_SOURCESET_NAME ? remote.prefix.get() :
+                        "${remote.prefix.get()}-${sourceSetName}"
+                }.curry(task.project)
+                task.awsRegion = s3.region
+                task.s3BucketName = s3.bucket
+                task.destinationDir = { Project p ->
                     new File(p.buildDir, folderName)
-                }.curry(task.project))
+                }.curry(task.project)
             }
         }
     }
 
     private static Action<TerraformInit> terraformInit(RemoteStateAwsS3ConfigGenerator configTask) {
-
         new Action<TerraformInit>() {
             @Override
             void execute(TerraformInit terraformInit) {

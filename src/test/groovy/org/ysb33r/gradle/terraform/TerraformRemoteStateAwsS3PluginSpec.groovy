@@ -9,7 +9,6 @@ import spock.lang.Specification
 
 import static org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator.CONFIG_FILE_NAME
 
-
 class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
     public static final String PLUGIN_ID = 'org.ysb33r.terraform.remotestate.s3'
@@ -47,7 +46,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         setup:
         project.terraformSourceSets {
             additional {
-
             }
         }
 

@@ -24,6 +24,7 @@ class Templates {
      * @param tokens LIst of replacement tokens
      * @return Location of generated file
      */
+    @SuppressWarnings('ParameterCount')
     static File generateFromTemplate(
         String taskName,
         Project project,
@@ -55,7 +56,6 @@ class Templates {
         backendConfigFile.parentFile.mkdirs()
         project.copy configGenerator
         backendConfigFile
-
     }
 
     private static File useDefaultTemplate(Project project, String filenamePrefix, String templateResourcePath) {

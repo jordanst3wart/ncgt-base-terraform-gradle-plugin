@@ -11,6 +11,7 @@
 
 === Other
 
+* {issue}13[#13] - Remove references to legacy task naming like `terraformXYZ`.
 * Default version of terraform is 0.12.24.
 
 // end::changelog[]

@@ -43,7 +43,7 @@ terraformSourceSets {
     }
 }
 
-terraformPlan {
+tfPlan {
     terraform {
         variables {
             var 'foo', 'bar' // <3>

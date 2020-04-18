@@ -63,7 +63,7 @@ class TerraformConvention {
     /** Creates a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>     Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>      Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
@@ -150,7 +150,7 @@ class TerraformConvention {
 
         SupplementaryConvention.values().each { SupplementaryConvention doMore ->
             project.pluginManager.withPlugin(doMore.pluginId) {
-                doMore.lazyCreateTasks.accept(project,sourceSet)
+                doMore.lazyCreateTasks.accept(project, sourceSet)
             }
         }
     }

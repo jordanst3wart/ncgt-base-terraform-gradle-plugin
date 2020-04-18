@@ -14,6 +14,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
 
     public static final String CONFIG_FILE_NAME = 'terraform-s3-backend-config.tf'
 
+    @SuppressWarnings('UnnecessaryCast')
     RemoteStateAwsS3ConfigGenerator() {
         group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
         description = 'Generates configuration for remote state in S3'

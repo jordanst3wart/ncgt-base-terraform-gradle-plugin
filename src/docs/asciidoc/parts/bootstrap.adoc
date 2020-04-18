@@ -26,7 +26,7 @@ NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 The base plugin provides:
 
 * A project <<TerraformExtension,extension>> named `terraform`.
-* Various Terraform task types which tend to map the `terraform` command closely. For instance for the `init` command, the appropriate task type is called `TerraformInit`.
+* Various Terraform task types which tend to map the `terraform` command closely. For instance for the `init` command, the appropriate task type is called `tfInit`.
 * Ability to download and use `terraform` executables.
 
 When the base plugin is applied to the root project it will automatically apply the `terraformrc` plugin.

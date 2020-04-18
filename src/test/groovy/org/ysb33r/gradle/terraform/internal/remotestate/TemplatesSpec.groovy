@@ -5,7 +5,6 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
 import spock.lang.Specification
 
-
 class TemplatesSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
@@ -13,7 +12,7 @@ class TemplatesSpec extends Specification {
     void 'Generate a configuration file from a default template'() {
         setup:
         def taskName = 'fooTask'
-        def outputFile = project.provider({ -> new File(project.projectDir, 'output.tf') })
+        def outputFile = project.provider { -> new File(project.projectDir, 'output.tf') }
         def tokens = [
             aws_region       : 'REGION',
             remote_state_name: 'REMOTESTATE',
