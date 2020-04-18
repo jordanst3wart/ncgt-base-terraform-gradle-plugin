@@ -13,6 +13,7 @@
 === Other
 
 * {issue}13[#13] - Remove references to legacy task naming like `terraformXYZ`.
+* {mr}17[!17] - `tfShowState` will now use `.tf` extension rather than `.txt`
 * Default version of terraform is 0.12.24.
 
 // end::changelog[]
