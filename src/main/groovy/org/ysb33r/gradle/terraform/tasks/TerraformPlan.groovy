@@ -51,8 +51,10 @@ class TerraformPlan extends AbstractTerraformTask {
 
     /** Set to {@code true} if a plan to destroy all resources must be produced.
      *
+     * Or pass {@code --destroy} on the command-line.
      */
     @Input
+    @Option(option = 'destroy', description = 'Generate a destruction plan')
     boolean destructionPlan = false
 
     /** Where the plan file will be written to.

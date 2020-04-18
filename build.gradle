@@ -14,7 +14,8 @@ plugins {
     id 'idea'
     id 'java-gradle-plugin'
     id 'org.ysb33r.gradletest' version '2.0'
-    id 'org.asciidoctor.jvm.convert' version '2.4.0'
+    id 'org.asciidoctor.jvm.convert' version '3.2.0'
+    id 'org.asciidoctor.editorconfig' version '3.2.0'
     id 'com.gradle.plugin-publish' version '0.10.1'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'org.ysb33r.vfs' version '1.0'
@@ -64,11 +65,11 @@ gradleTest {
     }
     versions minVersion
     // tag::gradleTestVersions[]
-    versions '4.10.3', '5.6.3', '6.1'
+    versions '4.10.3', '5.6.3', '6.3'
     // end::gradleTestVersions[]
 
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
-    dependsOn jar
+    dependsOn jar, cacheTerraformBinaries
     shouldRunAfter integrationTest
 }
 
