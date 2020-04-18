@@ -8,6 +8,7 @@
 === Features
 
 * {issue}17[#17] - Remote state in S3 simplified.
+* {issue}18[#18] - Ability to set destruction plan from command-line
 
 === Other
 
