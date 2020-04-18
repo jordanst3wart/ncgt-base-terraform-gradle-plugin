@@ -52,7 +52,7 @@ class TerraformShowState extends AbstractTerraformTask {
     @OutputFile
     Provider<File> getStatusReportOutputFile() {
         project.provider({ ->
-            new File(reportsDir.get(), "${sourceSet.name}.tf.status.${json ? 'json' : 'txt'}")
+            new File(reportsDir.get(), "${sourceSet.name}.status.${json ? 'tf.json' : 'tf'}")
         } as Callable<File>)
     }
 

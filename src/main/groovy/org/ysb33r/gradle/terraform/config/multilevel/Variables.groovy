@@ -219,7 +219,7 @@ class Variables implements TerraformTaskConfigExtension,
 
     /** Returns a description of the files and variables
      *
-     * @return Files vontaining variables as well as explicitly declared variabled/
+     * @return Files containing variables as well as explicitly declared variabled/
      *
      * @since 0.2
      */

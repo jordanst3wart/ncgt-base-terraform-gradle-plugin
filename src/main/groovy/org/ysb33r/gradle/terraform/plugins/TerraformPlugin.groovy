@@ -44,15 +44,4 @@ class TerraformPlugin implements Plugin<Project> {
             }
         })
     }
-
-//        project.extensions.extraProperties.set(
-//          DEPENDENCY_EXTENSION, { final String providerName, final String ver = '+' ->
-//            DependencyFactory.newSelfResolvingDependency(TerraformProviderDependency,project,providerName,ver)
-//        })
-
-//        project.configurations.create(TERRAFORM_CONFIGURATION) { Configuration cfg ->
-//            cfg.visible = false
-//            cfg.transitive = false
-//            cfg.canBeConsumed = false
-//        }
 }
