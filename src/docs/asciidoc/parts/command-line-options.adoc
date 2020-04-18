@@ -54,7 +54,7 @@ A number of task types support command-line options.
 | {nbsp}
 | Do not configure backends
 
-.2+<.^| `tfPlan`
+.3+<.^| `tfPlan`
 | `--targets`
 | list
 | {nbsp}
@@ -64,6 +64,11 @@ A number of task types support command-line options.
 | boolean
 | `false`
 | Write textual plan in JSON format.
+
+| `--destroy`
+| boolean
+| `false`
+| Generate a destruction plan instead.
 
 <.^| `tfShowState`
 | `--json`

@@ -20,7 +20,7 @@ terraform {
     environment AWS_SHARED_CREDENTIALS_FILE : '/path/shared.creds' // <3>
 }
 
-terraformInit {
+tfInit {
     environment = [ AWS_SECRET_ACCESS_KEY : '12345' ] // <4>
     setEnvironment([]) // <5>
     environment AWS_SHARED_CREDENTIALS_FILE : '/path/shared.creds' // <6>
@@ -46,7 +46,7 @@ terraform {
     useAwsEnvironment() // <1>
 }
 
-terraformInit {
+tfInit {
     useAwsEnvironment() // <2>
 }
 ----

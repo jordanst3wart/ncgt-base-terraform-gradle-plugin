@@ -2,15 +2,29 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.7.0 / v0.7.1 / v.0.7.2
+== v0.8.0
 
 // tag::changelog[]
+=== Features
+
+* {issue}17[#17] - Remote state in S3 simplified.
+* {issue}18[#18] - Ability to set destruction plan from command-line
+
+=== Other
+
+* {issue}13[#13] - Remove references to legacy task naming like `terraformXYZ`.
+* {mr}17[!17] - `tfShowState` will now use `.tf` extension rather than `.txt`
+* Default version of terraform is 0.12.24.
+
+// end::changelog[]
+
+== v0.7.0 / v0.7.1 / v.0.7.2
+
 === Bugs
 
 * {issue}3[#3] - Task `tfShowState` fails when using remote backend.
 * {mr}14[#14] - Remove unnecessary quotes from command line argument.
 
-// end::changelog[]
 
 == v0.6.0
 

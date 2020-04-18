@@ -48,7 +48,7 @@ class TerraformStateRm extends AbstractTerraformStateTask {
         this.type = id
     }
 
-    @Option(option = 'name', description = 'Name of resource to import')
+    @Option(option = 'name', description = 'Name of resource to remove')
     void setResourceName(String id) {
         this.resourceName = id
     }

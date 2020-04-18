@@ -6,16 +6,18 @@ These plugins are available from the plugin portal. Add the appropriate plugin i
 [source,groovy,subs="attributes+"]
 ----
 plugins {
-  id 'org.ysb33r.terraform.base'    version '{revnumber}'  // <1>
-  id 'org.ysb33r.terraform'         version '{revnumber}'  // <2>
-  id 'org.ysb33r.terraform.rc'      version '{revnumber}'  // <3>
-  id 'org.ysb33r.terraform.wrapper' version '{revnumber}'  // <4>
+  id 'org.ysb33r.terraform.base'           version '{revnumber}'  // <1>
+  id 'org.ysb33r.terraform'                version '{revnumber}'  // <2>
+  id 'org.ysb33r.terraform.rc'             version '{revnumber}'  // <3>
+  id 'org.ysb33r.terraform.wrapper'        version '{revnumber}'  // <4>
+  id 'org.ysb33r.terraform.remotestate.s3' version '{revnumber}'  // <5>
 }
 ----
 <1> Base plugin provides `terraform` extension.
 <2> Conventions for `terraform` including source sets and tasks created by convention.
 <3> This plugin is normally not applied directly, but deals specifically with Terraform configuration
-<4> This plugin is usually only applied at the root project and dealks with the creation of `terraformw` wrappers.
+<4> This plugin is usually only applied at the root project and deals with the creation of `terraformw` wrappers.
+<5> Simplifies storing of remote state in S3. See <<RemoteStateS3.Remote State in S3>>.
 
 NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 
@@ -24,7 +26,7 @@ NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 The base plugin provides:
 
 * A project <<TerraformExtension,extension>> named `terraform`.
-* Various Terraform task types which tend to map the `terraform` command closely. For instance for the `init` command, the appropriate task type is called `TerraformInit`.
+* Various Terraform task types which tend to map the `terraform` command closely. For instance for the `init` command, the appropriate task type is called `tfInit`.
 * Ability to download and use `terraform` executables.
 
 When the base plugin is applied to the root project it will automatically apply the `terraformrc` plugin.
@@ -51,7 +53,7 @@ Provides the `terraformWrapper` and `cacheTerraformBinaries` tasks.
 
 The minimalist project is
 
-[source,groovy]
+[source,groovy,subs="attributes+"]
 ----
 plugins {
   id 'org.ysb33r.terraform' version '{revnumber}'

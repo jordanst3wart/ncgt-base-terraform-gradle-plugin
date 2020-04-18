@@ -20,12 +20,6 @@ Integrating these two products delivers a pwerful combination, but also presents
 
 Using Terraform with Gradle means that the former no longer needs to be installed. Just specify the version and Gradle will bootstrap the correct version. If the version is already in cache (`~/gradle/native-binaries/`), Gradle will just reuse it.
 
-//=== Reproducibility
-//
-//In order to reproduce builds a deployments, Gradle will lock down the versions of Terraform plugins in use. This complements the use of version constraints in Terraform configuration files.
-//
-//Doing the equivalent of `terraform init -update` is not possible directly. See the section on <<terraformlock,Terraform version lock files>> for more details.
-
 === Caching of plugins
 
 Gradle will cache Terraform plugins using the Terraform caching mechanism, but share it between project by using the Gradle user home caching directories. It is possible to override this a have the caching use a per-project basis or purely rely on global Terrafom settings.
