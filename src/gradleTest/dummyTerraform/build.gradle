@@ -14,7 +14,7 @@ terraform {
 }
 
 task runGradleTest  {
-    dependsOn tfInit, tfPlan, tfApply, tfShowState, terraformWrapper
+    dependsOn tfInit, tfPlan, tfApply, tfShowState, terraformWrapper, tfOutput
 
     doLast {
         assert file('src/tf/main/terraform.tfstate').exists()

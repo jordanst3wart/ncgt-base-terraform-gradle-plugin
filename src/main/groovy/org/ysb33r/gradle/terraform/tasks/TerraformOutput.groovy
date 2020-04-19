@@ -18,28 +18,32 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
 import java.util.concurrent.Callable
 
-/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
+/** Equivalent of {@code terraform output}.
  *
- * @since 0.3
+ * Could be used with command-line arguments {@code --name}.
+ *
+ * @since 0.9.0
  */
 @CompileStatic
-class TerraformShowState extends AbstractTerraformTask {
+class TerraformOutput extends AbstractTerraformTask {
 
-    TerraformShowState() {
-        super('show', [], [])
-
+    TerraformOutput() {
+        super('output', [], [])
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->
-                new File(reportsDir.get(), "${sourceSet.name}.status.${json ? 'tf.json' : 'tf'}")
-            } as Callable<File>))
+                new File(reportsDir.get(), "${sourceSet.name}.outputs.${json ? 'tf.json' : 'tf'}")
+            } as Callable<File>)
+        )
 
         supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
@@ -53,6 +57,27 @@ class TerraformShowState extends AbstractTerraformTask {
     @Internal
     boolean json = false
 
+    /** List of names to retrieve output for.
+     *
+     * @return List of names. Can be {@code null} to retrieve all names.
+     */
+    @Input
+    @Optional
+    String getOutputName() {
+        this.outputName
+    }
+
+    /** Set the list of output names to retrieve.
+     *
+     * This option can be set on the command-line with {@code --name}
+     *
+     * @param outputName Output name to use.
+     */
+    @Option(option = 'name', description = 'Name of output variable')
+    void setName(String outputName) {
+        this.outputName = outputName
+    }
+
     /** Get the location where the report file needs to be generated.
      *
      * @return File provider
@@ -63,28 +88,17 @@ class TerraformShowState extends AbstractTerraformTask {
     }
 
     @Override
-    void exec() {
-        super.exec()
-        logger.lifecycle(
-            "The textual representation of the plan file has been generated into ${statusReportOutputFile.get()}"
-        )
-    }
-
-    /** Add specific command-line options for the command.
-     *
-     * @param execSpec
-     * @return execSpec
-     */
-    @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-
         if (json) {
             execSpec.cmdArgs JSON_FORMAT
         }
-
+        if (outputName) {
+            execSpec.cmdArgs(outputName)
+        }
         execSpec
     }
 
+    private String outputName
     private final Property<File> outputFile
 }

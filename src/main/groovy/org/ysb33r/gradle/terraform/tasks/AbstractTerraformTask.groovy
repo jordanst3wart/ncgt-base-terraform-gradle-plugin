@@ -392,7 +392,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     /** Add specific command-line options for the command.
-    /** Add specific command-line options for the command.
+     /** Add specific command-line options for the command.
      *
      * @param execSpec
      * @return execSpec
