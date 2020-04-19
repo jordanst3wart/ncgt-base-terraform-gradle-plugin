@@ -63,13 +63,18 @@ class TerraformInit extends AbstractTerraformTask {
      *
      * @since 0.6.0
      */
-    @Option(option = 'no-configure-backends', description = 'Whether backends should not be configured')
+    @Option(option = 'no-configure-backends', description = 'Skip backend configuration')
     @Internal
     boolean skipConfigureBackends = false
 
-    // TODO: Other backend settings
-    // -force-copy
-    // -reconfigure
+    @Option(option = 'force-copy', description = 'Automatically answer yes to any backend migration questions')
+    @Internal
+    boolean forceCopy = false
+
+    @Option(option = 'reconfigure',
+        description = 'Disregard any existing configuration and prevent migration of existing state')
+    @Internal
+    boolean reconfigure = false
 
     /** Configuration for Terraform backend.
      *
@@ -186,10 +191,17 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs("-backend-config=${this.backendConfig.get().absolutePath}")
         }
 
+        if (this.forceCopy) {
+            execSpec.cmdArgs('-force-copy')
+        }
+
+        if (this.reconfigure) {
+            execSpec.cmdArgs('-reconfigure')
+        }
+
         execSpec
     }
 
-//    private boolean checkVariables = true
     private Provider<File> backendConfig
     private final Map<String, Object> backendConfigValues = [:]
 }

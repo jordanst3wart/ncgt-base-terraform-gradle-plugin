@@ -40,7 +40,7 @@ class TerraformConvention {
     /** Provides a task name
      *
      * @param sourceSetName Name of source set the task will be associated with.
-     * @param commandType THe Terraform command that this task will wrap.
+     * @param commandType The Terraform command that this task will wrap.
      * @return Name of take
      */
     static String taskName(String sourceSetName, String commandType) {

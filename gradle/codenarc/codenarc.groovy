@@ -274,7 +274,9 @@ ruleset {
     UnnecessaryFinalOnPrivateMethod
     UnnecessaryFloatInstantiation
     UnnecessaryGString
-    UnnecessaryGetter
+    UnnecessaryGetter {
+        ignoreMethodNames = 'isEmpty'
+    }
     UnnecessaryIfStatement
     UnnecessaryInstanceOfCheck
     UnnecessaryInstantiationToGetClass
