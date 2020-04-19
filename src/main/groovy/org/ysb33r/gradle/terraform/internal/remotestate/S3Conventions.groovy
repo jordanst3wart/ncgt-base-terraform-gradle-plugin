@@ -70,7 +70,7 @@ class S3Conventions {
                 terraformInit(configTask.get()).execute(init)
             }
         })
-        lazyAddVariablesToSourceSet(configTask)
+        tsds.configure(lazyAddVariablesToSourceSet(configTask))
     }
 
     @SuppressWarnings('ClosureAsLastMethodParameter')
