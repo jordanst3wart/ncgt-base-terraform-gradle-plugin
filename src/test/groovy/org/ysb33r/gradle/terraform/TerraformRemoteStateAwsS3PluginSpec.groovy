@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
@@ -90,6 +91,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         setup:
         def region = 'blah-blah'
         def bucket = 'car'
+        TerraformSourceSets tss = project.terraformSourceSets
 
         when: 's3 is configured for region and bucket'
         s3.region = region
@@ -98,6 +100,12 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         then: 'the task will pick up appropriate aws configuration'
         project.tasks.createTfS3BackendConfiguration.s3BucketName.get() == bucket
         project.tasks.createTfS3BackendConfiguration.awsRegion.get() == region
+
+        when: 'the variables are analysed'
+        Map<String, String> vars = ((Variables)tss.getByName('main').variables).escapedVars
+
+        then: 'remote_state map will be passed to terraform'
+        vars.remote_state
     }
 
     void 'The default destination directory is based upon the source set name'() {

@@ -49,9 +49,9 @@ If you are interested in using locking of remote state you probably are going to
 data "terraform_remote_state" "aws_tf_remote_state" {
   backend = "s3"
   config = {
-    bucket = var.remote_state.aws_bucket // <1>
-    key    = "${var.remote_state.name}.tfstate" // <2>
-    region = var.remote_state.aws_region // <3>
+    bucket = var.remote_state["aws_bucket"] // <1>
+    key    = "${var.remote_state["name"]}.tfstate" // <2>
+    region = var.remote_state["aws_region"] // <3>
     encrypt = true
     dynamodb_table = "arn:aws:dynamodb:<REGION>:<ACCOUNT>:table/<TABLENAME>" // <4>
   }
