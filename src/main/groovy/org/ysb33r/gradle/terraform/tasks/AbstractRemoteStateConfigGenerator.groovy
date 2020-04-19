@@ -21,6 +21,7 @@ import org.gradle.api.Transformer
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
@@ -51,6 +52,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      *
      * @return
      */
+    @Internal
     Provider<File> getDestinationDir() {
         this.destDir
     }
@@ -79,6 +81,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @return Location of template file if set.
      */
     @Optional
+    @InputFile
     Provider<File> getTemplateFile() {
         this.templateFile
     }
@@ -187,16 +190,6 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      */
     @Internal
     abstract protected String getTemplateResourcePath()
-
-//    private File useDefaultTemplate() {
-//        File target = new File(project.buildDir,"tmp/${FileUtils.toSafeFileName(name)}.template.tf")
-//        this.class.getResourceAsStream(templateResourcePath).withCloseable {  strm ->
-//            target.withOutputStream { output ->
-//                output << strm
-//            }
-//        }
-//        target
-//    }
 
     private final Property<File> destDir
     private final Property<File> outputFile

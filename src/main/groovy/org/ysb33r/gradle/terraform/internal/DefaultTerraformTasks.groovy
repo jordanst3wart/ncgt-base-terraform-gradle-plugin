@@ -20,6 +20,7 @@ import org.ysb33r.gradle.terraform.tasks.TerraformApply
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
 import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
+import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
 import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
 import org.ysb33r.gradle.terraform.tasks.TerraformShowState
@@ -39,6 +40,7 @@ enum DefaultTerraformTasks {
     INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
     IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
     SHOW(2, 'showState', TerraformShowState, 'Generates a report on the current state'),
+    OUTPUT(2, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
     APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
     DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),

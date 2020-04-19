@@ -6,6 +6,7 @@ When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceS
 * `tfDestroy`
 * `tfImport`
 * `tfInit`
+* `tfOutput`
 * `tfPlan`
 * `tfShowState`
 * `tfStateMv` (`terraform state mv`)

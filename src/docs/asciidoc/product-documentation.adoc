@@ -22,5 +22,7 @@ include::parts/command-line-options.adoc[]
 
 include::parts/remote-state-s3.adoc[]
 
+include::parts/accessing-output-variables.adoc[]
+
 include::parts/alternatives.adoc[]
 // include::parts/wrapper.adoc[]
