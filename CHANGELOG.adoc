@@ -7,7 +7,8 @@
 // tag::changelog[]
 === Features
 
-{issue}22[#22] - `tfInit` can now take `--force-copy` and `--reconfigure` ans command-line options.
+* {issue}22[#22] - `tfInit` can now take `--force-copy` and `--reconfigure` ans command-line options.
+* {issue}23[#23] - Support for `terraform output` as `TerraformOutput` task type as well as a provider on the source set that can return all output variables as a deeply nested map.
 
 // end::changelog[]
 

@@ -18,19 +18,25 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.Transformer
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
+import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 
 import java.util.concurrent.Callable
 
 import static groovy.lang.Closure.DELEGATE_FIRST
+import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.OUTPUT
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
 /** Describes a Terraform source set
  *
@@ -74,9 +80,17 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         vars = new Variables(project.provider({ TerraformSourceDirectorySet it ->
             it.srcDir.get()
         }.curry(this)))
+
+        def cache = new OutputVariablesCache(project, project.provider({ TaskContainer tasks ->
+            (TerraformOutput) tasks.getByName(taskName(name, OUTPUT.command))
+        }.curry(project.tasks) as Callable<TerraformOutput>))
+
+        this.outputVariablesProvider = project.provider( { ->
+            cache.map
+        } as Callable<Map<String,?>>)
     }
 
-    /** The display name is the string reporesentation of the source set.
+    /** The display name is the string representation of the source set.
      *
      * @return String representation
      */
@@ -223,6 +237,41 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.vars
     }
 
+    /** Returns a provider which can be used to access output variables from a source set.
+     *
+     * Invoking the provider return by this call will invoke {@code terraform output} the first time, but thereafter
+     * values will be cached for the remainder of of the build. If you want updates values, ensure the relavent
+     * {@link org.ysb33r.gradle.terraform.tasks.TerraformApply} task is run before invoking the provider.
+     *
+     * @return Provider for reading output values. THe values are returned in a raw format which basically is just the
+     *   JSON output parsed into some form of map.
+     *
+     * @since 0.9.0
+     */
+    Provider<Map<String, ?>> getRawOutputVariables() {
+        this.outputVariablesProvider
+    }
+
+    /** Returns a provider to a specific output variable.
+     *
+     * Invoking the provider return by this call will invoke {@code terraform output} the first time, but thereafter
+     * values will be cached for the remainder of of the build. If you want updates values, ensure the relavent
+     * {@link org.ysb33r.gradle.terraform.tasks.TerraformApply} task is run before invoking the provider.
+     *
+     * @return Provider for value of specific output variable. If the vairable is not a primitive type, it is up to
+     * the caller to do further processing,
+     *
+     * @since 0.9.0
+     */
+    Provider<Object> rawOutputVariable(String varName) {
+        this.outputVariablesProvider.map( new Transformer<Object, Map<String, ?>>() {
+            @Override
+            Object transform(Map<String, ?> stringMap) {
+                stringMap[varName]['value']
+            }
+        })
+    }
+
     @Override
     PatternFilterable exclude(Closure closure) {
         patternSet.exclude(closure)
@@ -291,6 +340,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     private Provider<File> reportsDir
     private final Project project
     private final Variables vars
-
-    final PatternSet patternSet = new PatternSet()
+    private final Provider<Map<String,?>> outputVariablesProvider
+    private final PatternSet patternSet = new PatternSet()
 }
