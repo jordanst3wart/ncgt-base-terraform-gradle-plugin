@@ -13,6 +13,8 @@
 === Bugs
 
 * {issue}19[#19] - `createTfS3BackendConfiguration` should run after `generateTerraformConfig`.
+* {issue}20[#20] - `remote_state` map is not passed to `terraform`.
+* {issue}21[#21] - `Property` and `Provider` instances are not resolved correctly to strings in `VariablesSpec`.
 
 === Other
 

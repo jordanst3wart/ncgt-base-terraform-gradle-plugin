@@ -35,7 +35,7 @@ public enum SupplementaryConvention {
         S3Conventions::taskLazyCreator
     );
 
-    private SupplementaryConvention(
+    SupplementaryConvention(
         String pluginId,
         BiConsumer<Project, TerraformSourceDirectorySet> creator,
         BiConsumer<Project, NamedDomainObjectProvider<TerraformSourceDirectorySet>> lazyCreator) {
