@@ -1,0 +1,16 @@
+== Accessing Output Variables
+
+As from v0.9 is is possible to obtain access to output variables. This is an experimental feature and should be treated with care. Always have the correct task dependencies in place as to ensure that you get up to date values for the variables.
+
+This feature is targeted at two use cases:
+
+* You have more than one Terraform source set and you want to use outpus from one sourceset in another sourceset. Please ensure that you don't create circular dependencies between the two source sets in this case.
+* You have other build tasks that require values form your infrastructure.
+
+In order to obtain these variables `terraform output` is executed behind the scenes and the JSON output parsed.
+The output variables are effectively a map of the parsed JSON and can be accessed via the following methods on a source set.
+
+* link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariables[getRawOutputVariables]
+* link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariable[getRawOutputVariable(name)]
+
+Both of these methods return a Gradle `Provider`. The first extraction via  `get()` accessor will result in the values begin cached. For the rest of the build, the values are only read from the cache. Please delay accessing the required variables for as late as possible.

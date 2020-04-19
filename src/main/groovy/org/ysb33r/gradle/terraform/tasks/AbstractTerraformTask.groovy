@@ -32,7 +32,6 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
-import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.StringUtils
 import org.ysb33r.grolifant.api.exec.AbstractExecWrapperTask
@@ -111,13 +110,8 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     String getLogLevel() {
         switch (this.terraformLogLevel ?: project.logging.level) {
             case LogLevel.DEBUG:
-                return 'DEBUG'
-            case LogLevel.ERROR:
-                return 'ERROR'
-            case LogLevel.WARN:
-                return 'WARN'
             case LogLevel.INFO:
-                return 'INFO'
+                return 'TRACE'
             default:
                 null
         }
@@ -343,14 +337,13 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     @SuppressWarnings('DuplicateStringLiteral')
     @Input
     protected Map<String, String> getTerraformEnvironment() {
-        final Map<String, String> env = [
-            TF_DATA_DIR       : dataDir.get().absolutePath,
-            TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
-            TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
-            TF_LOG            : logLevel ?: '',
-        ]
-
-        env
+        TerraformUtils.terraformEnvironment(
+            project,
+            name,
+            dataDir,
+            logDir,
+            logLevel
+        )
     }
 
     /** Adds a boolean command-line option with correct formatting to the execution specification.

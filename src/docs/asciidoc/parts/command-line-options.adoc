@@ -64,6 +64,12 @@ A number of task types support command-line options.
 | {nbsp}
 | Disregard any existing configuration and prevent migration of any existing state
 
+<.^| `tfOutput`
+| `--json`
+| boolean
+| `false`
+| Write validation output in JSON format.
+
 .3+<.^| `tfPlan`
 | `--targets`
 | list

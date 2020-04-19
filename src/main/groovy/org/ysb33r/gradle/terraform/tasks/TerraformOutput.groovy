@@ -88,6 +88,14 @@ class TerraformOutput extends AbstractTerraformTask {
     }
 
     @Override
+    void exec() {
+        super.exec()
+        logger.lifecycle(
+            "The textual representation of the plan file has been generated into ${statusReportOutputFile.get()}"
+        )
+    }
+
+    @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
         if (json) {

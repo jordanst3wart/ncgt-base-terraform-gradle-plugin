@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.ysb33r.grolifant.api.OperatingSystem
 
 /** General utilities for Terraform.
@@ -44,5 +45,31 @@ class TerraformUtils {
      */
     static Map<String, String> awsEnvironment() {
         System.getenv().findAll { k, v -> k.startsWith('AWS_') }
+    }
+
+    /** Obtain the required terraform execution environmental variables
+     *
+     * @param project Project context
+     * @param name Name of the source set
+     * @param dataDir Data directory provider
+     * @param logDir Log directory provider
+     * @param logLevel Level of logging. Can be {@code null}.
+     * @return Map of environmental variables
+     *
+     * @since 0.9.0
+     */
+    static Map terraformEnvironment(
+        Project project,
+        String name,
+        Provider<File> dataDir,
+        Provider<File> logDir,
+        String logLevel
+    ) {
+        [
+            TF_DATA_DIR       : dataDir.get().absolutePath,
+            TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
+            TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
+            TF_LOG            : logLevel ?: '',
+        ]
     }
 }
