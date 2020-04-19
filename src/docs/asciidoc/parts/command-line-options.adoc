@@ -43,7 +43,7 @@ A number of task types support command-line options.
 | {nbsp}
 | Actual identifier to import. Check the Terraform documentation for the specific resource in order to know how to identify this.
 
-.2+<.^| `tfInit`
+.4+<.^| `tfInit`
 | `--upgrade`
 | boolean
 | {nbsp}
@@ -53,6 +53,16 @@ A number of task types support command-line options.
 | boolean
 | {nbsp}
 | Do not configure backends
+
+| `--force-copy`
+| boolean
+| {nbsp}
+| Automatically answer yes to any backend migration questions
+
+| `--reconfigure`
+| boolean
+| {nbsp}
+| Disregard any existing configuration and prevent migration of any existing state
 
 .3+<.^| `tfPlan`
 | `--targets`
