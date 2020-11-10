@@ -15,10 +15,13 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import java.util.concurrent.Callable
 
@@ -34,8 +37,23 @@ class TerraformPlanProvider {
     final Provider<TerraformPlan> plan
 
     TerraformPlanProvider(Project project, String sourceSetName) {
-        plan = project.provider({ ->
-            project.tasks.getByName(TerraformConvention.taskName(sourceSetName, 'plan'))
+        String taskName = TerraformConvention.taskName(sourceSetName, 'plan')
+        if (LegacyLevel.PRE_5_0) {
+            plan = providerPre50(project, taskName)
+        } else {
+            plan = provider(project, taskName)
+        }
+    }
+
+    @CompileDynamic
+    private Provider<TerraformPlan> providerPre50(Project project, String taskName) {
+        project.provider({ ->
+            project.tasks.getByName(taskName)
         } as Callable<TerraformPlan>)
+    }
+
+    @CompileDynamic
+    private TaskProvider<TerraformPlan> provider(Project project, String taskName) {
+        project.tasks.named(taskName, TerraformPlan)
     }
 }

@@ -22,9 +22,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceSets
-import org.ysb33r.grolifant.api.v4.StringUtils
-
-import java.util.concurrent.Callable
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** Extension that is added to the project {@link TerraformExtension}
  *
@@ -58,11 +56,11 @@ class TerraformRemoteStateExtension {
      */
     static TerraformRemoteStateExtension findExtension(Project project, String sourceSetName) {
         def sourceSet = project.extensions.getByType(TerraformSourceSets).getByName(sourceSetName)
-        ((ExtensionAware)sourceSet).extensions.getByType(TerraformRemoteStateExtension)
+        ((ExtensionAware) sourceSet).extensions.getByType(TerraformRemoteStateExtension)
     }
 
     TerraformRemoteStateExtension(Project project) {
-        this.project = project
+        this.projectOperations = ProjectOperations.find(project)
         this.prefix = project.objects.property(String)
         setPrefix(project.name)
     }
@@ -72,9 +70,7 @@ class TerraformRemoteStateExtension {
      * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
      */
     void setPrefix(Object p) {
-        this.prefix.set(project.provider({
-            StringUtils.stringize(p)
-        } as Callable<String>))
+        projectOperations.updateStringProperty(this.prefix, p)
     }
 
     /** A prefix that is added to remote state names.
@@ -93,6 +89,6 @@ class TerraformRemoteStateExtension {
         setPrefix(other.prefix)
     }
 
-    private final Project project
+    private final ProjectOperations projectOperations
     private final Property<String> prefix
 }

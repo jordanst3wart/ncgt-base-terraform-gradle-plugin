@@ -29,6 +29,7 @@ import org.gradle.api.Project
 import org.gradle.process.ExecResult
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
+import org.ysb33r.grolifant.api.core.ProjectOperations
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 
@@ -38,11 +39,15 @@ import java.nio.file.Files
 class DownloaderSpec extends DownloadTestSpecification {
 
     Project project = ProjectBuilder.builder().build()
+    ProjectOperations projectOperations
+    void setup() {
+        projectOperations = ProjectOperations.create(project)
+    }
 
     @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
     def 'Download a Terraform distribution'() {
         given: 'A requirement to download Terraform #TERRAFORM_VERSION'
-        Downloader dwn = new Downloader(DownloadTestSpecification.TERRAFORM_VERSION, project)
+        Downloader dwn = new Downloader(DownloadTestSpecification.TERRAFORM_VERSION, projectOperations)
         dwn.downloadRoot = new File(project.buildDir, 'download')
 
         when: 'The distribution root is requested'

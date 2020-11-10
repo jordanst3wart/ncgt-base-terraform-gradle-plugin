@@ -64,7 +64,6 @@ class TerraformRCExtension {
     boolean useGlobalConfig = false
 
     TerraformRCExtension(Project project) {
-        File gradleUserHomeDir = project.gradle.gradleUserHomeDir
         this.projectOperations = ProjectOperations.find(project)
 
         this.terraformRC = project.providers.provider({ File defaultLoc ->
@@ -72,9 +71,10 @@ class TerraformRCExtension {
         }.curry(new File(projectOperations.projectCacheDir, '.terraformrc')) as Callable<File>)
 
         this.pluginCacheDir = project.objects.property(File)
-        projectOperations.updateFileProperty(this.pluginCacheDir, project.provider({ File defaultLoc ->
-            defaultLoc
-        }.curry(new File(gradleUserHomeDir, 'caches/terraform.d'))))
+        projectOperations.updateFileProperty(
+            this.pluginCacheDir,
+            projectOperations.gradleUserHomeDir.map( {new File(it,'caches/terraform.d')})
+        )
 
         this.terraformRCTask = project.provider ({ TaskContainer t ->
             t.getByName(TERRAFORM_RC_TASK)

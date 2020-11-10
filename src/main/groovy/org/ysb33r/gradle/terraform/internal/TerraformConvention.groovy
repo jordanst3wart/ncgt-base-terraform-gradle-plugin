@@ -24,6 +24,7 @@ import org.gradle.util.GradleVersion
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
@@ -70,7 +71,7 @@ class TerraformConvention {
      */
     static void createSourceSetByConvention(Project project, String sourceSetName) {
         final TerraformSourceSets tss = project.extensions.getByType(TerraformSourceSets)
-        if (GradleVersion.current() < GradleVersion.version('4.10')) {
+        if (LegacyLevel.PRE_4_10) {
             createSourceSetAndTasks(sourceSetName, project, tss)
         } else {
             registerSourceSetAndTasks(sourceSetName, project, tss)
@@ -154,5 +155,4 @@ class TerraformConvention {
             }
         }
     }
-
 }

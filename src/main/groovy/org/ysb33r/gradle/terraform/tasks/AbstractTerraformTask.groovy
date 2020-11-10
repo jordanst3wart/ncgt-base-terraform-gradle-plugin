@@ -28,15 +28,16 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
+import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
-
-import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
@@ -76,30 +77,22 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
 
     @InputDirectory
     Provider<File> getSourceDir() {
-        sourceSet?.srcDir ?: project.provider({ ->
-            sourceSet.srcDir.get()
-        } as Callable<File>)
+        this.sourceDirProvider
     }
 
     @OutputDirectory
     Provider<File> getDataDir() {
-        sourceSet?.dataDir ?: project.provider({ ->
-            sourceSet.dataDir.get()
-        } as Callable<File>)
+        this.dataDirProvider
     }
 
     @Internal
     Provider<File> getLogDir() {
-        sourceSet?.logDir ?: project.provider({ ->
-            sourceSet.logDir.get()
-        } as Callable<File>)
+        this.logDirProvider
     }
 
     @Internal
     Provider<File> getReportsDir() {
-        sourceSet?.reportsDir ?: project.provider({ ->
-            sourceSet.reportsDir.get()
-        } as Callable<File>)
+        this.reportsDirProvider
     }
 
     /** The level at which Terraform should log.
@@ -108,7 +101,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     @Internal
     String getLogLevel() {
-        switch (this.terraformLogLevel ?: project.logging.level) {
+        switch (this.terraformLogLevel ?: projectOperations.gradleLogLevel) {
             case LogLevel.DEBUG:
             case LogLevel.INFO:
                 return 'TRACE'
@@ -154,7 +147,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             super.environment
         } else {
             Map<String, String> combinedEnv = [:]
-            combinedEnv.putAll(project.extensions.getByType(TerraformExtension).environment)
+            combinedEnv.putAll(projectTerraform.environment)
             combinedEnv.putAll(super.environment)
             combinedEnv
         }
@@ -175,13 +168,13 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      * @return String version adapted on a per-platform basis
      */
     String terraformPath(Object file) {
-        TerraformUtils.terraformPath(project, file)
+        TerraformUtils.terraformPath(projectOperations, file)
     }
 
     @Override
     void exec() {
         TerraformExecSpec execSpec = buildExecSpec()
-        createPluginCacheDir(project)
+        createPluginCacheDir(terraformrc)
 
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
@@ -198,10 +191,10 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         if (this.stdoutCapture) {
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
-                project.exec(runner).assertNormalExitValue()
+                projectOperations.exec(runner).assertNormalExitValue()
             }
         } else {
-            project.exec(runner).assertNormalExitValue()
+            projectOperations.exec(runner).assertNormalExitValue()
         }
     }
 
@@ -215,6 +208,12 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     protected static final String JSON_FORMAT = '-json'
 
+    /** Project operations that replaces legacy methods on the {@link org.gradle.api.Project} class and which
+     * are safe to use in configuration cache environments.
+     */
+    @Internal
+    protected final ProjectOperations projectOperations
+
     /**
      *
      * @param command Command to be executed. See https://www.terraform.io/docs/commands/index.html for details.
@@ -227,16 +226,37 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         List<TerraformExtensionConfigTypes> terraformConfigExtensions
     ) {
         super()
+        this.projectOperations = ProjectOperations.find(project)
         this.command = cmd
+        this.projectTerraform = project.extensions.getByType(TerraformExtension)
+        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+
         terraformExtension = extensions.create(
             TerraformExtension.NAME,
             TerraformExtension,
             this,
             terraformConfigExtensions
         )
+
         withConfigExtensions(configExtensions)
         withTerraformConfigExtensions(terraformConfigExtensions)
         environment(defaultEnvironment)
+
+        sourceDirProvider = project.provider {
+            sourceSet.srcDir.get()
+        }
+
+        dataDirProvider = project.provider {
+            sourceSet.dataDir.get()
+        }
+
+        logDirProvider = project.provider {
+            sourceSet.logDir.get()
+        }
+
+        reportsDirProvider = project.provider {
+            sourceSet.reportsDir.get()
+        }
     }
 
     /**
@@ -253,6 +273,15 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         defaultCommandParameters.add '-auto-approve'
     }
 
+    /**
+     * To be called from tasks where the command supports {@code yes}.
+     *
+     * @since 0.10.0
+     */
+    protected void supportsYes() {
+        defaultCommandParameters.add '-yes'
+    }
+
     /** To be called from tasks where the command supports {@code no-color}.
      *
      * <p> Will get set if {@code --console=plain was provided to Gradle}
@@ -260,7 +289,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      * @param withColor If set to {@code false}, the task will always run without color output.
      */
     protected void supportsColor(boolean withColor = true) {
-        ConsoleOutput mode = project.gradle.startParameter.consoleOutput
+        ConsoleOutput mode = projectOperations.consoleOutput
         if (mode == ConsoleOutput.Plain ||
             mode == ConsoleOutput.Auto && System.getenv('TERM') == 'dumb' ||
             !withColor
@@ -270,7 +299,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     protected void supportsForce() {
-        if (project.gradle.startParameter.rerunTasks) {
+        if (projectOperations.rerunTasks) {
             defaultCommandParameters.add '-force'
         }
     }
@@ -295,7 +324,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     @Override
     protected TerraformExecSpec createExecSpec() {
-        new TerraformExecSpec(project, toolExtension.resolver)
+        new TerraformExecSpec(projectOperations, toolExtension.resolver)
     }
 
     /** Configures a {@link TerraformExecSpec}.
@@ -338,7 +367,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     @Input
     protected Map<String, String> getTerraformEnvironment() {
         TerraformUtils.terraformEnvironment(
-            project,
+            terraformrc,
             name,
             dataDir,
             logDir,
@@ -428,12 +457,12 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     private void withConfigExtensions(List<Class> configExtensions) {
         for (Class it : configExtensions) {
-            TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension)it.newInstance(this)
+            TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension) it.newInstance(this)
             extensions.add(cex.name, cex)
             cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
                 inputs.property "config-extension-${cex.name}-${idx}", eval
             }
-            commandLineProviders.add(project.provider { -> cex.commandLineArgs })
+            commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
         }
     }
 
@@ -480,4 +509,10 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     private final List<String> defaultCommandParameters = []
     private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
+    private final Provider<File> sourceDirProvider
+    private final Provider<File> dataDirProvider
+    private final Provider<File> logDirProvider
+    private final Provider<File> reportsDirProvider
+    private final TerraformExtension projectTerraform
+    private final TerraformRCExtension terraformrc
 }

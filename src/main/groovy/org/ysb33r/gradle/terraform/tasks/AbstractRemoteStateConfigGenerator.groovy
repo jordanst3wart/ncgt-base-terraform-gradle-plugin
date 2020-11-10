@@ -27,6 +27,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.internal.remotestate.Templates
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
 
@@ -71,8 +72,8 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @param file Location of template file
      */
     void setTemplateFile(Object file) {
-        this.templateFile.set(project.provider({ ->
-            project.file(file)
+        this.templateFile.set(projectOperations.provider({ ->
+            projectOperations.file(file)
         } as Callable<File>))
     }
 
@@ -154,7 +155,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     void exec() {
         Templates.generateFromTemplate(
             name,
-            project,
+            projectOperations,
             templateResourcePath,
             templateFile,
             backendConfigFile,
@@ -164,10 +165,14 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         )
     }
 
+    @Internal
+    protected final ProjectOperations projectOperations
+
     protected AbstractRemoteStateConfigGenerator() {
         this.destDir = project.objects.property(File)
         this.outputFile = project.objects.property(File)
         this.templateFile = project.objects.property(File)
+        this.projectOperations = ProjectOperations.find(project)
 
         this.outputFile.set(destDir.map(new Transformer<File, File>() {
             @Override

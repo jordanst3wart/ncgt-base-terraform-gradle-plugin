@@ -18,13 +18,16 @@ package org.ysb33r.gradle.terraform.internal.output
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
+import groovy.util.logging.Slf4j
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.terraformEnvironment
 import static org.ysb33r.grolifant.api.v4.FileUtils.toSafeFileName
@@ -36,14 +39,23 @@ import static org.ysb33r.grolifant.api.v4.FileUtils.toSafeFileName
  * @since 0.9.0
  */
 @CompileStatic
+@Slf4j
 class OutputVariablesCache {
 
     OutputVariablesCache(
-        Project project,
-        Provider<TerraformOutput> outputTask
+        ProjectOperations projectOperations,
+        TerraformRCExtension terraformrc,
+        Provider <TerraformOutput > outputTask
     ) {
-        this.project = project
+        this.projectOperations = projectOperations
         this.outputTaskProvider = outputTask
+        this.terraformrc = terraformrc
+        this.tmpDirProvider = outputTask.map({
+            def sourceSetName = it.sourceSet.name
+            projectOperations.buildDirDescendant(
+                "tmp/tf-output-var-cache/${toSafeFileName(sourceSetName)}.tmp.---.json"
+            ).get()
+        })
     }
 
     @Synchronized
@@ -56,7 +68,6 @@ class OutputVariablesCache {
     }
 
     private void populateMap() {
-        String sourceSetName = outputTask.sourceSet.name
         TerraformExecSpec execSpec = buildExecSpec()
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
@@ -65,19 +76,16 @@ class OutputVariablesCache {
             }
         }
 
-        project.logger.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}"
-        File tmpFile = new File(
-            "${project.buildDir}/tmp/tf-output-var-cache",
-            "${toSafeFileName(sourceSetName)}.tmp.---.json"
-        )
+        log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}"
+        File tmpFile = tmpDirProvider.get()
         tmpFile.parentFile.mkdirs()
         try {
             tmpFile.withOutputStream { strm ->
                 execSpec.standardOutput(strm)
-                project.exec(runner).assertNormalExitValue()
+                projectOperations.exec(runner).assertNormalExitValue()
             }
             outputs.putAll(new JsonSlurper().parse(tmpFile) as Map<String, ?>)
-            project.logger.debug "Loaded sourceset ${outputTask.sourceSet.name} output variables with ${outputs}"
+            log.debug "Loaded sourceset ${outputTask.sourceSet.name} output variables with ${outputs}"
         } finally {
             tmpFile.delete()
         }
@@ -85,14 +93,14 @@ class OutputVariablesCache {
 
     private TerraformExecSpec buildExecSpec() {
         Map<String, String> tfEnv = terraformEnvironment(
-            project,
+            terraformrc,
             "${outputTask.sourceSet.name}-output-cache",
             outputTask.dataDir,
             outputTask.logDir,
             null
         )
 
-        TerraformExecSpec execSpec = new TerraformExecSpec(project, terraformExt.resolver)
+        TerraformExecSpec execSpec = new TerraformExecSpec(projectOperations, terraformExt.resolver)
 
         execSpec.identity {
             executable terraformExt.resolvableExecutable.executable.absolutePath
@@ -116,5 +124,7 @@ class OutputVariablesCache {
 
     private final Map<String, ?> outputs = [:]
     private final Provider<TerraformOutput> outputTaskProvider
-    private final Project project
+    private final ProjectOperations projectOperations
+    private final Provider<File> tmpDirProvider
+    private final TerraformRCExtension terraformrc
 }

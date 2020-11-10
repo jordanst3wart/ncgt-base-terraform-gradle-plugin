@@ -45,7 +45,7 @@ class AbstractTerraformApplyTask extends AbstractTerraformTask {
 
         TerraformPlan plan = planProvider.get()
         addCommandLineProvider(
-            project.provider({ ->
+            projectOperations.provider({ ->
                 plan.extensions.getByType(TerraformExtension).allVariables.commandLineArgs +
                     plan.extensions.getByType(Lock).commandLineArgs +
                     plan.extensions.getByType(StateOptionsFull).commandLineArgs

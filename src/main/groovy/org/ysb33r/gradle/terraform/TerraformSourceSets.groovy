@@ -21,44 +21,54 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.gradle.util.GradleVersion.current
 import static org.gradle.util.GradleVersion.version
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
+import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_5
 
 @CompileStatic
 class TerraformSourceSets implements NamedDomainObjectContainer<TerraformSourceDirectorySet> {
 
     TerraformSourceSets(Project project) {
-        boolean legacyMode = current() < version('5.5')
-        this.project = project
-        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { ObjectFactory objects, String name ->
+        this.projectOperations = ProjectOperations.create(project)
+        def terraformrc = locateTerraformRCExtension(project)
+        def objects = project.objects
+        def tasks = project.tasks
+        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
             objects.newInstance(
-            TerraformSourceDirectorySet,
+                TerraformSourceDirectorySet,
                 project,
+                objects,
+                tasks,
+                terraformrc,
                 name,
                 sourceSetDisplayName(name)
             )
-        }.curry(project.objects) as NamedDomainObjectFactory<TerraformSourceDirectorySet>
+        }
 
-        sourceDirectorySets = legacyMode ? createContainerLegacyMode(factory) : createContainer(factory)
+        sourceDirectorySets = PRE_5_5 ? createContainerLegacyMode(factory, project) : createContainer(factory, project)
     }
 
     @CompileDynamic
-    private NamedDomainObjectContainer<TerraformSourceDirectorySet> createContainer(
-        NamedDomainObjectFactory factory
+    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createContainer(
+        NamedDomainObjectFactory factory,
+        Project project
     ) {
         project.objects.domainObjectContainer(TerraformSourceDirectorySet, factory)
     }
 
     @CompileDynamic
-    private NamedDomainObjectContainer<TerraformSourceDirectorySet> createContainerLegacyMode(
-        NamedDomainObjectFactory factory
+    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createContainerLegacyMode(
+        NamedDomainObjectFactory factory,
+        Project project
     ) {
         project.container(TerraformSourceDirectorySet, factory)
     }
 
-    private final Project project
+    private final ProjectOperations projectOperations
 
     @Delegate(interfaces = true)
     private final NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceDirectorySets

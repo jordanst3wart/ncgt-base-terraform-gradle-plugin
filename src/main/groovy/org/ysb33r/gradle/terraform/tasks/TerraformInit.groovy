@@ -16,6 +16,7 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -26,7 +27,17 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.grolifant.api.v4.MapUtils
 
-import java.util.concurrent.Callable
+import java.nio.file.FileVisitResult
+import java.nio.file.FileVisitor
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.Files.readSymbolicLink
 
 /** Equivalent of {@code terraform init}.
  *
@@ -39,6 +50,8 @@ class TerraformInit extends AbstractTerraformTask {
         super('init', [Lock], [])
         supportsInputs()
         supportsColor()
+
+        this.backendConfig = project.objects.property(File)
     }
 
     // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option
@@ -97,9 +110,7 @@ class TerraformInit extends AbstractTerraformTask {
      * @since 0.4.0
      */
     void setBackendConfigFile(Object location) {
-        this.backendConfig = location ? project.provider({ ->
-            project.file(location)
-        } as Callable<File>) : null
+        projectOperations.updateFileProperty(this.backendConfig, location)
     }
 
     /** Backend configuration files.
@@ -149,6 +160,12 @@ class TerraformInit extends AbstractTerraformTask {
         this.backendConfigValues.put(key, value)
     }
 
+    @Override
+    void exec() {
+        removeDanglingSymlinks()
+        super.exec()
+    }
+
     /** Whether plugins should be verified.
      *
      */
@@ -166,7 +183,7 @@ class TerraformInit extends AbstractTerraformTask {
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        if (project.gradle.startParameter.offline) {
+        if (projectOperations.offline) {
             logger.warn(
                 'Gradle is running in offline mode. ' +
                     (upgrade ? 'Upgrade will not be attempted. ' : '') +
@@ -187,7 +204,7 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs "-backend-config=$k=$v"
         }
 
-        if (this.backendConfig) {
+        if (this.backendConfig.present) {
             execSpec.cmdArgs("-backend-config=${this.backendConfig.get().absolutePath}")
         }
 
@@ -202,6 +219,39 @@ class TerraformInit extends AbstractTerraformTask {
         execSpec
     }
 
-    private Provider<File> backendConfig
+    private void removeDanglingSymlinks() {
+        Path pluginDir = new File(dataDir.get(), 'plugins').toPath()
+        Files.walkFileTree(
+            pluginDir,
+            new FileVisitor<Path>() {
+                @Override
+                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (attrs.symbolicLink && !Files.exists(readSymbolicLink(file))) {
+                        logger.debug("Removing dangling plugin symbolic link ${file}")
+                        Files.delete(file)
+                    }
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    logger.debug("Failed to visit: ${file}, because ${exc.message}")
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    CONTINUE
+                }
+            }
+        )
+    }
+
+    private final Property<File> backendConfig
     private final Map<String, Object> backendConfigValues = [:]
 }

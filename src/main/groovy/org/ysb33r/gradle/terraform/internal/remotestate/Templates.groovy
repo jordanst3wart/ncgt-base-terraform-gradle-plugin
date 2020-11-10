@@ -21,6 +21,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.provider.Provider
+import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v5.FileUtils
 import org.ysb33r.grolifant.api.v4.MapUtils
 
@@ -38,8 +39,10 @@ class Templates {
      * @param endToken Terminating delimiter for tokens
      * @param tokens LIst of replacement tokens
      * @return Location of generated file
+     * @deprecated
      */
     @SuppressWarnings('ParameterCount')
+    @Deprecated
     static File generateFromTemplate(
         String taskName,
         Project project,
@@ -50,8 +53,43 @@ class Templates {
         String endToken,
         Map<String, Object> tokens
     ) {
+        generateFromTemplate(
+            taskName,
+            ProjectOperations.create(project),
+            templateResourcePath,
+            templateFile,
+            outputFile,
+            beginToken,
+            endToken,
+            tokens
+        )
+    }
+
+    /** Generates a configuration file
+     *
+     * @param taskName Name of task that is request the generation
+     * @param projectOperations Project context
+     * @param templateResourcePath Resource path for default template
+     * @param templateFile ALternative template file if present
+     * @param outputFile Final output file
+     * @param beginToken Starting delimiter for tokens
+     * @param endToken Terminating delimiter for tokens
+     * @param tokens LIst of replacement tokens
+     * @return Location of generated file
+     */
+    @SuppressWarnings('ParameterCount')
+    static File generateFromTemplate(
+        String taskName,
+        ProjectOperations projectOperations,
+        String templateResourcePath,
+        Provider<File> templateFile,
+        Provider<File> outputFile,
+        String beginToken,
+        String endToken,
+        Map<String, Object> tokens
+    ) {
         File template = templateFile.present ? templateFile.get() :
-            useDefaultTemplate(project, taskName, templateResourcePath)
+            useDefaultTemplate(projectOperations, taskName, templateResourcePath)
 
         File backendConfigFile = outputFile.get()
         def configGenerator = new Action<CopySpec>() {
@@ -69,12 +107,17 @@ class Templates {
         }
 
         backendConfigFile.parentFile.mkdirs()
-        project.copy configGenerator
+        projectOperations.copy(configGenerator)
         backendConfigFile
     }
 
-    private static File useDefaultTemplate(Project project, String filenamePrefix, String templateResourcePath) {
-        File target = new File(project.buildDir, "tmp/${FileUtils.toSafeFileName(filenamePrefix)}.template.tf")
+    private static File useDefaultTemplate(
+        ProjectOperations projectOperations,
+        String filenamePrefix,
+        String templateResourcePath) {
+        File target = projectOperations
+            .buildDirDescendant("tmp/${FileUtils.toSafeFileName(filenamePrefix)}.template.tf")
+            .get()
         target.parentFile.mkdirs()
         Templates.getResourceAsStream(templateResourcePath).withCloseable { strm ->
             target.withOutputStream { output ->

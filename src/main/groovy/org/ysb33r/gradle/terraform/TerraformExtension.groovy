@@ -31,11 +31,12 @@ import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.MapUtils
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
+import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
+import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
-
-import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
@@ -78,12 +79,6 @@ class TerraformExtension extends AbstractToolExtension {
      */
     public static final String TERRAFORM_DEFAULT = '0.13.5'
 
-//    /** Function to return all Terraform variables from an extension.
-//     *
-//     */
-//    public static final Function<TerraformExtension, TerraformTaskConfigExtension> ALL_VARIABLES =
-//        { TerraformExtension te -> te.allVariables } as Function<TerraformExtension, TerraformTaskConfigExtension>
-//
     /** Constructs a new extension which is attached to the provided project.
      *
      * @param project Project this extension is associated with.
@@ -91,7 +86,7 @@ class TerraformExtension extends AbstractToolExtension {
     TerraformExtension(Project project) {
         super(project)
         if (Downloader.downloadSupported) {
-            addVersionResolver(project)
+            addVersionResolver(projectOperations)
             executable([version: TERRAFORM_DEFAULT])
         } else {
             executable searchPath()
@@ -165,7 +160,7 @@ class TerraformExtension extends AbstractToolExtension {
      *
      * Task extension variables overrides source set variables which in turn overrides global variables.
      *
-     * Files ocntaining variables are simply added to a list in order of global, source set, local.
+     * Files containing variables are simply added to a list in order of global, source set, local.
      *
      * @return Terraform variables and files containing variables.
      */
@@ -190,10 +185,7 @@ class TerraformExtension extends AbstractToolExtension {
             varsFilesPair.files.addAll(vars.allVars.files)
             varsFilesPair.vars.putAll(vars.allVars.vars)
 
-            new Variables(
-                varsFilesPair,
-                project.provider({ -> terraformTask.sourceDir.get() } as Callable<File>)
-            )
+            new Variables(varsFilesPair, terraformTask.sourceDir)
         } else {
             (Variables) extContainer.getByType(VariablesSpec)
         }
@@ -251,33 +243,33 @@ class TerraformExtension extends AbstractToolExtension {
      * @return String version adapted on a per-platform basis
      */
     String terraformPath(Object file) {
-        TerraformUtils.terraformPath(project, file)
+        TerraformUtils.terraformPath(projectOperations, file)
     }
 
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) projectExtension
     }
 
-    private void addVersionResolver(Project project) {
-        ResolveExecutableByVersion.DownloaderFactory downloaderFactory = {
-            Map<String, Object> options, String version, Project p ->
+    private void addVersionResolver(ProjectOperations projectOperations) {
+        DownloaderFactory downloaderFactory = {
+            Map<String, Object> options, String version, ProjectOperations p ->
                 new Downloader(version, p)
-        } as ResolveExecutableByVersion.DownloaderFactory
+        }
 
-        ResolveExecutableByVersion.DownloadedExecutable resolver = { Downloader installer ->
+        DownloadedExecutable resolver = { Downloader installer ->
             installer.terraformExecutablePath
-        } as ResolveExecutableByVersion.DownloadedExecutable
+        }
 
         resolverFactoryRegistry.registerExecutableKeyActions(
-            new ResolveExecutableByVersion(project, downloaderFactory, resolver)
+            new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
         )
     }
 
     private void addVariablesExtension(AbstractTerraformTask task = null) {
         if (task) {
-            addEmbeddableConfiguration(task, VARIABLES, project.provider { -> task.sourceDir.get() })
+            addEmbeddableConfiguration(task, VARIABLES, task.sourceDir)
         } else {
-            addEmbeddableConfiguration(null, VARIABLES, project.provider { -> null })
+            addEmbeddableConfiguration(null, VARIABLES, projectOperations.provider { -> null })
         }
     }
 

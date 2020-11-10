@@ -30,8 +30,20 @@ class TerraformExecSpec extends AbstractCommandExecSpec {
     /** Construct class and attach it to specific project.
      *
      * @param project Project this exec spec is attached.
+     * @deprecated
      */
+    @Deprecated
     TerraformExecSpec(Project project, ExternalExecutable resolver) {
         super(ProjectOperations.find(project), resolver)
+    }
+
+    /** Construct class and attach it to specific project.
+     *
+     * @param projectOperations Project this exec spec is attached.
+     *
+     * @since 0.10.0
+     */
+    TerraformExecSpec(ProjectOperations projectOperations, ExternalExecutable resolver) {
+        super(projectOperations, resolver)
     }
 }

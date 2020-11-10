@@ -64,8 +64,33 @@ class TerraformInitSpec extends IntegrationSpecification {
         new File(testkitDir, 'caches/terraform.d').exists()
     }
 
-    void 'Run terraform init on a project with a single plugin'() {
+    void 'Run terraform (0.13+) init on a project with a single plugin'() {
         setup:
+        String providerVersion = '2.70.0'
+        File pluginDir = new File(testkitDir, "caches/terraform.d/registry.terraform.io/hashicorp/aws/${providerVersion}/${HashicorpUtils.osArch(OS)}")
+        new File(srcDir, 'init.tf').text = """
+        provider "aws" {
+          version = "${providerVersion}"
+          region  = "us-east-1"
+        }
+        """
+
+        when:
+        BuildResult result = gradleRunner.build()
+
+        then:
+        result.task(":${taskName}").outcome == SUCCESS
+        pluginDir.exists()
+        pluginDir.listFiles().find { it.name.startsWith('terraform-') }
+    }
+
+    void 'Run terraform (0.12) init on a project with a single plugin'() {
+        setup:
+        buildFile << '''
+        terraform {
+            executable version : '0.12.24'
+        }
+        '''
         File pluginDir = new File(testkitDir, "caches/terraform.d/${HashicorpUtils.osArch(OS)}")
         new File(srcDir, 'init.tf').text = '''
 provider "aws" {

@@ -51,7 +51,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
      * @param bucketName Bucket name
      */
     void setS3BucketName(Object bucketName) {
-        updateStringProperty(project, this.bucketName, bucketName)
+        projectOperations.updateStringProperty(this.bucketName, bucketName)
     }
 
     /** The S3 bucket used for state storage
@@ -68,7 +68,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
      * @param rsn Anything that can be lazy-evaluted to a string.
      */
     void setRemoteStateName(Object rsn) {
-        updateStringProperty(project, this.remoteStateName, rsn)
+        projectOperations.updateStringProperty(this.remoteStateName, rsn)
     }
 
     /** The name that will be used to identify remote state.
@@ -86,7 +86,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
      * @param region Anything convertible to a string.
      */
     void setAwsRegion(Object region) {
-        updateStringProperty(project, this.awsRegion, region)
+        projectOperations.updateStringProperty(this.awsRegion, region)
     }
 
     /** Get AWS region used for remote storage.

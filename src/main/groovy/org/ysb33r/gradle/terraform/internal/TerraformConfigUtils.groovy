@@ -41,11 +41,21 @@ class TerraformConfigUtils {
      *
      * @param project Project requesting Terraform location.
      * @return Location of Terraform config file. Never {@code null}.
+     *
+     * @deprecated
      */
+    @Deprecated
     static File locateTerraformConfigFile(Project project) {
-        TerraformRCExtension ext = locateTerraformRCExtension(project)
+        locateTerraformConfigFile(locateTerraformRCExtension(project))
+    }
 
-        ext.useGlobalConfig ? new File(locateGlobalTerraformConfigAsString()) : ext.terraformRC.get()
+    /** Locates the Terraform configuration file in use by the specific project
+     *
+     * @param terraformrc {@link TerraformRCExtension}.
+     * @return Location of Terraform config file. Never {@code null}.
+     */
+    static File locateTerraformConfigFile(TerraformRCExtension terraformrc) {
+        terraformrc.useGlobalConfig ? new File(locateGlobalTerraformConfigAsString()) : terraformrc.terraformRC.get()
     }
 
     /** Locates the global {@code terraformrc file}
@@ -74,6 +84,8 @@ class TerraformConfigUtils {
     }
 
     /** Locates the {@link TerraformRCExtension} in the project
+     *
+     * Only call this method during confguration phase.
      *
      * @param project Project to start search from.
      * @return {@link TerraformRCExtension}. Never {@code null}.
@@ -128,9 +140,23 @@ class TerraformConfigUtils {
      * @return Location of the cache directory or {@code empty} if a global configuration is used.
      *
      * @throw {@link MissingTerraformConfiguration} if {@link TerraformRCExtension} cannot be located.
+     * @deprecated
      */
+    @Deprecated
     static Optional<File> createPluginCacheDir(Project project) {
-        TerraformRCExtension terraformrc = locateTerraformRCExtension(project)
+        createPluginCacheDir(locateTerraformRCExtension(project))
+    }
+
+    /** Creates the plugin cache directory if it is not a global configuration.
+     *
+     * @param terraformrc {@link TerraformRCExtension}.
+     * @return Location of the cache directory or {@code empty} if a global configuration is used.
+     *
+     * @throw {@link MissingTerraformConfiguration} if {@link TerraformRCExtension} cannot be located.
+     *
+     * @since 0.10.0
+     */
+    static Optional<File> createPluginCacheDir(TerraformRCExtension terraformrc) {
         if (terraformrc.useGlobalConfig) {
             Optional.empty()
         } else {

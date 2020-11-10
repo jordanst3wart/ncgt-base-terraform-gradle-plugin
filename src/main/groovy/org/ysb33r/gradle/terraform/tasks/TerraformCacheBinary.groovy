@@ -30,6 +30,7 @@ class TerraformCacheBinary extends AbstractCacheBinaryTask {
     TerraformCacheBinary() {
         super(LOCATION_PROPERTIES_DEFAULT)
         this.terraformExtension = project.extensions.getByType(TerraformExtension)
+        terraformrc = project.extensions.getByType(TerraformRCExtension)
     }
 
     @Override
@@ -54,7 +55,6 @@ class TerraformCacheBinary extends AbstractCacheBinaryTask {
 
     @Override
     protected Map<String, String> getAdditionalProperties() {
-        TerraformRCExtension terraformrc = project.extensions.getByType(TerraformRCExtension)
         def map = super.additionalProperties
         map.putAll APP_VERSION: binaryVersion,
             APP_LOCATION: binaryLocation,
@@ -64,4 +64,5 @@ class TerraformCacheBinary extends AbstractCacheBinaryTask {
     }
 
     private final TerraformExtension terraformExtension
+    private final TerraformRCExtension terraformrc
 }
