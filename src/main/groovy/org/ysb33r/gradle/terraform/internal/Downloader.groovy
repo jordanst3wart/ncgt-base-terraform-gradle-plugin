@@ -18,7 +18,7 @@ package org.ysb33r.gradle.terraform.internal
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.ysb33r.grashicorp.HashicorpUtils
-import org.ysb33r.grolifant.api.AbstractDistributionInstaller
+import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
 import org.ysb33r.grolifant.api.OperatingSystem
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
 

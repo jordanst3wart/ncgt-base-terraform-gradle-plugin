@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 
 import static org.gradle.util.GradleVersion.current
 import static org.gradle.util.GradleVersion.version
@@ -31,13 +32,14 @@ class TerraformSourceSets implements NamedDomainObjectContainer<TerraformSourceD
     TerraformSourceSets(Project project) {
         boolean legacyMode = current() < version('5.5')
         this.project = project
-        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
-            new TerraformSourceDirectorySet(
+        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { ObjectFactory objects, String name ->
+            objects.newInstance(
+            TerraformSourceDirectorySet,
                 project,
                 name,
                 sourceSetDisplayName(name)
             )
-        } as NamedDomainObjectFactory<TerraformSourceDirectorySet>
+        }.curry(project.objects) as NamedDomainObjectFactory<TerraformSourceDirectorySet>
 
         sourceDirectorySets = legacyMode ? createContainerLegacyMode(factory) : createContainer(factory)
     }

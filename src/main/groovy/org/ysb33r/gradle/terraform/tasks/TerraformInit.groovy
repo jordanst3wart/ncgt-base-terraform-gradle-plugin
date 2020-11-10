@@ -24,7 +24,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
-import org.ysb33r.grolifant.api.MapUtils
+import org.ysb33r.grolifant.api.v4.MapUtils
 
 import java.util.concurrent.Callable
 

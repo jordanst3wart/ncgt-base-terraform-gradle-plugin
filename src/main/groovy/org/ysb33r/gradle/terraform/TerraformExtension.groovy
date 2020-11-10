@@ -31,9 +31,9 @@ import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
-import org.ysb33r.grolifant.api.MapUtils
-import org.ysb33r.grolifant.api.exec.AbstractToolExtension
-import org.ysb33r.grolifant.api.exec.ResolveExecutableByVersion
+import org.ysb33r.grolifant.api.v4.MapUtils
+import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
+import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 
 import java.util.concurrent.Callable
 
@@ -76,7 +76,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.12.24'
+    public static final String TERRAFORM_DEFAULT = '0.13.5'
 
 //    /** Function to return all Terraform variables from an extension.
 //     *

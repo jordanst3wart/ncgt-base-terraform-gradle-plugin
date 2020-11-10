@@ -2,15 +2,24 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.9.0
+== v0.10.0
 
 // tag::changelog[]
+=== Features
+* Default `terraform` version is `0.13.5`.
+* Remote S3 state can be configured on a per source set basis.
+
+// end::changelog[]
+
+== v0.9.0
+
+
 === Features
 
 * {issue}22[#22] - `tfInit` can now take `--force-copy` and `--reconfigure` ans command-line options.
 * {issue}23[#23] - Support for `terraform output` as `TerraformOutput` task type as well as a provider on the source set that can return all output variables as a deeply nested map.
 
-// end::changelog[]
+
 
 == v0.8.0 / v0.8.1
 

@@ -21,7 +21,8 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.grolifant.api.StringUtils
+import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.grolifant.api.v4.StringUtils
 
 import java.util.concurrent.Callable
 
@@ -46,6 +47,20 @@ class TerraformRemoteStateExtension {
             .extensions.getByType(TerraformRemoteStateExtension)
     }
 
+    /**
+     * Utility to find this extension on a terraform source set.
+     *
+     * @param project Project context
+     * @param sourceSetName Name of source set.
+     * @return Extension after it has been attached.
+     *
+     * @since 0.10.0
+     */
+    static TerraformRemoteStateExtension findExtension(Project project, String sourceSetName) {
+        def sourceSet = project.extensions.getByType(TerraformSourceSets).getByName(sourceSetName)
+        ((ExtensionAware)sourceSet).extensions.getByType(TerraformRemoteStateExtension)
+    }
+
     TerraformRemoteStateExtension(Project project) {
         this.project = project
         this.prefix = project.objects.property(String)
@@ -67,6 +82,15 @@ class TerraformRemoteStateExtension {
      */
     Provider<String> getPrefix() {
         this.prefix
+    }
+
+    /**
+     * Follows the settings of another remote state extension.
+     *
+     * @param other Instance of {@link TerraformRemoteStateExtension} to follow.
+     */
+    void follow(TerraformRemoteStateExtension other) {
+        setPrefix(other.prefix)
     }
 
     private final Project project

@@ -33,15 +33,15 @@ import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
-import org.ysb33r.grolifant.api.StringUtils
-import org.ysb33r.grolifant.api.exec.AbstractExecWrapperTask
+import org.ysb33r.grolifant.api.v4.StringUtils
+import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 
 import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
-import static org.ysb33r.grolifant.api.StringUtils.stringize
+import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 /** A base class for performing a {@code terraform} execution.
  *
@@ -428,7 +428,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     private void withConfigExtensions(List<Class> configExtensions) {
         for (Class it : configExtensions) {
-            TerraformTaskConfigExtension cex = it.newInstance(this)
+            TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension)it.newInstance(this)
             extensions.add(cex.name, cex)
             cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
                 inputs.property "config-extension-${cex.name}-${idx}", eval

@@ -22,7 +22,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin
 
-import static org.ysb33r.grolifant.api.StringUtils.updateStringProperty
+import static org.ysb33r.grolifant.api.v4.StringUtils.updateStringProperty
 
 @CompileStatic
 class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator {

@@ -27,7 +27,7 @@ import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.terraformEnvironment
-import static org.ysb33r.grolifant.api.FileUtils.toSafeFileName
+import static org.ysb33r.grolifant.api.v4.FileUtils.toSafeFileName
 
 /** An internal cache of output variables
  *

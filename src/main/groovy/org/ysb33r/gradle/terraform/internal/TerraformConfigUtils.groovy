@@ -103,6 +103,8 @@ class TerraformConfigUtils {
 
     /** Locates the task that can generate a {@code terraformrc} file.
      *
+     * Should only be called in configuration phase.
+     *
      * @param project Project to start search from.
      * @return Task.*
      * @throw {@link MissingTerraformConfiguration} if task cannot be located.
@@ -111,7 +113,7 @@ class TerraformConfigUtils {
         TerraformRCExtension ext = locateTerraformRCExtension(project)
 
         try {
-            ext.project.tasks.getByName(TERRAFORM_RC_TASK)
+            ext.terraformRCTask.get()
         } catch (UnknownTaskException e) {
             throw new MissingTerraformConfiguration(
                 'Cannot locate a task in this project or the root project which could generate the terraformrc file',

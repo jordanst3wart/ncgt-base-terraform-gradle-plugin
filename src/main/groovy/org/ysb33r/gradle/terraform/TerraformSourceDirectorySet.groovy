@@ -32,6 +32,7 @@ import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
 import static groovy.lang.Closure.DELEGATE_FIRST
@@ -60,6 +61,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param name Name of source set.
      * @param displayName Display name of source set.
      */
+    @Inject
     TerraformSourceDirectorySet(Project project, String name, String displayName) {
         this.name = name
         this.displayName = displayName

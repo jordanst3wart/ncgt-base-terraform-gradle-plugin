@@ -122,7 +122,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         main.name == CONFIG_FILE_NAME
         main.parentFile.name == 'tfS3BackendConfiguration'
         additional.parentFile.name == 'tfAdditionalS3BackendConfiguration'
-        main.parentFile.parentFile == project.buildDir
+        main.parentFile.parentFile == new File(project.buildDir,'tfRemoteState')
         project.tasks.createTfS3BackendConfiguration.destinationDir.get() == main.parentFile
     }
 
@@ -161,9 +161,14 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         task.tokens.keySet().containsAll(['foo', 'bar'])
     }
 
-    void 'terraformInit has configuration file corretly setup'() {
+    void 'terraformInit has configuration file correctly setup'() {
         expect:
         project.tasks.tfInit.backendConfigFile.get() == outputFile(project.tasks.createTfS3BackendConfiguration)
+    }
+
+    void 'Extensions are added to terraform source directory sets'() {
+        expect:
+        project.terraformSourceSets.getByName('main').remote.s3 instanceof RemoteStateS3
     }
 
     private File outputFile(RemoteStateAwsS3ConfigGenerator task) {

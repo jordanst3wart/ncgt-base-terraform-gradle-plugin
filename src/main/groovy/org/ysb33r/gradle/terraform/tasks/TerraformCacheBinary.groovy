@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grolifant.api.OperatingSystem
-import org.ysb33r.grolifant.api.wrapper.script.AbstractCacheBinaryTask
+import org.ysb33r.grolifant.api.v4.wrapper.script.AbstractCacheBinaryTask
 
 @CompileStatic
 class TerraformCacheBinary extends AbstractCacheBinaryTask {

@@ -45,7 +45,8 @@ repositories {
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    compile "org.ysb33r.gradle:grolifant:${grolifantVer}"
+    compile "org.ysb33r.gradle:grolifant-core:${grolifantVer}"
+    compile "org.ysb33r.gradle:grolifant50:${grolifantVer}"
     compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
 
     testCompile("org.spockframework:spock-core:1.3-groovy-${spockGroovyVer}") {

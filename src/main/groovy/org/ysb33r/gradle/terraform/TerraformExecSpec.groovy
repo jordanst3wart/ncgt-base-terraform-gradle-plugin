@@ -17,8 +17,9 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.ysb33r.grolifant.api.exec.AbstractCommandExecSpec
-import org.ysb33r.grolifant.api.exec.ExternalExecutable
+import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.v4.exec.AbstractCommandExecSpec
+import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable
 
 /** An execution specification for {@code Terraform}.
  *
@@ -31,6 +32,6 @@ class TerraformExecSpec extends AbstractCommandExecSpec {
      * @param project Project this exec spec is attached.
      */
     TerraformExecSpec(Project project, ExternalExecutable resolver) {
-        super(project, resolver)
+        super(ProjectOperations.find(project), resolver)
     }
 }

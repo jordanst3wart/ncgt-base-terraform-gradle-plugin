@@ -21,8 +21,8 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.provider.Provider
-import org.ysb33r.grolifant.api.FileUtils
-import org.ysb33r.grolifant.api.MapUtils
+import org.ysb33r.grolifant.api.v5.FileUtils
+import org.ysb33r.grolifant.api.v4.MapUtils
 
 @CompileStatic
 class Templates {

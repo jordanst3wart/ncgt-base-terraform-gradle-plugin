@@ -18,7 +18,7 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.internal.Transform
-import org.ysb33r.grolifant.api.wrapper.script.AbstractScriptWrapperTask
+import org.ysb33r.grolifant.api.v4.wrapper.script.AbstractScriptWrapperTask
 
 import javax.inject.Inject
 
