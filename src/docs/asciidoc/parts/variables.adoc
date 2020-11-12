@@ -1,6 +1,7 @@
 == Terraform variables
+[[variables]]
 
-A number of Terraform task types support vairtables and files containing variables. Any `variables` block support the following functionality
+A number of Terraform task types support variables and files containing variables. Any `variables` block support the following functionality
 
 [source,groovy]
 ----

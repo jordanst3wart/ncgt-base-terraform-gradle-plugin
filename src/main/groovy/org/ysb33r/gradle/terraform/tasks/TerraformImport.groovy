@@ -41,6 +41,7 @@ class TerraformImport extends AbstractTerraformTask {
         )
         supportsInputs()
         supportsColor()
+        alwaysOutOfDate()
     }
 
     @Input

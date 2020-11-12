@@ -43,6 +43,9 @@ class TerraformShowState extends AbstractTerraformTask {
 
         supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
+        inputs.files(taskProvider('init'))
+        inputs.files(taskProvider('plan'))
+        inputs.files(taskProvider('apply'))
     }
 
     /** Whether output should be in JSON

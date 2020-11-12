@@ -46,6 +46,8 @@ class TerraformApply extends AbstractTerraformApplyTask {
         }
 
         outputs.file(tracker).optional()
+        inputs.files(taskProvider('init'))
+        inputs.files(taskProvider('plan'))
     }
 
     private final Provider<File> tracker

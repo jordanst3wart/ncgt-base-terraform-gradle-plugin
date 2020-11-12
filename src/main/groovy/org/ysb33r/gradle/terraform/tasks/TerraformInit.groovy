@@ -22,6 +22,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
@@ -32,6 +34,7 @@ import java.nio.file.FileVisitor
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import java.time.LocalDateTime
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static java.nio.file.FileVisitResult.CONTINUE
@@ -45,14 +48,6 @@ import static java.nio.file.Files.readSymbolicLink
  */
 @CompileStatic
 class TerraformInit extends AbstractTerraformTask {
-
-    TerraformInit() {
-        super('init', [Lock], [])
-        supportsInputs()
-        supportsColor()
-
-        this.backendConfig = project.objects.property(File)
-    }
 
     // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option
 
@@ -88,6 +83,39 @@ class TerraformInit extends AbstractTerraformTask {
         description = 'Disregard any existing configuration and prevent migration of existing state')
     @Internal
     boolean reconfigure = false
+
+    /**
+     * The directory where terraform plgins data is written to.
+     *
+     * @since 0.10
+     */
+    @OutputDirectory
+    final Provider<File> pluginDirectory
+
+    /**
+     * The location of {@code terraform.tfstate}.
+     *
+     * @since 0.10
+     */
+    @OutputFile
+    final Provider<File> terraformStateFile
+
+    /**
+     * The location of the file that provides details about the last run of this task.
+     */
+    @OutputFile
+    final Provider<File> terraformInitStateFile
+
+    TerraformInit() {
+        super('init', [Lock], [])
+        supportsInputs()
+        supportsColor()
+
+        this.backendConfig = project.objects.property(File)
+        this.pluginDirectory = dataDir.map( {new File(it,'plugins')})
+        this.terraformStateFile = dataDir.map( {new File(it,'terraform.tfstate')})
+        this.terraformInitStateFile = dataDir.map( {new File(it,'.init.txt')})
+    }
 
     /** Configuration for Terraform backend.
      *
@@ -164,6 +192,7 @@ class TerraformInit extends AbstractTerraformTask {
     void exec() {
         removeDanglingSymlinks()
         super.exec()
+        terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
     /** Whether plugins should be verified.

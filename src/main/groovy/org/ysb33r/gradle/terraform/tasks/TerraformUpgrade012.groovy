@@ -29,6 +29,7 @@ class TerraformUpgrade012 extends AbstractTerraformTask {
 
     TerraformUpgrade012() {
         super('0.12upgrade',[],[])
+        alwaysOutOfDate()
     }
 
     /** Set auto-approve mode.

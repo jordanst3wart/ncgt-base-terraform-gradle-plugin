@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Transformer
+import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.model.ObjectFactory
@@ -130,6 +131,11 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             cleaned.resolveStrategy = DELEGATE_FIRST
             cleaned
         }.curry(tempProjectReference, this.vars) as Function<Closure,Closure>
+
+        this.secondarySources = []
+        this.secondarySourcesProvider = projectOperations.provider( { List<Object> files ->
+            projectOperations.fileize(files)
+        }.curry(this.secondarySources))
     }
 
     /** The display name is the string representation of the source set.
@@ -223,6 +229,35 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      */
     FileTree getAsFileTree() {
         projectOperations.fileTree(sourceDir).matching(this.patternSet)
+    }
+
+    /**
+     * Additional sources that affects infrastructure.
+     *
+     * @param files Anthing convertible to a file.
+     *
+     * @since 0.10.
+     */
+    void secondarySources(Object... files) {
+        this.secondarySources.addAll(files)
+    }
+    /**
+     * Additional sources that affects infrastructure.
+     *
+     * @param files Anything convertible to a file.
+     *
+     * @since 0.10.
+     */
+    void secondarySources(Iterable<Object> files) {
+        this.secondarySources.addAll(files)
+    }
+
+    /** Provides a list of secondary sources.
+     *
+     * @return Provider never returns null, but could return an empty list.
+     */
+    Provider<List<File>> getSecondarySources() {
+        this.secondarySourcesProvider
     }
 
     /** Sets Terraform variables that are applicable to this source set.
@@ -372,4 +407,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     private final Provider<Map<String, ?>> outputVariablesProvider
     private final PatternSet patternSet = new PatternSet()
     private final Function<Closure, Closure> closureCleaner
+    private final List<Object> secondarySources
+    private final Provider<List<File>> secondarySourcesProvider
 }

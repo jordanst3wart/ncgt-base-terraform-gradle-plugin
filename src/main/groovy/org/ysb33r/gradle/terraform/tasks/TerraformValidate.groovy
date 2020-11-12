@@ -30,6 +30,7 @@ class TerraformValidate extends AbstractTerraformTask {
     TerraformValidate() {
         super('validate', [], [])
         supportsColor()
+        inputs.files(taskProvider('init'))
     }
 
     /** Whether output should be in JSON

@@ -48,6 +48,7 @@ class TerraformPlan extends AbstractTerraformTask {
         )
         supportsInputs()
         supportsColor()
+        inputs.files(taskProvider('init'))
     }
 
     /** Set to {@code true} if a plan to destroy all resources must be produced.

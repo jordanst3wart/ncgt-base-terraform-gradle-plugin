@@ -30,6 +30,7 @@ class AbstractTerraformStateTask extends AbstractTerraformTask {
     protected AbstractTerraformStateTask(final String subcmd) {
         super('state', [], [])
         this.subcmd = subcmd
+        alwaysOutOfDate()
     }
 
     @Override

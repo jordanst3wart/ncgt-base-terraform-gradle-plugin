@@ -15,16 +15,18 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.Transformer
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
@@ -34,6 +36,7 @@ import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
@@ -42,6 +45,7 @@ import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
+import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_0
 import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 /** A base class for performing a {@code terraform} execution.
@@ -80,7 +84,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.sourceDirProvider
     }
 
-    @OutputDirectory
+    @Internal
     Provider<File> getDataDir() {
         this.dataDirProvider
     }
@@ -257,6 +261,46 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         reportsDirProvider = project.provider {
             sourceSet.reportsDir.get()
         }
+
+        secondarySources = project.provider { ->
+            sourceSet.secondarySources.get()
+        }
+    }
+
+    /**
+     * Provider to another Terraform task.
+     *
+     * @param command Terraform command.
+     * @return Task provider.
+     *
+     * @since 0.10
+     */
+    @CompileDynamic
+    protected Provider<AbstractTerraformTask> taskProvider(String command) {
+        Provider<String> taskName = projectOperations.provider({ ->
+            TerraformConvention.taskName(sourceSet.name, command)
+        })
+
+        if (PRE_5_0) {
+            taskName.map({ String it ->
+                (AbstractTerraformTask) project.tasks.getByName(it)
+            } as Transformer<AbstractTerraformTask, String>)
+        } else {
+            taskName.flatMap({ String it ->
+                project.tasks.named(it, AbstractTerraformTask)
+            } as Transformer<Provider<AbstractTerraformTask>, String>)
+        }
+    }
+
+    /**
+     * Marks task to always be out of date.
+     *
+     * Calls this from the constructor of Terraform task types that should always be out of date.
+     *
+     * @since 0.10.
+     */
+    protected void alwaysOutOfDate() {
+        inputs.property('always-out-of-date', UUID.randomUUID().toString())
     }
 
     /**
@@ -330,7 +374,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     /** Configures a {@link TerraformExecSpec}.
      *
      * @param execSpec Specification to be configured
-     * @return Conrfigured specification
+     * @return Configured specification
      */
     @Override
     protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
@@ -374,6 +418,20 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             logLevel
         )
     }
+
+    /**
+     * Additional sources that are not in the source set directory, but for which cahnges will
+     * require a re-run of the task.
+     *
+     * This includes files such as local modules or files that provide variables directly or
+     * indirectly.
+     *
+     * @return List of input files.
+     *
+     * @since 0.10
+     */
+    @InputFiles
+    protected final Provider<List<File>> secondarySources
 
     /** Adds a boolean command-line option with correct formatting to the execution specification.
      *
