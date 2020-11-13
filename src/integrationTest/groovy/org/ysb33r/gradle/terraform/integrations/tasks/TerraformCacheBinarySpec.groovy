@@ -21,7 +21,7 @@ import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
 import org.ysb33r.gradle.terraform.tasks.TerraformCacheBinary
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 

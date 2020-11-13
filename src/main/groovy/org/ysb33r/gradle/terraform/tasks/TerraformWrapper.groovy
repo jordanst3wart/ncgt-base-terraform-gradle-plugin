@@ -56,10 +56,11 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
 
     @Override
     protected Map<String, String> getTokenValuesAsMap() {
+        File cacheTaskParent = cacheTask.locationPropertiesFile.get().parentFile
         [
             APP_BASE_NAME               : 'terraform',
             GRADLE_WRAPPER_RELATIVE_PATH: rootRelativePath,
-            DOT_GRADLE_RELATIVE_PATH    : projectOperations.relativePath(cacheTask.locationPropertiesFile.get().parentFile),
+            DOT_GRADLE_RELATIVE_PATH    : projectOperations.relativePath(cacheTaskParent),
             APP_LOCATION_FILE           : cacheTask.locationPropertiesFile.get().name,
             CACHE_TASK_NAME             : cacheTask.name,
             TERRAFORMRC_TASK_NAME       : TERRAFORM_RC_TASK

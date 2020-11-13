@@ -277,9 +277,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      */
     @CompileDynamic
     protected Provider<AbstractTerraformTask> taskProvider(String command) {
-        Provider<String> taskName = projectOperations.provider({ ->
+        Provider<String> taskName = projectOperations.provider { ->
             TerraformConvention.taskName(sourceSet.name, command)
-        })
+        }
 
         if (PRE_5_0) {
             taskName.map({ String it ->

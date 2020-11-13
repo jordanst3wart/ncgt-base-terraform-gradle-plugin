@@ -21,8 +21,7 @@ import org.gradle.api.Task
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskContainer
-import org.gradle.api.tasks.TaskProvider
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
@@ -73,10 +72,10 @@ class TerraformRCExtension {
         this.pluginCacheDir = project.objects.property(File)
         projectOperations.updateFileProperty(
             this.pluginCacheDir,
-            projectOperations.gradleUserHomeDir.map( {new File(it,'caches/terraform.d')})
+            projectOperations.gradleUserHomeDir.map { new File(it, 'caches/terraform.d') }
         )
 
-        this.terraformRCTask = project.provider ({ TaskContainer t ->
+        this.terraformRCTask = project.provider({ TaskContainer t ->
             t.getByName(TERRAFORM_RC_TASK)
         }.curry(project.tasks) as Callable<Task>)
     }
@@ -113,8 +112,7 @@ class TerraformRCExtension {
     /**
      * Task that creates the {@code .terraformrc} file.
      *
-     * @return Provider
-     *
+     * @return Provider*
      * @since 0.17.0
      */
     Provider<Task> getTerraformRCTask() {
