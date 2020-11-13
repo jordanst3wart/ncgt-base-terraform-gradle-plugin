@@ -22,13 +22,12 @@ import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 
 import java.nio.file.Files
 
 @SuppressWarnings('NoWildcardImports')
 import static java.nio.file.attribute.PosixFilePermission.*
-import static org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin.TERRAFORM_RC_TASK
 
 /** Internal utilities for dealing with Terraform tool configuration.
  *

@@ -16,15 +16,14 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Project
 import org.ysb33r.grashicorp.HashicorpUtils
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
-import org.ysb33r.grolifant.api.OperatingSystem
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
+import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
 
-import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86
-import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
 /** Downloads specific versions of {@code Terraform}.
  *

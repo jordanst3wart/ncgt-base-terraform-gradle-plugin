@@ -18,8 +18,6 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
 
-import javax.inject.Inject
-
 /** Equivalent of {@code terraform 0.12upgrade}.
  *
  * @since 0.10.0
@@ -28,7 +26,7 @@ import javax.inject.Inject
 class TerraformUpgrade012 extends AbstractTerraformTask {
 
     TerraformUpgrade012() {
-        super('0.12upgrade',[],[])
+        super('0.12upgrade', [], [])
         alwaysOutOfDate()
     }
 

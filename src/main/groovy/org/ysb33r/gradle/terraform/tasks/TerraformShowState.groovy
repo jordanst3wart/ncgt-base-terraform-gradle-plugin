@@ -68,8 +68,9 @@ class TerraformShowState extends AbstractTerraformTask {
     @Override
     void exec() {
         super.exec()
+        URI fileLocation = statusReportOutputFile.get().toURI()
         logger.lifecycle(
-            "The textual representation of the plan file has been generated into ${statusReportOutputFile.get()}"
+            "The textual representation of the plan file has been generated into ${fileLocation}"
         )
     }
 

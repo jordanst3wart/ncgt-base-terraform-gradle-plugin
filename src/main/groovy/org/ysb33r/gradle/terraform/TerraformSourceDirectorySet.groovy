@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Transformer
-import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.model.ObjectFactory
@@ -40,7 +39,6 @@ import javax.inject.Inject
 import java.util.concurrent.Callable
 import java.util.function.Function
 
-import static groovy.lang.Closure.DELEGATE_FIRST
 import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.OUTPUT
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
@@ -48,6 +46,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
  *
  */
 @CompileStatic
+@SuppressWarnings('MethodCount')
 class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Source directory name
@@ -70,6 +69,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param displayName Display name of source set.
      */
     @Inject
+    @SuppressWarnings('ParameterCount')
     TerraformSourceDirectorySet(
         Project tempProjectReference,
         ObjectFactory objects,
@@ -112,9 +112,8 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         String outputTaskName = taskName(name, OUTPUT.command)
         def outputTaskProvider = projectOperations.provider {
-            (TerraformOutput) tasks.withType(TerraformOutput).matching(
-                { TerraformOutput t -> t.name == outputTaskName }
-            ).getByName(outputTaskName)
+            (TerraformOutput) tasks.withType(TerraformOutput).matching { TerraformOutput t -> t.name == outputTaskName }
+                .getByName(outputTaskName)
         }
 
         def cache = new OutputVariablesCache(
@@ -128,12 +127,12 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         this.closureCleaner = { Project project, Object varsContainer, Closure cfg ->
             Closure cleaned = ((Closure) cfg.clone()).dehydrate().rehydrate(varsContainer, project, project)
-            cleaned.resolveStrategy = DELEGATE_FIRST
+            cleaned.resolveStrategy = Closure.DELEGATE_FIRST
             cleaned
-        }.curry(tempProjectReference, this.vars) as Function<Closure,Closure>
+        }.curry(tempProjectReference, this.vars) as Function<Closure, Closure>
 
         this.secondarySources = []
-        this.secondarySourcesProvider = projectOperations.provider( { List<Object> files ->
+        this.secondarySourcesProvider = projectOperations.provider({ List<Object> files ->
             projectOperations.fileize(files)
         }.curry(this.secondarySources))
     }

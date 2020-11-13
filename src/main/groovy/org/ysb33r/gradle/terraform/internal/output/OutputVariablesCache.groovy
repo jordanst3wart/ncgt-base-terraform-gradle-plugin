@@ -20,7 +20,6 @@ import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
 import groovy.util.logging.Slf4j
 import org.gradle.api.Action
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
@@ -45,17 +44,17 @@ class OutputVariablesCache {
     OutputVariablesCache(
         ProjectOperations projectOperations,
         TerraformRCExtension terraformrc,
-        Provider <TerraformOutput > outputTask
+        Provider<TerraformOutput> outputTask
     ) {
         this.projectOperations = projectOperations
         this.outputTaskProvider = outputTask
         this.terraformrc = terraformrc
-        this.tmpDirProvider = outputTask.map({
+        this.tmpDirProvider = outputTask.map {
             def sourceSetName = it.sourceSet.name
             projectOperations.buildDirDescendant(
                 "tmp/tf-output-var-cache/${toSafeFileName(sourceSetName)}.tmp.---.json"
             ).get()
-        })
+        }
     }
 
     @Synchronized

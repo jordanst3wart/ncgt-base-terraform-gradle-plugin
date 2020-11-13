@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** General utilities for Terraform.
@@ -40,7 +40,7 @@ class TerraformUtils {
     @Deprecated
     static String terraformPath(Project project, Object file) {
         String path = project.file(file).absolutePath
-        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, '/') : path
+        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, FORWARD_SLASH) : path
     }
 
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
@@ -52,7 +52,7 @@ class TerraformUtils {
      */
     static String terraformPath(ProjectOperations projectOperations, Object file) {
         String path = projectOperations.file(file).absolutePath
-        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, '/') : path
+        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, FORWARD_SLASH) : path
     }
 
     /** Get all AWS-related environmental variables.
@@ -117,4 +117,6 @@ class TerraformUtils {
             TF_LOG            : logLevel ?: '',
         ]
     }
+
+    private static final String FORWARD_SLASH = '/'
 }

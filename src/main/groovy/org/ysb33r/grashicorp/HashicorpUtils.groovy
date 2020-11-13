@@ -20,12 +20,12 @@ import groovy.transform.CompileStatic
 import org.cyberneko.html.parsers.SAXParser
 import org.gradle.api.GradleException
 import org.gradle.util.GradleVersion
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 
 import java.util.regex.Pattern
 
-import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86
-import static org.ysb33r.grolifant.api.OperatingSystem.Arch.X86_64
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
 /** Code for dealing with Hashicorp standards.
  *

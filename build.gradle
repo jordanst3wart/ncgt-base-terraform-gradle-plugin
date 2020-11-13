@@ -46,7 +46,7 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
     compile "org.ysb33r.gradle:grolifant-core:${grolifantVer}"
-    compile "org.ysb33r.gradle:grolifant60:${grolifantVer}"
+    compile "org.ysb33r.gradle:grolifant50:${grolifantVer}" // TODO: Set to be grolifant60
     compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
 
     testCompile("org.spockframework:spock-core:1.3-groovy-${spockGroovyVer}") {

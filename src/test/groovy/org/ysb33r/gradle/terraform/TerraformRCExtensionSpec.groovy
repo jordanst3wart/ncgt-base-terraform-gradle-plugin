@@ -17,7 +17,7 @@ package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import spock.lang.Specification
 
 import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath

@@ -122,8 +122,10 @@ class TerraformPlan extends AbstractTerraformTask {
             projectOperations.exec(showExecSpec).assertNormalExitValue()
         }
 
-        logger.lifecycle("The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut}")
-        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut}")
+        logger.lifecycle(
+            "The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut.toURI()}"
+        )
+        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut.toURI()}")
     }
 
     /** Add specific command-line options for the command.

@@ -20,14 +20,11 @@ import groovy.transform.CompileStatic
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
-import org.gradle.api.model.ObjectFactory
 import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
-import static org.gradle.util.GradleVersion.current
-import static org.gradle.util.GradleVersion.version
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
-import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_5
 
 @CompileStatic
 class TerraformSourceSets implements NamedDomainObjectContainer<TerraformSourceDirectorySet> {
@@ -49,7 +46,9 @@ class TerraformSourceSets implements NamedDomainObjectContainer<TerraformSourceD
             )
         }
 
-        sourceDirectorySets = PRE_5_5 ? createContainerLegacyMode(factory, project) : createContainer(factory, project)
+        sourceDirectorySets = LegacyLevel.PRE_5_5 ?
+            createContainerLegacyMode(factory, project) :
+            createContainer(factory, project)
     }
 
     @CompileDynamic

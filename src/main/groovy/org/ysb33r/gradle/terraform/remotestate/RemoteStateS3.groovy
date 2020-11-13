@@ -20,7 +20,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
 
@@ -42,7 +41,7 @@ class RemoteStateS3 implements RemoteStateS3Provider {
      * @return Extension after it has been attached.
      */
     static RemoteStateS3 findExtension(Project project) {
-        ((ExtensionAware)TerraformRemoteStateExtension.findExtension(project)).extensions.getByType(RemoteStateS3)
+        ((ExtensionAware) TerraformRemoteStateExtension.findExtension(project)).extensions.getByType(RemoteStateS3)
     }
 
     /**
@@ -55,8 +54,8 @@ class RemoteStateS3 implements RemoteStateS3Provider {
      * @since 0.10.0
      */
     static RemoteStateS3 findExtension(Project project, String sourceSetName) {
-        def remote = TerraformRemoteStateExtension.findExtension(project,sourceSetName)
-        ((ExtensionAware)remote).extensions.getByType(RemoteStateS3)
+        def remote = TerraformRemoteStateExtension.findExtension(project, sourceSetName)
+        ((ExtensionAware) remote).extensions.getByType(RemoteStateS3)
     }
 
     /**

@@ -37,9 +37,6 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.time.LocalDateTime
 
 import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
 import static java.nio.file.Files.readSymbolicLink
 
 /** Equivalent of {@code terraform init}.
@@ -112,9 +109,9 @@ class TerraformInit extends AbstractTerraformTask {
         supportsColor()
 
         this.backendConfig = project.objects.property(File)
-        this.pluginDirectory = dataDir.map( {new File(it,'plugins')})
-        this.terraformStateFile = dataDir.map( {new File(it,'terraform.tfstate')})
-        this.terraformInitStateFile = dataDir.map( {new File(it,'.init.txt')})
+        this.pluginDirectory = dataDir.map { new File(it, PLUGIN_SUBDIR) }
+        this.terraformStateFile = dataDir.map { new File(it, 'terraform.tfstate') }
+        this.terraformInitStateFile = dataDir.map { new File(it, '.init.txt') }
     }
 
     /** Configuration for Terraform backend.
@@ -249,7 +246,7 @@ class TerraformInit extends AbstractTerraformTask {
     }
 
     private void removeDanglingSymlinks() {
-        Path pluginDir = new File(dataDir.get(), 'plugins').toPath()
+        Path pluginDir = new File(dataDir.get(), PLUGIN_SUBDIR).toPath()
         Files.walkFileTree(
             pluginDir,
             new FileVisitor<Path>() {
@@ -283,4 +280,6 @@ class TerraformInit extends AbstractTerraformTask {
 
     private final Property<File> backendConfig
     private final Map<String, Object> backendConfigValues = [:]
+
+    private static final String PLUGIN_SUBDIR = 'plugins'
 }
