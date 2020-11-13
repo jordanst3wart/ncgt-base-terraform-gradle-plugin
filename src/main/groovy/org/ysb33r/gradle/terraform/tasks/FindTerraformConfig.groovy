@@ -17,13 +17,13 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
 
@@ -44,10 +44,10 @@ class FindTerraformConfig extends DefaultTask {
     }
 
     FindTerraformConfig() {
-        configLocation = locateConfigFile(project)
-        outputLocation = project.providers.provider({ ->
-            new File(project.buildDir, '.location.terraformrc')
-        } as Callable<File>)
+        def po = ProjectOperations.find(project)
+        TerraformRCExtension terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+        configLocation = locateConfigFile(po, terraformrc)
+        outputLocation = po.buildDirDescendant('.location.terraformrc')
     }
 
     @TaskAction
@@ -55,15 +55,14 @@ class FindTerraformConfig extends DefaultTask {
         outputLocation.get().text = configLocation.get().absolutePath
     }
 
-    static private Provider<File> locateConfigFile(Project p) {
-        p.providers.provider({ Project project ->
-            TerraformRCExtension terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+    static private Provider<File> locateConfigFile(ProjectOperations po, TerraformRCExtension terraformrc) {
+        po.provider({
             if (terraformrc.useGlobalConfig) {
                 new File(locateGlobalTerraformConfigAsString()).absoluteFile
             } else {
                 terraformrc.terraformRC.get()
             }
-        }.curry() as Callable<File>)
+        } as Callable<File>)
     }
 
     private final Provider<File> outputLocation

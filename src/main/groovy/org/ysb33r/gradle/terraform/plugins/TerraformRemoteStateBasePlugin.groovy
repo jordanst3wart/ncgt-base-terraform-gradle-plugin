@@ -19,6 +19,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.AbstractRemoteStateConfigGenerator
 
@@ -29,11 +31,21 @@ class TerraformRemoteStateBasePlugin implements Plugin<Project> {
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
 
-        ((ExtensionAware) project.extensions.getByType(TerraformExtension))
-            .extensions.create(TerraformRemoteStateExtension.NAME, TerraformRemoteStateExtension, project)
+        TerraformRemoteStateExtension remote = addExtension(
+            project,
+            ((ExtensionAware) project.extensions.getByType(TerraformExtension))
+        )
 
         project.tasks.withType(AbstractRemoteStateConfigGenerator) { AbstractRemoteStateConfigGenerator t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
         }
+
+        project.extensions.getByType(TerraformSourceSets).all { TerraformSourceDirectorySet tsds ->
+            addExtension(project, ((ExtensionAware) tsds)).follow(remote)
+        }
+    }
+
+    static TerraformRemoteStateExtension addExtension(Project project, ExtensionAware instance) {
+        instance.extensions.create(TerraformRemoteStateExtension.NAME, TerraformRemoteStateExtension, project)
     }
 }

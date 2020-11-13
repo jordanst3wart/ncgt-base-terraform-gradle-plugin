@@ -17,12 +17,16 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.ysb33r.grolifant.api.FileUtils
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.gradle.api.tasks.TaskContainer
+import org.ysb33r.grolifant.api.core.OperatingSystem
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
 
+import static org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin.TERRAFORM_RC_TASK
 import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
 /** Extension that describes a {@code terraformrc} file.
@@ -31,11 +35,6 @@ import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
  */
 @CompileStatic
 class TerraformRCExtension {
-
-    /** Project this extension is attached to.
-     *
-     */
-    final Project project
 
     /** Disable checkpoint.
      *
@@ -64,18 +63,21 @@ class TerraformRCExtension {
     boolean useGlobalConfig = false
 
     TerraformRCExtension(Project project) {
-        this.project = project
+        this.projectOperations = ProjectOperations.find(project)
+
         this.terraformRC = project.providers.provider({ File defaultLoc ->
             defaultLoc
-        }.curry(new File(FileUtils.projectCacheDirFor(project.rootProject), '.terraformrc'))
-            as Callable<File>
+        }.curry(new File(projectOperations.projectCacheDir, '.terraformrc')) as Callable<File>)
+
+        this.pluginCacheDir = project.objects.property(File)
+        projectOperations.updateFileProperty(
+            this.pluginCacheDir,
+            projectOperations.gradleUserHomeDir.map { new File(it, 'caches/terraform.d') }
         )
-        this.pluginCacheDir = project.provider({ File defaultLoc ->
-            defaultLoc
-        }.curry(new File(
-            project.gradle.gradleUserHomeDir,
-            'caches/terraform.d'
-        )))
+
+        this.terraformRCTask = project.provider({ TaskContainer t ->
+            t.getByName(TERRAFORM_RC_TASK)
+        }.curry(project.tasks) as Callable<Task>)
     }
 
     /** Sets the location of the Terraform plugin cache directory
@@ -83,9 +85,12 @@ class TerraformRCExtension {
      * @param dir Anything that is convertible using {@code project.file}.
      */
     void setPluginCacheDir(Object dir) {
-        this.pluginCacheDir = project.providers.provider({ ->
-            project.file(dir)
-        } as Callable<File>)
+        projectOperations.updateFileProperty(
+            this.pluginCacheDir,
+            projectOperations.provider({ ->
+                projectOperations.file(dir)
+            } as Callable<File>)
+        )
     }
 
     /** Location of Terraform plugin cache directory
@@ -102,6 +107,16 @@ class TerraformRCExtension {
      */
     Provider<File> getTerraformRC() {
         this.terraformRC
+    }
+
+    /**
+     * Task that creates the {@code .terraformrc} file.
+     *
+     * @return Provider*
+     * @since 0.17.0
+     */
+    Provider<Task> getTerraformRCTask() {
+        this.terraformRCTask
     }
 
     /** Adds a credential set to the configuration file.
@@ -130,7 +145,10 @@ class TerraformRCExtension {
         writer
     }
 
-    private Provider<File> pluginCacheDir
+    private final Property<File> pluginCacheDir
     private final Provider<File> terraformRC
     private final Map<String, String> credentials = [:]
+    private final ProjectOperations projectOperations
+    private final Provider<Task> terraformRCTask
+
 }

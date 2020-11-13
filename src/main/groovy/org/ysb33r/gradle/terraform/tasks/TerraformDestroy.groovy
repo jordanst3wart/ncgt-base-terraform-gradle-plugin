@@ -37,6 +37,9 @@ class TerraformDestroy extends AbstractTerraformApplyTask {
         doLast {
             plan.get().internalTrackerFile.get().delete()
         }
+
+        inputs.files(taskProvider('init'))
+        inputs.files(taskProvider('apply'))
     }
 
     /** Set auto-approve mode.

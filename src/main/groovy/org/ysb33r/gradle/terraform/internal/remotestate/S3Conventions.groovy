@@ -100,20 +100,20 @@ class S3Conventions {
         new Action<RemoteStateAwsS3ConfigGenerator>() {
             @Override
             void execute(RemoteStateAwsS3ConfigGenerator task) {
-                RemoteStateS3 s3 = RemoteStateS3.findExtension(task.project)
+                RemoteStateS3 s3 = RemoteStateS3.findExtension(task.project, sourceSetName)
                 String folderName = sourceSetName == DEFAULT_SOURCESET_NAME ?
                     'tfS3BackendConfiguration' :
                     "tf${sourceSetName.capitalize()}S3BackendConfiguration"
 
                 task.remoteStateName = { Project p ->
-                    TerraformRemoteStateExtension remote = findExtension(p)
+                    TerraformRemoteStateExtension remote = findExtension(p, sourceSetName)
                     sourceSetName == DEFAULT_SOURCESET_NAME ? remote.prefix.get() :
                         "${remote.prefix.get()}-${sourceSetName}"
                 }.curry(task.project)
                 task.awsRegion = s3.region
                 task.s3BucketName = s3.bucket
                 task.destinationDir = { Project p ->
-                    new File(p.buildDir, folderName)
+                    new File(p.buildDir, "tfRemoteState/${folderName}")
                 }.curry(task.project)
             }
         }

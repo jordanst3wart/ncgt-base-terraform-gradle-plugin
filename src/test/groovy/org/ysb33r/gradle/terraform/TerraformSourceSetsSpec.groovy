@@ -58,7 +58,9 @@ class TerraformSourceSetsSpec extends Specification {
         def allVars = ((Variables)tss.getByName('main').variables).allVars
 
         then:
-        allVars.vars.foo1 == 'bar1'
-        allVars.vars.foo2 == 'bar2'
+        verifyAll {
+            allVars.vars.foo1 == 'bar1'
+            allVars.vars.foo2 == 'bar2'
+        }
     }
 }

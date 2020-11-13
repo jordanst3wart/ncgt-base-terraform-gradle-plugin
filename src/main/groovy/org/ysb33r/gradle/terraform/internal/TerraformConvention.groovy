@@ -20,10 +20,10 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
-import org.gradle.util.GradleVersion
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
@@ -63,14 +63,14 @@ class TerraformConvention {
     /** Creates a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>      Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>       Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
      */
     static void createSourceSetByConvention(Project project, String sourceSetName) {
         final TerraformSourceSets tss = project.extensions.getByType(TerraformSourceSets)
-        if (GradleVersion.current() < GradleVersion.version('4.10')) {
+        if (LegacyLevel.PRE_4_10) {
             createSourceSetAndTasks(sourceSetName, project, tss)
         } else {
             registerSourceSetAndTasks(sourceSetName, project, tss)
@@ -154,5 +154,4 @@ class TerraformConvention {
             }
         }
     }
-
 }

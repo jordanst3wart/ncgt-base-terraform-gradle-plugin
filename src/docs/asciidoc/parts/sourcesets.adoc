@@ -32,3 +32,21 @@ terraformSourceSets {
 Tasks for additional source sets follow the `tf<SourceSetName><TerraformCommand>` format. For instance in the above example the initialisation task for the `development` source set will be called `tfDevelopmentInit`.
 
 By convention all tasks that map Terraform commands start with `tf`. Other non-commands tasks might start with `terraform` or contain `Terraform` within the task name.
+
+=== Configuring source sets
+
+[source,groovy]
+----
+terraformSourceSets {
+  main {
+     srcDir = 'src/tf/main' // <1>
+     variables { // <2>
+       var 'aws_region', 'us-east-1'
+     }
+     secondarySources 'src/tf/modules' // <3>
+  }
+}
+----
+<1> Source directory, which will also be the working directory for terraform.
+<2> Configure any variables that are specific to the source set. See <<variables,Variables block>> for more details.
+<3> Additional sources that should affect re-running of tasks, but which are not directly part of the existing source set.

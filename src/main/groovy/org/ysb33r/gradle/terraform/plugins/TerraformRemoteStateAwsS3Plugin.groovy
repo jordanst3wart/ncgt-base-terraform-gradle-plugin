@@ -16,10 +16,14 @@
 package org.ysb33r.gradle.terraform.plugins
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
+import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 
 import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
 
@@ -28,7 +32,16 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.apply plugin: TerraformRemoteStateBasePlugin
-        ((ExtensionAware) findExtension(project)).extensions.create(RemoteStateS3.NAME, RemoteStateS3, project)
+        RemoteStateS3 globalS3Configuration = ((ExtensionAware) findExtension(project)).extensions.create(
+            RemoteStateS3.NAME,
+            RemoteStateS3,
+            project
+        )
+
+        project.extensions.getByType(TerraformSourceSets).all ({ TerraformSourceDirectorySet tsds ->
+            def trse = (ExtensionAware)((ExtensionAware)tsds).extensions.getByType(TerraformRemoteStateExtension)
+            trse.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project).follow(globalS3Configuration)
+        } as Action<TerraformSourceDirectorySet>)
 
         project.apply plugin: TerraformPlugin
     }

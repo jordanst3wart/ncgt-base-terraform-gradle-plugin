@@ -43,6 +43,9 @@ class TerraformShowState extends AbstractTerraformTask {
 
         supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
+        inputs.files(taskProvider('init'))
+        inputs.files(taskProvider('plan'))
+        inputs.files(taskProvider('apply'))
     }
 
     /** Whether output should be in JSON
@@ -65,8 +68,9 @@ class TerraformShowState extends AbstractTerraformTask {
     @Override
     void exec() {
         super.exec()
+        URI fileLocation = statusReportOutputFile.get().toURI()
         logger.lifecycle(
-            "The textual representation of the plan file has been generated into ${statusReportOutputFile.get()}"
+            "The textual representation of the plan file has been generated into ${fileLocation}"
         )
     }
 

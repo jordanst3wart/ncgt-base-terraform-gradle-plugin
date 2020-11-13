@@ -21,13 +21,13 @@ import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-import org.ysb33r.grolifant.api.StringUtils
+import org.ysb33r.grolifant.api.v4.StringUtils
 
 import javax.inject.Inject
 import java.nio.file.Path
 import java.util.stream.Collectors
 
-import static org.ysb33r.grolifant.api.MapUtils.stringizeValues
+import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 /** A configuration building block for tasks that need to pass variables to
  * a {@code terraform task}.
@@ -69,7 +69,7 @@ class Variables implements TerraformTaskConfigExtension,
      *
      * @param name Name of variable.
      * @param value Lazy-evaluated form of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Object)}
+     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Object)}
      * is accepted.
      */
     @Override
@@ -84,7 +84,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable.
-     *  Anything resolvable via {@link org.ysb33r.grolifant.api.MapUtils#stringizeValues(Map)}
+     *  Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues(Map)}
      * is accepted.
      */
     @Override
@@ -99,7 +99,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
      */
     @Override
     void list(final String name, Object val1, Object... vals) {
@@ -114,7 +114,7 @@ class Variables implements TerraformTaskConfigExtension,
      *
      * @param name Name of variable.
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Iterable <?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
      */
     @Override
     void list(final String name, Iterable<?> vals) {
@@ -124,7 +124,7 @@ class Variables implements TerraformTaskConfigExtension,
     /** Adds a name of a file containing {@code terraform} variables.
      *
      * @param fileName Files that can be converted via
-     * {@link org.ysb33r.grolifant.api.StringUtils#stringize(Object o)} and resolved relative to the appropriate
+     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Object o)} and resolved relative to the appropriate
      * {@link org.ysb33r.gradle.terraform.TerraformSourceDirectorySet}.
      */
     @Override
@@ -208,7 +208,7 @@ class Variables implements TerraformTaskConfigExtension,
         } as List<String>
         varList.addAll(fileNames.stream().map { String fileName ->
             "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
-        }.collect(Collectors.toList()))
+        }.collect(Collectors.toList()) as List<String>)
         varList
     }
 

@@ -21,9 +21,8 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.grolifant.api.StringUtils
-
-import java.util.concurrent.Callable
+import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** Extension that is added to the project {@link TerraformExtension}
  *
@@ -46,8 +45,22 @@ class TerraformRemoteStateExtension {
             .extensions.getByType(TerraformRemoteStateExtension)
     }
 
+    /**
+     * Utility to find this extension on a terraform source set.
+     *
+     * @param project Project context
+     * @param sourceSetName Name of source set.
+     * @return Extension after it has been attached.
+     *
+     * @since 0.10.0
+     */
+    static TerraformRemoteStateExtension findExtension(Project project, String sourceSetName) {
+        def sourceSet = project.extensions.getByType(TerraformSourceSets).getByName(sourceSetName)
+        ((ExtensionAware) sourceSet).extensions.getByType(TerraformRemoteStateExtension)
+    }
+
     TerraformRemoteStateExtension(Project project) {
-        this.project = project
+        this.projectOperations = ProjectOperations.find(project)
         this.prefix = project.objects.property(String)
         setPrefix(project.name)
     }
@@ -57,9 +70,7 @@ class TerraformRemoteStateExtension {
      * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
      */
     void setPrefix(Object p) {
-        this.prefix.set(project.provider({
-            StringUtils.stringize(p)
-        } as Callable<String>))
+        projectOperations.updateStringProperty(this.prefix, p)
     }
 
     /** A prefix that is added to remote state names.
@@ -69,6 +80,15 @@ class TerraformRemoteStateExtension {
         this.prefix
     }
 
-    private final Project project
+    /**
+     * Follows the settings of another remote state extension.
+     *
+     * @param other Instance of {@link TerraformRemoteStateExtension} to follow.
+     */
+    void follow(TerraformRemoteStateExtension other) {
+        setPrefix(other.prefix)
+    }
+
+    private final ProjectOperations projectOperations
     private final Property<String> prefix
 }

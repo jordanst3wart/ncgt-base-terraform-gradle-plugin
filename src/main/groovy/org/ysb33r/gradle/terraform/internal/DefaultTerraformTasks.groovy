@@ -27,6 +27,8 @@ import org.ysb33r.gradle.terraform.tasks.TerraformShowState
 import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
 import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
 import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
+import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade012
+import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade013
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
 /** Maps terraform tasks to conventions.
@@ -47,7 +49,9 @@ enum DefaultTerraformTasks {
     VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
-    STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state')
+    STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
+    UPGRADE_012(40,'upgrade012', TerraformUpgrade012,'Upgrades source to v0.12'),
+    UPGRADE_013(41,'upgrade013', TerraformUpgrade013,'Upgrades source to v0.13')
 
     static List<DefaultTerraformTasks> ordered() {
         DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
