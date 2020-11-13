@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -47,6 +48,7 @@ class TerraformPlan extends AbstractTerraformTask {
         )
         supportsInputs()
         supportsColor()
+        inputs.files(taskProvider('init'))
     }
 
     /** Set to {@code true} if a plan to destroy all resources must be produced.
@@ -63,9 +65,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanOutputFile() {
-        reportsDir.map { File reportDir ->
+        reportsDir.map( { File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan")
-        }
+        } as Transformer<File,File>)
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -74,9 +76,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanReportOutputFile() {
-        reportsDir.map { File reportDir ->
+        reportsDir.map( { File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-        }
+        } as Transformer<File,File>)
     }
 
     /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
@@ -117,11 +119,13 @@ class TerraformPlan extends AbstractTerraformTask {
 
         textOut.withOutputStream { OutputStream report ->
             Action<ExecSpec> showExecSpec = configureShowCommand(planOut, report)
-            project.exec(showExecSpec).assertNormalExitValue()
+            projectOperations.exec(showExecSpec).assertNormalExitValue()
         }
 
-        logger.lifecycle("The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut}")
-        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut}")
+        logger.lifecycle(
+            "The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut.toURI()}"
+        )
+        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut.toURI()}")
     }
 
     /** Add specific command-line options for the command.

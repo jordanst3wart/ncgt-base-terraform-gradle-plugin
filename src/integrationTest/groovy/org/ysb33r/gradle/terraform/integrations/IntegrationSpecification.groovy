@@ -20,7 +20,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 
 class IntegrationSpecification extends DownloadTestSpecification  {
     public static final OperatingSystem OS = OperatingSystem.current()

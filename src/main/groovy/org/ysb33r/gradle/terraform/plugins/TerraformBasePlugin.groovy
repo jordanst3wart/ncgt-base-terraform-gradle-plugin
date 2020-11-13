@@ -23,6 +23,7 @@ import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -38,7 +39,7 @@ class TerraformBasePlugin implements Plugin<Project> {
         if (project == project.rootProject) {
             project.apply plugin: TerraformRCPlugin
         }
-
+        ProjectOperations.maybeCreateExtension(project)
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
         project.extensions.create(TERRAFORM_SOURCESETS, TerraformSourceSets, project)
 

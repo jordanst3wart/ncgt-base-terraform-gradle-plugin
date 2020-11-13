@@ -23,6 +23,13 @@ import spock.lang.IgnoreIf
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
 
+import java.nio.file.FileVisitResult
+import java.nio.file.FileVisitor
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+
+import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
@@ -58,6 +65,38 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
             logLevel = 'DEBUG'
         }
         """
+    }
+
+    void cleanup() {
+        Files.walkFileTree(
+            new File(projectDir, 'build/tf/main/plugins').toPath(),
+            new FileVisitor<Path>() {
+                @Override
+                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (attrs.symbolicLink) {
+                        println "Deleting: ${file}"
+                        Files.delete(file)
+                    }
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    println "Failed to visit: ${file}, because ${exc.message}"
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    CONTINUE
+                }
+            }
+        )
     }
 
     @Unroll
@@ -119,6 +158,15 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     File createTF() {
         File destFile = new File(testProjectDir.root, 'TF/foo.bar')
         new File(srcDir, 'init.tf').text = """
+        terraform {
+              required_providers {
+                local = {
+                    source = "hashicorp/local"
+                    version = "2.0.0"
+                }
+            }
+        }
+
         variable "foofile" {
           type = string
         }

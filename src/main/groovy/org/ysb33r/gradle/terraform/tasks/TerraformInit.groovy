@@ -16,17 +16,28 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
-import org.ysb33r.grolifant.api.MapUtils
+import org.ysb33r.grolifant.api.v4.MapUtils
 
-import java.util.concurrent.Callable
+import java.nio.file.FileVisitResult
+import java.nio.file.FileVisitor
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+import java.time.LocalDateTime
+
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.Files.readSymbolicLink
 
 /** Equivalent of {@code terraform init}.
  *
@@ -34,12 +45,6 @@ import java.util.concurrent.Callable
  */
 @CompileStatic
 class TerraformInit extends AbstractTerraformTask {
-
-    TerraformInit() {
-        super('init', [Lock], [])
-        supportsInputs()
-        supportsColor()
-    }
 
     // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option
 
@@ -76,6 +81,39 @@ class TerraformInit extends AbstractTerraformTask {
     @Internal
     boolean reconfigure = false
 
+    /**
+     * The directory where terraform plgins data is written to.
+     *
+     * @since 0.10
+     */
+    @OutputDirectory
+    final Provider<File> pluginDirectory
+
+    /**
+     * The location of {@code terraform.tfstate}.
+     *
+     * @since 0.10
+     */
+    @OutputFile
+    final Provider<File> terraformStateFile
+
+    /**
+     * The location of the file that provides details about the last run of this task.
+     */
+    @OutputFile
+    final Provider<File> terraformInitStateFile
+
+    TerraformInit() {
+        super('init', [Lock], [])
+        supportsInputs()
+        supportsColor()
+
+        this.backendConfig = project.objects.property(File)
+        this.pluginDirectory = dataDir.map { new File(it, PLUGIN_SUBDIR) }
+        this.terraformStateFile = dataDir.map { new File(it, 'terraform.tfstate') }
+        this.terraformInitStateFile = dataDir.map { new File(it, '.init.txt') }
+    }
+
     /** Configuration for Terraform backend.
      *
      * See {@link https://www.terraform.io/docs/backends/config.html#partial-configuration}
@@ -97,9 +135,7 @@ class TerraformInit extends AbstractTerraformTask {
      * @since 0.4.0
      */
     void setBackendConfigFile(Object location) {
-        this.backendConfig = location ? project.provider({ ->
-            project.file(location)
-        } as Callable<File>) : null
+        projectOperations.updateFileProperty(this.backendConfig, location)
     }
 
     /** Backend configuration files.
@@ -149,6 +185,13 @@ class TerraformInit extends AbstractTerraformTask {
         this.backendConfigValues.put(key, value)
     }
 
+    @Override
+    void exec() {
+        removeDanglingSymlinks()
+        super.exec()
+        terraformInitStateFile.get().text = "${LocalDateTime.now()}"
+    }
+
     /** Whether plugins should be verified.
      *
      */
@@ -166,7 +209,7 @@ class TerraformInit extends AbstractTerraformTask {
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        if (project.gradle.startParameter.offline) {
+        if (projectOperations.offline) {
             logger.warn(
                 'Gradle is running in offline mode. ' +
                     (upgrade ? 'Upgrade will not be attempted. ' : '') +
@@ -187,7 +230,7 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs "-backend-config=$k=$v"
         }
 
-        if (this.backendConfig) {
+        if (this.backendConfig.present) {
             execSpec.cmdArgs("-backend-config=${this.backendConfig.get().absolutePath}")
         }
 
@@ -202,6 +245,41 @@ class TerraformInit extends AbstractTerraformTask {
         execSpec
     }
 
-    private Provider<File> backendConfig
+    private void removeDanglingSymlinks() {
+        Path pluginDir = new File(dataDir.get(), PLUGIN_SUBDIR).toPath()
+        Files.walkFileTree(
+            pluginDir,
+            new FileVisitor<Path>() {
+                @Override
+                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (attrs.symbolicLink && !Files.exists(readSymbolicLink(file))) {
+                        logger.debug("Removing dangling plugin symbolic link ${file}")
+                        Files.delete(file)
+                    }
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    logger.debug("Failed to visit: ${file}, because ${exc.message}")
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    CONTINUE
+                }
+            }
+        )
+    }
+
+    private final Property<File> backendConfig
     private final Map<String, Object> backendConfigValues = [:]
+
+    private static final String PLUGIN_SUBDIR = 'plugins'
 }

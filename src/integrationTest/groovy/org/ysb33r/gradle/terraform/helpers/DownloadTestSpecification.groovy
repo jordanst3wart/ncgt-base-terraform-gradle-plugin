@@ -16,7 +16,7 @@
 package org.ysb33r.gradle.terraform.helpers
 
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.grolifant.api.OperatingSystem
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import spock.lang.Specification
 
 @SuppressWarnings('LineLength')

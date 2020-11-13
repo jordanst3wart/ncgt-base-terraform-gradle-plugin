@@ -18,7 +18,8 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.internal.Transform
-import org.ysb33r.grolifant.api.wrapper.script.AbstractScriptWrapperTask
+import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.v4.wrapper.script.AbstractScriptWrapperTask
 
 import javax.inject.Inject
 
@@ -32,6 +33,8 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
         super()
         this.terraformExtension = project.extensions.getByType(TerraformExtension)
         this.cacheTask = cacheTask
+        this.rootRelativePath = project.relativePath(project.rootDir)
+        this.projectOperations = ProjectOperations.find(project)
         outputs.files(Transform.toList(TEMPLATE_MAPPING.values()) {
             new File(project.projectDir, it)
         })
@@ -53,10 +56,11 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
 
     @Override
     protected Map<String, String> getTokenValuesAsMap() {
+        File cacheTaskParent = cacheTask.locationPropertiesFile.get().parentFile
         [
             APP_BASE_NAME               : 'terraform',
-            GRADLE_WRAPPER_RELATIVE_PATH: project.relativePath(project.rootDir),
-            DOT_GRADLE_RELATIVE_PATH    : project.relativePath(cacheTask.locationPropertiesFile.get().parentFile),
+            GRADLE_WRAPPER_RELATIVE_PATH: rootRelativePath,
+            DOT_GRADLE_RELATIVE_PATH    : projectOperations.relativePath(cacheTaskParent),
             APP_LOCATION_FILE           : cacheTask.locationPropertiesFile.get().name,
             CACHE_TASK_NAME             : cacheTask.name,
             TERRAFORMRC_TASK_NAME       : TERRAFORM_RC_TASK
@@ -65,7 +69,8 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
 
     private final TerraformExtension terraformExtension
     private final TerraformCacheBinary cacheTask
-
+    private final String rootRelativePath
+    private final ProjectOperations projectOperations
     private static final String TEMPLATE_TOKEN_DELIMITER = '~~'
     private static final String TEMPLATE_RESOURCE_PATH = '/terraform-wrapper'
     private static final Map<String, String> TEMPLATE_MAPPING = [

@@ -21,6 +21,8 @@ import org.gradle.api.Project
 import org.gradle.api.Transformer
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.TaskContainer
@@ -31,10 +33,12 @@ import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
+import java.util.function.Function
 
-import static groovy.lang.Closure.DELEGATE_FIRST
 import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.OUTPUT
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
@@ -42,6 +46,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
  *
  */
 @CompileStatic
+@SuppressWarnings('MethodCount')
 class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Source directory name
@@ -56,38 +61,80 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Constructs the source set.
      *
-     * @param project Project this sourcer set is attached to.
+     * @param tempProjectReference Project this source set is attached to.
+     * @param object Object factory
+     * @param tasks Take container
+     * @param terraformrc Reference to {@link TerraformRCExtension}
      * @param name Name of source set.
      * @param displayName Display name of source set.
      */
-    TerraformSourceDirectorySet(Project project, String name, String displayName) {
+    @Inject
+    @SuppressWarnings('ParameterCount')
+    TerraformSourceDirectorySet(
+        Project tempProjectReference,
+        ObjectFactory objects,
+        TaskContainer tasks,
+        TerraformRCExtension terraformrc,
+        String name,
+        String displayName
+    ) {
+        this.projectOperations = ProjectOperations.create(tempProjectReference)
         this.name = name
         this.displayName = displayName
-        this.project = project
         this.patternSet.include('**/*.tf', '**/*.tfvars', '*.tfstate')
 
-        srcDir = "src/tf/${name}"
-        dataDir = project.provider({
-            project.file("${project.buildDir}/tf/${name}")
-        } as Callable<File>)
-        logDir = project.provider({
-            project.file("${project.buildDir}/reports/tf/${name}/logs")
-        } as Callable<File>)
-        reportsDir = project.provider({
-            project.file("${project.buildDir}/reports/tf/${name}")
-        } as Callable<File>)
+        sourceDir = objects.property(File)
+        dataDir = objects.property(File)
+        logDir = objects.property(File)
+        reportsDir = objects.property(File)
 
-        vars = new Variables(project.provider({ TerraformSourceDirectorySet it ->
-            it.srcDir.get()
-        }.curry(this)))
+        projectOperations.updateFileProperty(
+            sourceDir,
+            "src/tf/${name}"
+        )
 
-        def cache = new OutputVariablesCache(project, project.provider({ TaskContainer tasks ->
-            (TerraformOutput) tasks.getByName(taskName(name, OUTPUT.command))
-        }.curry(project.tasks) as Callable<TerraformOutput>))
+        projectOperations.updateFileProperty(
+            dataDir,
+            projectOperations.buildDirDescendant("tf/${name}")
+        )
 
-        this.outputVariablesProvider = project.provider( { ->
+        projectOperations.updateFileProperty(
+            logDir,
+            projectOperations.buildDirDescendant("tf/${name}/logs")
+        )
+
+        projectOperations.updateFileProperty(
+            reportsDir,
+            projectOperations.buildDirDescendant("reports/tf/${name}")
+        )
+
+        vars = new Variables(this.sourceDir)
+
+        String outputTaskName = taskName(name, OUTPUT.command)
+        def outputTaskProvider = projectOperations.provider {
+            (TerraformOutput) tasks.withType(TerraformOutput).matching { TerraformOutput t -> t.name == outputTaskName }
+                .getByName(outputTaskName)
+        }
+
+        def cache = new OutputVariablesCache(
+            projectOperations,
+            terraformrc,
+            outputTaskProvider
+        )
+        this.outputVariablesProvider = projectOperations.provider({ ->
             cache.map
-        } as Callable<Map<String,?>>)
+        } as Callable<Map<String, ?>>)
+
+        this.closureCleaner = { Project project, Object varsContainer, Closure cfg ->
+            Closure cleaned = ((Closure) cfg.clone()).dehydrate().rehydrate(varsContainer, project, project)
+            cleaned.resolveStrategy = Closure.DELEGATE_FIRST
+            cleaned
+        }.curry(tempProjectReference, this.vars) as Function<Closure, Closure>
+
+        this.secondarySources = []
+        this.secondarySourcesProvider = projectOperations.provider({ List<Object> files ->
+            projectOperations.fileize(files)
+        }.curry(this.secondarySources))
     }
 
     /** The display name is the string representation of the source set.
@@ -112,11 +159,8 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param dir Directory can be anything convertible using {@link Project#file}.
      * @return {@code this}.
      */
-    TerraformSourceDirectorySet setSrcDir(Object dir) {
-        this.sourceDir = project.provider { ->
-            project.file(dir)
-        }
-        this
+    void setSrcDir(Object dir) {
+        projectOperations.updateFileProperty(this.sourceDir, dir)
     }
 
     /** Data directory provider.
@@ -132,11 +176,8 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param dir Directory can be anything convertible using {@link Project#file}.
      * @return {@code this}.
      */
-    TerraformSourceDirectorySet setDataDir(Object dir) {
-        this.dataDir = project.provider { ->
-            project.file(dir)
-        }
-        this
+    void setDataDir(Object dir) {
+        projectOperations.updateFileProperty(this.dataDir, dir)
     }
 
     /** Log directory provider.
@@ -152,11 +193,8 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param dir Directory can be anything convertible using {@link Project#file}.
      * @return {@code this}.
      */
-    TerraformSourceDirectorySet setLogDir(Object dir) {
-        this.logDir = project.provider { ->
-            project.file(dir)
-        }
-        this
+    void setLogDir(Object dir) {
+        projectOperations.updateFileProperty(this.logDir, dir)
     }
 
     /** Reports directory.
@@ -172,11 +210,8 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param dir Directory can be anything convertible using {@link Project#file}.
      * @return {@code this}.
      */
-    TerraformSourceDirectorySet setReportsDir(Object dir) {
-        this.reportsDir = project.provider { ->
-            project.file(dir)
-        }
-        this
+    void setReportsDir(Object dir) {
+        projectOperations.updateFileProperty(this.reportsDir, dir)
     }
 
     /** Returns the pattern filter.
@@ -189,10 +224,39 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Returns terraform source tree
      *
-     * @return SOurce tree as a file tree.
+     * @return Source tree as a file tree.
      */
     FileTree getAsFileTree() {
-        project.fileTree(sourceDir).matching(this.patternSet)
+        projectOperations.fileTree(sourceDir).matching(this.patternSet)
+    }
+
+    /**
+     * Additional sources that affects infrastructure.
+     *
+     * @param files Anthing convertible to a file.
+     *
+     * @since 0.10.
+     */
+    void secondarySources(Object... files) {
+        this.secondarySources.addAll(files)
+    }
+    /**
+     * Additional sources that affects infrastructure.
+     *
+     * @param files Anything convertible to a file.
+     *
+     * @since 0.10.
+     */
+    void secondarySources(Iterable<Object> files) {
+        this.secondarySources.addAll(files)
+    }
+
+    /** Provides a list of secondary sources.
+     *
+     * @return Provider never returns null, but could return an empty list.
+     */
+    Provider<List<File>> getSecondarySources() {
+        this.secondarySourcesProvider
     }
 
     /** Sets Terraform variables that are applicable to this source set.
@@ -202,8 +266,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @since 0.2
      */
     void variables(@DelegatesTo(VariablesSpec) Closure cfg) {
-        Closure runner = (Closure) (cfg.dehydrate()).rehydrate(this.vars, project, project)
-        runner.resolveStrategy = DELEGATE_FIRST
+        Closure runner = closureCleaner.apply(cfg)
         runner()
     }
 
@@ -224,7 +287,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @return String version adapted on a per-platform basis
      */
     String terraformPath(Object file) {
-        TerraformUtils.terraformPath(project, file)
+        TerraformUtils.terraformPath(projectOperations, file)
     }
 
     /** Get all terraform variables applicable to this source set.
@@ -264,7 +327,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @since 0.9.0
      */
     Provider<Object> rawOutputVariable(String varName) {
-        this.outputVariablesProvider.map( new Transformer<Object, Map<String, ?>>() {
+        this.outputVariablesProvider.map(new Transformer<Object, Map<String, ?>>() {
             @Override
             Object transform(Map<String, ?> stringMap) {
                 stringMap[varName]['value']
@@ -334,12 +397,15 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         patternSet.include(closure)
     }
 
-    private Provider<File> sourceDir
-    private Provider<File> dataDir
-    private Provider<File> logDir
-    private Provider<File> reportsDir
-    private final Project project
+    private final Property<File> sourceDir
+    private final Property<File> dataDir
+    private final Property<File> logDir
+    private final Property<File> reportsDir
+    private final ProjectOperations projectOperations
     private final Variables vars
-    private final Provider<Map<String,?>> outputVariablesProvider
+    private final Provider<Map<String, ?>> outputVariablesProvider
     private final PatternSet patternSet = new PatternSet()
+    private final Function<Closure, Closure> closureCleaner
+    private final List<Object> secondarySources
+    private final Provider<List<File>> secondarySourcesProvider
 }

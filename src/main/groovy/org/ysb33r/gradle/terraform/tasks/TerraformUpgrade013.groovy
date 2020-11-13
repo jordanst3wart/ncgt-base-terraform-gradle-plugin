@@ -16,29 +16,30 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.gradle.api.tasks.options.Option
 
-/** Base classs all {@code terraform state} subcommands.
+/** Equivalent of {@code terraform 0.13upgrade}.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.5.0
+ * @since 0.10.0
  */
 @CompileStatic
-class AbstractTerraformStateTask extends AbstractTerraformTask {
+class TerraformUpgrade013 extends AbstractTerraformTask {
 
-    protected AbstractTerraformStateTask(final String subcmd) {
-        super('state', [], [])
-        this.subcmd = subcmd
+    TerraformUpgrade013() {
+        super('0.13upgrade', [], [])
         alwaysOutOfDate()
     }
 
-    @Override
-    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        execSpec.cmdArgs this.subcmd
-        super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec
+    /** Set auto-approve mode.
+     *
+     * Once set it cannot be unset for the duration of the Gradle task graph execution.
+     *
+     * @param state {@code true} will auto-approve upgrade.
+     */
+    @Option(option = 'approve', description = 'Auto-approve upgrade of sources to Terraform v0.13')
+    void setAutoApprove(Boolean state) {
+        if (state) {
+            supportsYes()
+        }
     }
-
-    private final String subcmd
 }

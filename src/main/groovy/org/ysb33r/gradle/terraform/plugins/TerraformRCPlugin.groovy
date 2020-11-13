@@ -20,6 +20,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** A plugin that deals with Terraform tool configuration.
  *
@@ -32,6 +33,7 @@ class TerraformRCPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        ProjectOperations.maybeCreateExtension(project)
         TerraformRCExtension terraformrc = project.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, project)
         Task generator = project.tasks.create(TERRAFORM_RC_TASK)
         generator.identity {
