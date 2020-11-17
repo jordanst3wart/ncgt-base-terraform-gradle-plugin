@@ -5,7 +5,7 @@ Storing remote state in S3 seems to be a popular approach with Terraform users. 
 
 The plugin adds a `createTfS3BackendConfiguration` tasks and if you have additional Terraform source sets it will add a tasks of the form `createTf<SOUCESET>S3BackendConfiguration`. It also adds a `terraform.remote` and `terraform.remote.s3` extensions. The plugin wil also add a map variable called `remote_state` which contains elements `name`, `aws_region`, `aws_bucket`. If you apply this plugin you will need to add the map variable somewhere in your terraform files.
 
-== Approach
+=== Approach
 
 Normally in order for remote state to be used, a set of backend configuraion values or a backend configuration file has to be passed to `terraform init`. In the case of `tfInit` this is done via the `backendConfigValues` and `backendConfigFile` methods. The plugin simplifies this process by generating a configuration file from pre-configured values and a default template. It then automatically configures `tfInit` to use this configuration file.
 
@@ -64,6 +64,7 @@ data "terraform_remote_state" "aws_tf_remote_state" {
 
 Now tell Gradle about your S3 setup
 
+[[ConfigureRemoteS3]]
 [source,groovy]
 ----
 terraform {
