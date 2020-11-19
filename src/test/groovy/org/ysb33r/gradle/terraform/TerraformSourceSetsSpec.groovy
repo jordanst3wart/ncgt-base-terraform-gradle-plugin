@@ -17,9 +17,12 @@ package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -55,12 +58,99 @@ class TerraformSourceSetsSpec extends Specification {
         }
 
         TerraformSourceSets tss = project.terraformSourceSets
-        def allVars = ((Variables)tss.getByName('main').variables).allVars
+        def allVars = ((Variables) tss.getByName('main').variables).allVars
 
         then:
         verifyAll {
             allVars.vars.foo1 == 'bar1'
             allVars.vars.foo2 == 'bar2'
+        }
+    }
+
+    void 'Items must be able resolve entities in project scope'() {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
+        project.extensions.create('testExt', TestExtension)
+
+        when:
+        configureFourSourceSets()
+
+        then:
+        noExceptionThrown()
+    }
+
+    void 'Items must be able resolve entities in project scope even with different order of plugins applied'() {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
+        project.apply plugin: 'org.ysb33r.terraform'
+        project.extensions.create('testExt', TestExtension)
+
+        when:
+        configureFourSourceSets()
+
+        then:
+        noExceptionThrown()
+    }
+
+    void configureFourSourceSets() {
+        project.allprojects {
+            terraformSourceSets {
+                main {
+                    remote {
+                        s3 {
+                            follow(project.testExt.myProviders)
+                        }
+                    }
+                }
+                create('created') {
+                    remote {
+                        s3 {
+                            follow(project.testExt.myProviders)
+                        }
+                    }
+                }
+                register('registered') {
+                    remote {
+                        s3 {
+                            follow(project.testExt.myProviders)
+                        }
+                    }
+                }
+                groovyAutoAddStyle {
+                    remote {
+                        s3 {
+                            follow(project.testExt.myProviders)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    static class TestExtension {
+        final ProviderFactory providers
+
+        TestExtension(ProviderFactory p) {
+            this.providers = p
+        }
+
+        RemoteStateS3Provider getMyProviders() {
+            new RemoteStateS3Provider() {
+                @Override
+                Provider<String> getRegion() {
+                    providers.provider { -> 'region' }
+                }
+
+                @Override
+                Provider<String> getBucket() {
+                    providers.provider { -> 'bucket' }
+                }
+
+                @Override
+                Provider<String> getDynamoDbLockTableArn() {
+                    providers.provider { -> 'table' }
+                }
+            }
         }
     }
 }

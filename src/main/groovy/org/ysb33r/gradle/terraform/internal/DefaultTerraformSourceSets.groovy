@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform
+package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
-import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.grolifant.api.core.LegacyLevel
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
 
 @CompileStatic
-class TerraformSourceSets implements NamedDomainObjectContainer<TerraformSourceDirectorySet> {
+class DefaultTerraformSourceSets implements TerraformSourceSets {
 
-    TerraformSourceSets(Project project) {
+    DefaultTerraformSourceSets(Project project) {
         this.projectOperations = ProjectOperations.create(project)
         def terraformrc = locateTerraformRCExtension(project)
         def objects = project.objects

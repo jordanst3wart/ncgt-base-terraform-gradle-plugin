@@ -18,10 +18,9 @@ package org.ysb33r.gradle.terraform.internal
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.LegacyLevel
 
@@ -60,97 +59,94 @@ class TerraformConvention {
             "Terraform source set for ${sourceSetName}"
     }
 
-    /** Creates a sourceset using specific conventions
+    /** Creates or registers the tasks associated with a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>       Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>         Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
      */
-    static void createSourceSetByConvention(Project project, String sourceSetName) {
-        final TerraformSourceSets tss = project.extensions.getByType(TerraformSourceSets)
+    static void createTasksByConvention(Project project, TerraformSourceDirectorySet sourceSet) {
         if (LegacyLevel.PRE_4_10) {
-            createSourceSetAndTasks(sourceSetName, project, tss)
+            createTasks(sourceSet, project)
         } else {
-            registerSourceSetAndTasks(sourceSetName, project, tss)
+            registerTasks(sourceSet, project)
         }
     }
 
-    @CompileDynamic
-    private static void createSourceSetAndTasks(
-        String name,
-        Project project,
-        TerraformSourceSets tss
+    private static Action<AbstractTerraformTask> taskConfigurator(
+        TerraformSourceDirectorySet sourceSet,
+        DefaultTerraformTasks type
     ) {
-        TerraformSourceDirectorySet sourceSet = tss.create(name)
-
-        DefaultTerraformTasks.ordered().each {
-            AbstractTerraformTask newTask
-            if (it.dependsOnProvider) {
-                newTask = project.tasks.create(
-                    taskName(name, it.command),
-                    it.type,
-                    it.dependsOnProvider.newInstance(project, name)
-                )
-            } else {
-                newTask = project.tasks.create(
-                    taskName(name, it.command),
-                    it.type
-                )
-            }
-            newTask.sourceSet = sourceSet
-            newTask.group = TERRAFORM_TASK_GROUP
-            newTask.description = "${it.description} for '${name}'"
-            if (it != DefaultTerraformTasks.INIT) {
-                newTask.mustRunAfter taskName(name, TERRAFORM_INIT)
-            }
-        }
-
-        SupplementaryConvention.values().each { SupplementaryConvention doMore ->
-            project.pluginManager.withPlugin(doMore.pluginId) {
-                doMore.createTasks.accept(project, sourceSet)
-            }
-        }
-    }
-
-    @CompileDynamic
-    private static void registerSourceSetAndTasks(
-        String name,
-        Project project,
-        TerraformSourceSets tss
-    ) {
-        NamedDomainObjectProvider<TerraformSourceDirectorySet> sourceSet = tss.register(name)
-
-        DefaultTerraformTasks.ordered().each {
-            def configurator = new Action<AbstractTerraformTask>() {
-                @Override
-                void execute(AbstractTerraformTask t) {
-                    t.sourceSet = sourceSet.get()
-                    t.group = TERRAFORM_TASK_GROUP
-                    t.description = "${it.description} for '${name}'"
-                    if (it != DefaultTerraformTasks.INIT) {
-                        t.mustRunAfter taskName(name, TERRAFORM_INIT)
-                    }
+        String name = sourceSet.name
+        new Action<AbstractTerraformTask>() {
+            @Override
+            void execute(AbstractTerraformTask t) {
+                t.sourceSet = sourceSet
+                t.group = TERRAFORM_TASK_GROUP
+                t.description = "${type.description} for '${name}'"
+                if (type != DefaultTerraformTasks.INIT) {
+                    t.mustRunAfter taskName(name, TERRAFORM_INIT)
                 }
             }
-            if (it.dependsOnProvider) {
-                project.tasks.register(
-                    taskName(name, it.command),
-                    it.type,
-                    it.dependsOnProvider.newInstance(project, name)
-                ).configure(configurator)
-            } else {
-                project.tasks.register(
-                    taskName(name, it.command),
-                    it.type
-                ).configure(configurator)
+        }
+    }
+
+    private static void registerTasks(
+        TerraformSourceDirectorySet sourceSet,
+        Project project
+    ) {
+        if (!project.tasks.findByName(taskName(sourceSet.name, TERRAFORM_INIT))) {
+            String name = sourceSet.name
+            DefaultTerraformTasks.ordered().each {
+                def taskConfigurator = taskConfigurator(sourceSet, it)
+                TaskProvider<AbstractTerraformTask> taskProvider
+                if (it.dependsOnProvider) {
+                    taskProvider = project.tasks.register(
+                        taskName(name, it.command),
+                        it.type,
+                        it.dependsOnProvider.newInstance(project, name)
+                    ) as TaskProvider<AbstractTerraformTask>
+                } else {
+                    taskProvider = project.tasks.register(
+                        taskName(name, it.command),
+                        it.type
+                    ) as TaskProvider<AbstractTerraformTask>
+                }
+
+                taskProvider.configure(taskConfigurator)
             }
         }
+    }
 
-        SupplementaryConvention.values().each { SupplementaryConvention doMore ->
-            project.pluginManager.withPlugin(doMore.pluginId) {
-                doMore.lazyCreateTasks.accept(project, sourceSet)
+    @CompileDynamic
+    private static void createTasks(
+        TerraformSourceDirectorySet sourceSet,
+        Project project
+    ) {
+        String name = sourceSet.name
+        if (!project.tasks.findByName(taskName(sourceSet.name, TERRAFORM_INIT))) {
+            DefaultTerraformTasks.ordered().each {
+                AbstractTerraformTask newTask
+                if (it.dependsOnProvider) {
+                    newTask = project.tasks.create(
+                        taskName(name, it.command),
+                        it.type,
+                        it.dependsOnProvider.newInstance(project, name)
+                    )
+                } else {
+                    newTask = project.tasks.create(
+                        taskName(name, it.command),
+                        it.type
+                    )
+                }
+                newTask.sourceSet = sourceSet
+                newTask.group = TERRAFORM_TASK_GROUP
+                newTask.description = "${it.description} for '${name}'"
+                if (it != DefaultTerraformTasks.INIT) {
+                    newTask.mustRunAfter taskName(name, TERRAFORM_INIT)
+                }
             }
         }
     }
