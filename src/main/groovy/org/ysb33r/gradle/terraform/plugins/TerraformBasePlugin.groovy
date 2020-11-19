@@ -20,10 +20,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.internal.DefaultTerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
-import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -41,7 +42,8 @@ class TerraformBasePlugin implements Plugin<Project> {
         }
         ProjectOperations.maybeCreateExtension(project)
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
-        project.extensions.create(TERRAFORM_SOURCESETS, TerraformSourceSets, project)
+
+        project.extensions.create(TerraformSourceSets, TERRAFORM_SOURCESETS, DefaultTerraformSourceSets, project)
 
         project.pluginManager.withPlugin('org.ysb33r.cloudci') {
             project.tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t ->

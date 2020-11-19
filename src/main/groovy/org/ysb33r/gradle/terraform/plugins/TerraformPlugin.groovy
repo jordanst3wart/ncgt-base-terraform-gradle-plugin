@@ -19,10 +19,11 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createSourceSetByConvention
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -35,13 +36,12 @@ class TerraformPlugin implements Plugin<Project> {
         project.apply plugin: TerraformBasePlugin
 
         TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
-
-        createSourceSetByConvention(project, DEFAULT_SOURCESET_NAME)
-        terraformSourceSets.addRule('Add source set', new Action<String>() {
+        terraformSourceSets.all(new Action<TerraformSourceDirectorySet>() {
             @Override
-            void execute(String requestedName) {
-                createSourceSetByConvention(project, requestedName)
+            void execute(TerraformSourceDirectorySet tsds) {
+                createTasksByConvention(project, tsds)
             }
         })
+        terraformSourceSets.create(DEFAULT_SOURCESET_NAME)
     }
 }

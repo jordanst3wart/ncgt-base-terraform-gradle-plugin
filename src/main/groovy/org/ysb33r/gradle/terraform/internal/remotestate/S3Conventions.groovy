@@ -19,11 +19,11 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import org.gradle.api.Action
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
@@ -56,8 +56,12 @@ class S3Conventions {
 
     @CompileDynamic
     @TypeChecked
-    static void taskLazyCreator(Project project, NamedDomainObjectProvider<TerraformSourceDirectorySet> tsds) {
+    static void taskLazyCreator(Project project, TerraformSourceDirectorySet tsds) {
         String name = tsds.name
+        if (!project.tasks.findByName(taskName(name, TERRAFORM_INIT))) {
+            TerraformConvention.createTasksByConvention(project, tsds)
+        }
+
         String configTaskName = newTaskName(name)
         TaskProvider<RemoteStateAwsS3ConfigGenerator> configTask = project.tasks.register(
             configTaskName,
@@ -70,7 +74,7 @@ class S3Conventions {
                 terraformInit(configTask.get()).execute(init)
             }
         })
-        tsds.configure(lazyAddVariablesToSourceSet(configTask))
+        lazyAddVariablesToSourceSet(configTask).execute(tsds)
     }
 
     @SuppressWarnings('ClosureAsLastMethodParameter')

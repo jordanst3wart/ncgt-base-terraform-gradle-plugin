@@ -22,8 +22,10 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.internal.remotestate.S3Conventions
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
 
@@ -38,9 +40,15 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
             project
         )
 
-        project.extensions.getByType(TerraformSourceSets).all ({ TerraformSourceDirectorySet tsds ->
-            def trse = (ExtensionAware)((ExtensionAware)tsds).extensions.getByType(TerraformRemoteStateExtension)
+        project.extensions.getByType(TerraformSourceSets).all({ TerraformSourceDirectorySet tsds ->
+            def trse = (ExtensionAware) ((ExtensionAware) tsds).extensions.getByType(TerraformRemoteStateExtension)
             trse.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project).follow(globalS3Configuration)
+
+            if (LegacyLevel.PRE_4_10) {
+                S3Conventions.taskCreator(project, tsds)
+            } else {
+                S3Conventions.taskLazyCreator(project, tsds)
+            }
         } as Action<TerraformSourceDirectorySet>)
 
         project.apply plugin: TerraformPlugin
