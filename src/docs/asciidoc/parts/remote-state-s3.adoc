@@ -53,14 +53,14 @@ data "terraform_remote_state" "aws_tf_remote_state" {
     key    = "${var.remote_state["name"]}.tfstate" // <2>
     region = var.remote_state["aws_region"] // <3>
     encrypt = true
-    dynamodb_table = "arn:aws:dynamodb:<REGION>:<ACCOUNT>:table/<TABLENAME>" // <4>
+    dynamodb_table =  var.remote_state["aws_dynamodb_lock_table_arn"]// <4>
   }
 }
 ----
 <1> The name of the bucket where remote state is stored. You can use the `remote_state` map to simplify things. The bucket should pre-exist.
 <2> Name of the file in S3 where the state is stored. Convention is to add `.tfstate` to the remote state name.
-<3> Region which is used to stored the state.
-<4> Your DynamoDB table for storing lock status. The table should pre-exist.
+<3> Region which is used to store the state.
+<4> Your DynamoDB table for storing lock status. The table should pre-exist. You can also use `dynamodb_table = "arn:aws:dynamodb:<REGION>:<ACCOUNT>:table/<TABLENAME>"` and substitute values accordingly.
 
 Now tell Gradle about your S3 setup
 
@@ -74,6 +74,7 @@ terraform {
     s3 {
         bucket = 'terraform-managed-remote-state-files' // <2>
         region = 'us-west-1' // <3>
+        dynamoDbLockTableArn = "arn:aws:dynamodb:us-west-1:1234567890AB:table/TerraformLocks" // <4>
     }
   }
 }
@@ -81,6 +82,7 @@ terraform {
 <1> If you are not happy with the project name being the default prefix for remote state named, then set this here.
 <2> Set the S3 bucket that will contain your state files.
 <3> Region that you are operating in.
+<4> The DynamoDB table use for terraform locks.
 
 [[CustomiseS3Template,customise the S3 template]]
 === Customising the configuration template

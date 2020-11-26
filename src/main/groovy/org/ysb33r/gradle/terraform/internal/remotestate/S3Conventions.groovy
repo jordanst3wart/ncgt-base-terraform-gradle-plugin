@@ -133,7 +133,19 @@ class S3Conventions {
         }
     }
 
-    static private void addVariables(TerraformSourceDirectorySet tdds, Object name, Object region, Object bucket) {
-        tdds.variables.map('remote_state', name: name, aws_region: region, 'aws_bucket': bucket)
+    static private void addVariables(
+        TerraformSourceDirectorySet tdds,
+        Object name,
+        Object region,
+        Object bucket,
+        Object lockTable
+    ) {
+        tdds.variables.map(
+            'remote_state',
+            name: name,
+            aws_region: region,
+            aws_bucket: bucket,
+            aws_dynamodb_lock_table_arn: lockTable
+        )
     }
 }
