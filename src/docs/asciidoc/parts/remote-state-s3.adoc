@@ -53,7 +53,7 @@ data "terraform_remote_state" "aws_tf_remote_state" {
     key    = "${var.remote_state["name"]}.tfstate" // <2>
     region = var.remote_state["aws_region"] // <3>
     encrypt = true
-    dynamodb_table =  var.remote_state["aws_dynamodb_lock_table_arn"]// <4>
+    dynamodb_table =  var.remote_state["aws_dynamodb_lock_table_arn"] // <4>
   }
 }
 ----
