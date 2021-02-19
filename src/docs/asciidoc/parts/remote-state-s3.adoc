@@ -39,7 +39,7 @@ variable "remote_state" { // <2>
 }
 ----
 <1> Indicate that you play to store remote state in S3.
-<2> Allow for Gradle to pass the map of remote state variabled.
+<2> Allow for Gradle to pass the map of remote state variables.
 
 If you are interested in using locking of remote state you probably are going to need something like this as well
 

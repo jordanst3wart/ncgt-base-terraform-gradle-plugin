@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,6 +96,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         when: 's3 is configured for region and bucket'
         s3.region = region
         s3.bucket = bucket
+        s3.dynamoDbLockTableArn = '123'
 
         then: 'the task will pick up appropriate aws configuration'
         project.tasks.createTfS3BackendConfiguration.s3BucketName.get() == bucket

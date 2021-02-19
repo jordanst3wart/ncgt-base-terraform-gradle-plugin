@@ -14,7 +14,7 @@
 
 === Other
 
-* Default `terraform` version is `0.13.5`.
+* Default `terraform` version is `0.14.3`.
 // end::changelog[]
 
 == v0.9.0
