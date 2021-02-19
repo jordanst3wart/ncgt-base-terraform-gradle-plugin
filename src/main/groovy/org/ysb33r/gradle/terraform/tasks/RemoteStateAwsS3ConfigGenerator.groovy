@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
 
     /** Sets a new remote state name
      *
-     * @param rsn Anything that can be lazy-evaluted to a string.
+     * @param rsn Anything that can be lazy-evaluated to a string.
      */
     void setRemoteStateName(Object rsn) {
         projectOperations.updateStringProperty(this.remoteStateName, rsn)

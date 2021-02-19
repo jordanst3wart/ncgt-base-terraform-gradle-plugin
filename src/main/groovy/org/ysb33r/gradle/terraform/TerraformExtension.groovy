@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.13.5'
+    public static final String TERRAFORM_DEFAULT = '0.14.7'
 
     /** Constructs a new extension which is attached to the provided project.
      *

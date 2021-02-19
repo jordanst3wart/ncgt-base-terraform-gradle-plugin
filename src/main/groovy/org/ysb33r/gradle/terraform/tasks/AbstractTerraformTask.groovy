@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.gradle.api.Transformer
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.configuration.ConsoleOutput
+import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -99,31 +100,47 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.reportsDirProvider
     }
 
-    /** The level at which Terraform should log.
+    /** The level at which Terraform should log to a file.
      *
      * @return Terraform log level. Can be {@code null} signifying that logging is switched off.
      */
     @Internal
     String getLogLevel() {
-        switch (this.terraformLogLevel ?: projectOperations.gradleLogLevel) {
-            case LogLevel.DEBUG:
-            case LogLevel.INFO:
-                return 'TRACE'
-            default:
-                null
-        }
+        this.terraformLogLevel
     }
 
+    /**
+     * Whether to log progress to the directory specified in {@link #getLogDir}.
+     *
+     * @param state {@code true} to log progress
+     *
+     * @since 0.10.0
+     */
+    void setLogProgress(boolean state) {
+        this.terraformLogLevel = state ? 'TRACE' : null
+    }
+
+    @Deprecated
+    @ReplacedBy('logProgress')
     void unsetLogLevel() {
-        this.terraformLogLevel = null
+        logger.warn('unsetLogLevel is deprecated. Use setLogProgress instead.')
+        this.logProgress = false
     }
 
+    @Deprecated
+    @ReplacedBy('logProgress')
+    @SuppressWarnings('DuplicateStringLiteral')
     void setLogLevel(String lvl) {
-        this.terraformLogLevel = LogLevel.valueOf(lvl)
+        logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
+        logProgress = lvl == 'INFO' || lvl == 'DEBUG'
     }
 
+    @Deprecated
+    @ReplacedBy('logProgress')
+    @SuppressWarnings('DuplicateStringLiteral')
     void setLogLevel(LogLevel lvl) {
-        this.terraformLogLevel = lvl
+        logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
+        logProgress = lvl == LogLevel.INFO || lvl == LogLevel.DEBUG
     }
 
     /** Replace current environment with new one.
@@ -187,7 +204,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             }
         }
 
-        if (logLevel) {
+        if (terraformLogLevel) {
             logDir.get().mkdirs()
         }
 
@@ -415,7 +432,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
             name,
             dataDir,
             logDir,
-            logLevel
+            terraformLogLevel
         )
     }
 
@@ -559,9 +576,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         // end::default-environment[]
     }
 
-    private LogLevel terraformLogLevel
     private Object sourceSetProxy
     private boolean noProjectEnvironment = false
+    private String terraformLogLevel = 'TRACE'
     private Provider<File> stdoutCapture
     private final String command
     private final List<String> defaultCommandParameters = []
