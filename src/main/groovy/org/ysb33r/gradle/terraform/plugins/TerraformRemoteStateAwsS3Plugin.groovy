@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,14 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
 
         project.extensions.getByType(TerraformSourceSets).all({ TerraformSourceDirectorySet tsds ->
             def trse = (ExtensionAware) ((ExtensionAware) tsds).extensions.getByType(TerraformRemoteStateExtension)
-            trse.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project).follow(globalS3Configuration)
+            def remote = trse.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project)
+
+            remote.follow(globalS3Configuration)
 
             if (LegacyLevel.PRE_4_10) {
-                S3Conventions.taskCreator(project, tsds)
+                S3Conventions.taskCreator(project, tsds, remote)
             } else {
-                S3Conventions.taskLazyCreator(project, tsds)
+                S3Conventions.taskLazyCreator(project, tsds, remote)
             }
         } as Action<TerraformSourceDirectorySet>)
 

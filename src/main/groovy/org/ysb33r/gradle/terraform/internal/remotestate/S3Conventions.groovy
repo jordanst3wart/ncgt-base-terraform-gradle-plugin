@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
@@ -42,21 +43,36 @@ import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtens
  */
 @CompileStatic
 class S3Conventions {
-    static void taskCreator(Project project, TerraformSourceDirectorySet tdds) {
+    static void taskCreator(
+        Project project,
+        TerraformSourceDirectorySet tdds,
+        RemoteStateS3Provider remoteS3
+    ) {
         String name = tdds.name
         String configTaskName = newTaskName(name)
         RemoteStateAwsS3ConfigGenerator configTask = project.tasks.create(
             configTaskName,
             RemoteStateAwsS3ConfigGenerator
         )
+
         defaultRemoteStateName(name).execute(configTask)
         terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(taskName(name, TERRAFORM_INIT)))
-        addVariables(tdds, configTask.remoteStateName, configTask.awsRegion, configTask.s3BucketName)
+        addVariables(
+            tdds,
+            configTask.remoteStateName,
+            configTask.awsRegion,
+            configTask.s3BucketName,
+            remoteS3.dynamoDbLockTableArn
+        )
     }
 
     @CompileDynamic
     @TypeChecked
-    static void taskLazyCreator(Project project, TerraformSourceDirectorySet tsds) {
+    static void taskLazyCreator(
+        Project project,
+        TerraformSourceDirectorySet tsds,
+        RemoteStateS3Provider remoteS3
+    ) {
         String name = tsds.name
         if (!project.tasks.findByName(taskName(name, TERRAFORM_INIT))) {
             TerraformConvention.createTasksByConvention(project, tsds)
@@ -74,12 +90,13 @@ class S3Conventions {
                 terraformInit(configTask.get()).execute(init)
             }
         })
-        lazyAddVariablesToSourceSet(configTask).execute(tsds)
+        lazyAddVariablesToSourceSet(configTask, remoteS3).execute(tsds)
     }
 
     @SuppressWarnings('ClosureAsLastMethodParameter')
     private static Action<TerraformSourceDirectorySet> lazyAddVariablesToSourceSet(
-        Provider<RemoteStateAwsS3ConfigGenerator> configTask
+        Provider<RemoteStateAwsS3ConfigGenerator> configTask,
+        RemoteStateS3Provider remoteState
     ) {
         new Action<TerraformSourceDirectorySet>() {
             @Override
@@ -88,7 +105,8 @@ class S3Conventions {
                     tsds,
                     { -> configTask.get().remoteStateName },
                     { -> configTask.get().awsRegion },
-                    { -> configTask.get().s3BucketName }
+                    { -> configTask.get().s3BucketName },
+                    remoteState.dynamoDbLockTableArn
                 )
             }
         }
@@ -133,7 +151,19 @@ class S3Conventions {
         }
     }
 
-    static private void addVariables(TerraformSourceDirectorySet tdds, Object name, Object region, Object bucket) {
-        tdds.variables.map('remote_state', name: name, aws_region: region, 'aws_bucket': bucket)
+    static private void addVariables(
+        TerraformSourceDirectorySet tdds,
+        Object name,
+        Object region,
+        Object bucket,
+        Provider<String> lockTable
+    ) {
+        tdds.variables.map(
+            'remote_state',
+            name: name,
+            aws_region: region,
+            aws_bucket: bucket,
+            aws_dynamodb_lock_table_arn: { -> lockTable.getOrElse('') }
+        )
     }
 }
