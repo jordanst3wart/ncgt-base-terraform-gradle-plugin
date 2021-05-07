@@ -26,6 +26,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.TerraformMajorVersion
 import org.ysb33r.grolifant.api.v4.MapUtils
 
 import java.nio.file.FileVisitResult
@@ -37,6 +38,8 @@ import java.time.LocalDateTime
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static java.nio.file.Files.readSymbolicLink
+import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_11_OR_OLDER
+import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_12
 
 /** Equivalent of {@code terraform init}.
  *
@@ -191,6 +194,14 @@ class TerraformInit extends AbstractTerraformTask {
         terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
+    /** Whether plugins should be verified.
+     *
+     * @deprecated Only used for Terraform 0.12 or older
+     */
+    @Internal
+    @Deprecated
+    boolean verifyPlugins = true
+
     /** Add specific command-line options for the command.
      * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
      * to {@code terraform init}.
@@ -234,6 +245,10 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs('-reconfigure')
         }
 
+        TerraformMajorVersion verGroup = terraformMajorVersion
+        if (verGroup == VERSION_11_OR_OLDER || verGroup == VERSION_12) {
+            execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
+        }
         execSpec
     }
 
