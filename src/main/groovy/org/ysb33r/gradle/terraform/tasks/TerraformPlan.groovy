@@ -65,9 +65,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanOutputFile() {
-        reportsDir.map( { File reportDir ->
+        reportsDir.map({ File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan")
-        } as Transformer<File,File>)
+        } as Transformer<File, File>)
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -76,9 +76,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanReportOutputFile() {
-        reportsDir.map( { File reportDir ->
+        reportsDir.map({ File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-        } as Transformer<File,File>)
+        } as Transformer<File, File>)
     }
 
     /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
@@ -99,6 +99,15 @@ class TerraformPlan extends AbstractTerraformTask {
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
+    }
+
+    /** Mark resources to be replaces.
+     *
+     * @param resourceNames List of resources to target.
+     */
+    @Option(option = 'replace', description = 'List of resources to replace')
+    void setReplacements(List<String> resourceNames) {
+        extensions.getByType(ResourceFilter).replacements = resourceNames
     }
 
     /** Where to write the report in human-readable or JSON format.

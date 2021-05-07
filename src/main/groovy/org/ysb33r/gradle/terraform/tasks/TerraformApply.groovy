@@ -17,6 +17,9 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.config.ResourceFilter
+import org.ysb33r.gradle.terraform.config.StateOptionsFull
 
 import javax.inject.Inject
 import java.time.LocalDateTime
@@ -30,12 +33,23 @@ import java.util.concurrent.Callable
  * @since 0.1
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformApplyTask {
+class TerraformApply extends AbstractTerraformTask {
+
+    /*
+-lock=false - Disables Terraform's default behavior of attempting to take a read/write lock on the state for the duration of the operation.
+
+-lock-timeout=DURATION - Unless locking is disabled with -lock=false, instructs Terraform to retry acquiring a lock for a period of time before returning an error. The duration syntax is a number followed by a time unit letter, such as "3s" for three seconds.
+
+-parallelism=n
+     */
 
     @Inject
     TerraformApply(TerraformPlanProvider plan) {
-        super(plan, 'apply')
+        super('apply', [Lock, StateOptionsFull], [])
         supportsAutoApprove()
+        supportsInputs()
+        supportsColor()
+        planProvider = plan
 
         tracker = project.provider({ ->
             plan.get().internalTrackerFile.get()
@@ -51,4 +65,5 @@ class TerraformApply extends AbstractTerraformApplyTask {
     }
 
     private final Provider<File> tracker
+    private final TerraformPlanProvider planProvider
 }

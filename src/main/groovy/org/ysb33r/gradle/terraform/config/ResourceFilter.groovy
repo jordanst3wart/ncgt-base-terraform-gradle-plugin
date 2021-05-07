@@ -34,29 +34,46 @@ class ResourceFilter implements TerraformTaskConfigExtension {
     @Override
     @SuppressWarnings('UnnecessaryCast')
     List<Closure> getInputProperties() {
-        [{ -> this.resources }] as List<Closure>
+        [{ -> this.targets }] as List<Closure>
     }
 
     void setTargets(Iterable<String> targets) {
-        this.resources.clear()
-        this.resources.addAll(targets)
+        this.targets.clear()
+        this.targets.addAll(targets)
     }
 
     void target(String... targets) {
-        this.resources.addAll(targets)
+        this.targets.addAll(targets)
     }
 
     void target(Iterable<String> targets) {
-        this.resources.addAll(targets)
+        this.targets.addAll(targets)
+    }
+
+    void setReplacements(Iterable<String> targets) {
+        this.replacements.clear()
+        this.replacements.addAll(targets)
+    }
+
+    void replace(String... targets) {
+        this.replacements.addAll(targets)
+    }
+
+    void repalce(Iterable<String> targets) {
+        this.replacements.addAll(targets)
     }
 
     @Override
     List<String> getCommandLineArgs() {
-        Transform.toList(resources) {
+        Transform.toList((Collection) targets) {
             "-target=${it}".toString()
+        }
+        Transform.toList((Collection) replacements) {
+            "-replace=${it}".toString()
         }
     }
 
     private final AbstractTerraformTask terraformTask
-    private final List<String> resources = []
+    private final List<String> targets = []
+    private final List<String> replacements = []
 }
