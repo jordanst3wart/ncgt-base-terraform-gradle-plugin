@@ -17,16 +17,18 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.TerraformMajorVersion
+import org.ysb33r.gradle.terraform.errors.TerraformUpgradeNotSupportedException
 
 /** Equivalent of {@code terraform 0.12upgrade}.
  *
  * @since 0.10.0
  */
 @CompileStatic
-class TerraformUpgrade012 extends AbstractTerraformTask {
+class TerraformUpgrade extends AbstractTerraformTask {
 
-    TerraformUpgrade012() {
-        super('0.12upgrade', [], [])
+    TerraformUpgrade() {
+        super(null, [], [])
         alwaysOutOfDate()
     }
 
@@ -40,6 +42,21 @@ class TerraformUpgrade012 extends AbstractTerraformTask {
     void setAutoApprove(Boolean state) {
         if (state) {
             supportsYes()
+        }
+    }
+
+    @Override
+    protected String getTerraformCommand() {
+        // Look up version
+        switch (terraformMajorVersion) {
+            case TerraformMajorVersion.VERSION_12:
+                return '0.12upgrade'
+            case TerraformMajorVersion.VERSION_13:
+                return '0.13upgrade'
+            default:
+                throw new TerraformUpgradeNotSupportedException(
+                    'This version of terraform does not have a command to upgrade from a previous version'
+                )
         }
     }
 }

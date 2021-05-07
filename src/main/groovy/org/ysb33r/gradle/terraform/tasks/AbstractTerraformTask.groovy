@@ -17,10 +17,12 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.Synchronized
 import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.logging.Logger
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
@@ -31,17 +33,21 @@ import org.gradle.api.tasks.Internal
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformMajorVersion
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
+import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
+
+import java.util.concurrent.ConcurrentHashMap
 
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
@@ -525,6 +531,23 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         this.defaultCommandParameters
     }
 
+    /**
+     * Tries to determine the current terraform version group
+     *
+     * @return Terraform version
+     *
+     * @since 0.10.0
+     */
+    protected TerraformMajorVersion getTerraformMajorVersion() {
+        def tssName = sourceSet?.name
+
+        if (tssName) {
+            loadTerraformVersion(tssName, terraformExtension, logger)
+        } else {
+            throw new TerraformConfigurationException("Source set is not associated for task ${name}")
+        }
+    }
+
     /** To be called subclass constructor for defining specific configuration extensions that are
      * supported.
      *
@@ -575,6 +598,29 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         }
         // end::default-environment[]
     }
+
+    @Synchronized
+    private static TerraformMajorVersion loadTerraformVersion(
+        String sourceSetName,
+        TerraformExtension tf,
+        Logger log
+    ) {
+        TF_VERSIONS.computeIfAbsent(sourceSetName) {
+            def ver = tf.resolveTerraformVersion()
+            if (ver == TerraformMajorVersion.UNKNOWN) {
+                log.info('''Configured terraform version is unknown to this plugin.
+  If this is a new version of terraform please raise an issue at
+
+    https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues
+
+''')
+            }
+            ver
+        }
+    }
+
+    private static final ConcurrentHashMap<String, TerraformMajorVersion> TF_VERSIONS =
+        new ConcurrentHashMap<String, TerraformMajorVersion>()
 
     private Object sourceSetProxy
     private boolean noProjectEnvironment = false
