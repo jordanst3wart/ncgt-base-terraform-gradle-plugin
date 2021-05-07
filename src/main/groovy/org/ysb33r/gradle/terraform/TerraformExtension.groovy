@@ -273,6 +273,8 @@ class TerraformExtension extends AbstractToolExtension {
             TerraformExecSpec tes = new TerraformExecSpec(projectOperations, resolver)
             def strm = new ByteArrayOutputStream()
             tes.standardOutput(strm)
+            tes.executable(resolvableExecutable)
+            tes.command(VERSION_CMD_ARGS)
 
             Action<ExecSpec> runner = new Action<ExecSpec>() {
                 @Override
@@ -361,6 +363,7 @@ class TerraformExtension extends AbstractToolExtension {
     @SuppressWarnings('UnnecessaryCast')
     private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
     private static final String VERSION_KEY = 'version'
+    private static final String VERSION_CMD_ARGS = VERSION_KEY
 
     private Boolean warnOnNewVersion
     private final Map<String, Object> env

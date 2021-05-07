@@ -16,7 +16,11 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
@@ -35,14 +39,6 @@ import java.util.concurrent.Callable
 @CompileStatic
 class TerraformApply extends AbstractTerraformTask {
 
-    /*
--lock=false - Disables Terraform's default behavior of attempting to take a read/write lock on the state for the duration of the operation.
-
--lock-timeout=DURATION - Unless locking is disabled with -lock=false, instructs Terraform to retry acquiring a lock for a period of time before returning an error. The duration syntax is a number followed by a time unit letter, such as "3s" for three seconds.
-
--parallelism=n
-     */
-
     @Inject
     TerraformApply(TerraformPlanProvider plan) {
         super('apply', [Lock, StateOptionsFull], [])
@@ -50,7 +46,12 @@ class TerraformApply extends AbstractTerraformTask {
         supportsInputs()
         supportsColor()
         planProvider = plan
-
+        planFile = planProvider.map(new Transformer<File, TerraformPlan>() {
+            @Override
+            File transform(TerraformPlan terraformPlan) {
+                terraformPlan.planOutputFile.get()
+            }
+        })
         tracker = project.provider({ ->
             plan.get().internalTrackerFile.get()
         } as Callable<File>)
@@ -60,9 +61,49 @@ class TerraformApply extends AbstractTerraformTask {
         }
 
         outputs.file(tracker).optional()
-        inputs.files(taskProvider('init'))
         inputs.files(taskProvider('plan'))
+//        inputs.files(taskProvider('init'))
     }
+
+    /** Select specific resources.
+     *
+     * @param resourceNames List of resources to target.
+     *
+     * @since 0.10.0
+     */
+    @Option(option = 'target', description = 'List of resources to target')
+    void setTargets(List<String> resourceNames) {
+        planProvider.configure {
+            it.extensions.getByType(ResourceFilter).target(resourceNames)
+        }
+    }
+
+    /** Mark resources to be replaced.
+     *
+     * @param resourceNames List of resources to target.
+     *
+     * @since 0.10.0
+     */
+    @Option(option = 'replace', description = 'List of resources to replace')
+    void setReplacements(List<String> resourceNames) {
+        planProvider.configure {
+            it.extensions.getByType(ResourceFilter).replace(resourceNames)
+        }
+    }
+
+    @Override
+    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec.cmdArgs(planFile.map(new Transformer<String, File>() {
+            @Override
+            String transform(File plan) {
+                plan.absolutePath
+            }
+        }))
+    }
+
+    @InputFile
+    protected final Provider<File> planFile
 
     private final Provider<File> tracker
     private final TerraformPlanProvider planProvider

@@ -59,7 +59,7 @@ class ResourceFilter implements TerraformTaskConfigExtension {
         this.replacements.addAll(targets)
     }
 
-    void repalce(Iterable<String> targets) {
+    void replace(Iterable<String> targets) {
         this.replacements.addAll(targets)
     }
 

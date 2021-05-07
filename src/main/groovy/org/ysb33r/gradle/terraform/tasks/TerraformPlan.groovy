@@ -65,7 +65,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanOutputFile() {
-        reportsDir.map({ File reportDir ->
+        dataDir.map({ File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan")
         } as Transformer<File, File>)
     }

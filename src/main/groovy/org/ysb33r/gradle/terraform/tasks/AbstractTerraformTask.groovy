@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
 import org.gradle.api.Action
 import org.gradle.api.Transformer
+import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
@@ -27,7 +28,6 @@ import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.process.ExecSpec
@@ -86,7 +86,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         }
     }
 
-    @InputDirectory
+    @Internal
     Provider<File> getSourceDir() {
         this.sourceDirProvider
     }
@@ -288,6 +288,21 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         secondarySources = project.provider { ->
             sourceSet.secondarySources.get()
         }
+
+        this.sourceFiles = project.fileTree(sourceDirProvider)
+        this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate')
+    }
+
+    /**
+     * Files in the source direcotyr that act as input files to determine up to date status.
+     *
+     * @return File collection
+     *
+     * @since 0.10.0
+     */
+    @InputFiles
+    protected FileCollection getSourceFiles() {
+        this.sourceFiles
     }
 
     /**
@@ -636,4 +651,5 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     private final Provider<File> reportsDirProvider
     private final TerraformExtension projectTerraform
     private final TerraformRCExtension terraformrc
+    private final ConfigurableFileTree sourceFiles
 }

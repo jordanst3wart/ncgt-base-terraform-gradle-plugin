@@ -57,6 +57,4 @@ class AbstractTerraformApplyTask extends AbstractTerraformTask {
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
     }
-
-
 }

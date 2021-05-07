@@ -31,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributes
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
 @RestoreSystemProperties
@@ -62,7 +63,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         }
 
         tfApply {
-            logLevel = 'DEBUG'
+            logProgress = true
         }
         """
     }
@@ -102,7 +103,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     @Unroll
     void 'Run terraform plan on a local resource (#state)'() {
         setup:
-        File planFile = new File(buildDir, 'reports/tf/main/main.tf.plan')
+        File planFile = new File(buildDir, 'tf/main/main.tf.plan')
         File textFile = new File(buildDir, "reports/tf/main/main.tf.plan.${json ? 'json' : 'txt'}")
         def cmdLine = json ? ['--json'] : []
         if (destroy) {
@@ -132,6 +133,30 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         then:
         result.task(':tfApply').outcome == SUCCESS
         destFile.text == FILE_CONTENTS
+    }
+
+    void 'Plan should not run twice if nothing changed'() {
+        when:
+        BuildResult result = getGradleRunner(['tfPlan']).build()
+
+        then:
+        result.task(':tfPlan').outcome == SUCCESS
+
+        when:
+        BuildResult result2 = getGradleRunner(['tfApply']).build()
+
+        then:
+        result2.task(':tfInit').outcome == UP_TO_DATE
+        result2.task(':tfPlan').outcome == UP_TO_DATE
+        result2.task(':tfApply').outcome == SUCCESS
+
+        when:
+        BuildResult result3= getGradleRunner(['tfApply']).build()
+
+        then:
+        result3.task(':tfInit').outcome == UP_TO_DATE
+        result3.task(':tfPlan').outcome == UP_TO_DATE
+        result3.task(':tfApply').outcome == UP_TO_DATE
     }
 
     void 'Run terraform destroy on a local resource'() {
