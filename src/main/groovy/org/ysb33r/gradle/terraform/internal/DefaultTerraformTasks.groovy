@@ -27,6 +27,8 @@ import org.ysb33r.gradle.terraform.tasks.TerraformShowState
 import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
 import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
 import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
+
+import org.ysb33r.gradle.terraform.tasks.TerraformUntaint
 import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade
 
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
@@ -50,6 +52,7 @@ enum DefaultTerraformTasks {
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
     STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
+    UNTAINT(34,'untaint', TerraformUntaint,'Remove tainted status from resource'),
     UPGRADE(40,'upgrade', TerraformUpgrade,'Upgrades Terraform source to current version')
 
     static List<DefaultTerraformTasks> ordered() {
