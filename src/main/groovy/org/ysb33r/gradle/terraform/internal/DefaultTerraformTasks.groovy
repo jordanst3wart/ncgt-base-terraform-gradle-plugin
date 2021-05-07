@@ -19,6 +19,8 @@ import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroyPlan
+import org.ysb33r.gradle.terraform.tasks.TerraformFmtApply
+import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
@@ -53,7 +55,9 @@ enum DefaultTerraformTasks {
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
     STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
     UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
-    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version')
+    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version'),
+    FMT_CHECK(50,'fmtCheck', TerraformFmtCheck,'Checks whether files are correctly formatted'),
+    FMT_APPLY(51,'fmtApply', TerraformFmtApply,'Formats source files in source set')
 
     static List<DefaultTerraformTasks> ordered() {
         DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List

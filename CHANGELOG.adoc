@@ -10,7 +10,8 @@
 * {issue}16[#16] - Improved up to date checking for various Terraform tasks.
 * {issue}25[#25] - File paths printed in console are shown as URIs to support better hyperlinking from IDEs.
 * {issue}28[#28] - Remote S3 state can be configured on a per source set basis.
-* {issue}29[#29],  - Tasks `tfUpgrade` added to aid in upgrading from previous `terraform` sources where the specific version supports it.
+* {issue}29[#29] - Tasks `tfUpgrade` added to aid in upgrading from previous `terraform` sources where the specific version supports it.
+* {issue}31[#31] - Tasks `tfFmtCheck` and `tfFmtApply` added.
 * {issue}32[#32] - Remove logging levels as it is not supported by Terraform and replace by method `setLogProgress`.
 * {issue}33[#33] - Support for terraform 0.15.
 * {issue}35[#35] -Task `tfUntaint` added.
