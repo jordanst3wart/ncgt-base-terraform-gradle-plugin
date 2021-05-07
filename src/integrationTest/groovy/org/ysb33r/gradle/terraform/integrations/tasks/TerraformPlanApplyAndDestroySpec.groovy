@@ -101,16 +101,11 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     }
 
     @Unroll
-    void 'Run terraform plan on a local resource (#state)'() {
+    void 'Run terraform plan on a local resource (#format)'() {
         setup:
         File planFile = new File(buildDir, 'tf/main/main.tf.plan')
         File textFile = new File(buildDir, "reports/tf/main/main.tf.plan.${json ? 'json' : 'txt'}")
         def cmdLine = json ? ['--json'] : []
-        if (destroy) {
-            buildFile.withWriterAppend { w ->
-                w.println 'tfPlan.destructionPlan = true'
-            }
-        }
 
         when:
         BuildResult result = getGradleRunner(['tfPlan'] + cmdLine).build()
@@ -121,9 +116,31 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         textFile.exists()
 
         where:
-        destroy | state     | json
-        false   | 'normal'  | false
-        true    | 'destroy' | true
+        format | json
+        'text' | false
+        'json' | true
+    }
+
+    @Unroll
+    void 'Create destroy plan (#format)'() {
+        setup:
+        File planFile = new File(buildDir, 'tf/main/main.tf.destroy.plan')
+        File textFile = new File(buildDir, "reports/tf/main/main.tf.destroy.plan.${json ? 'json' : 'txt'}")
+        def cmdLine = json ? ['--json'] : []
+
+        when:
+        BuildResult result = getGradleRunner(['tfApply', 'tfDestroyPlan'] + cmdLine).build()
+
+        then:
+        result.task(':tfApply').outcome == SUCCESS
+        result.task(':tfDestroyPlan').outcome == SUCCESS
+        planFile.exists()
+        textFile.exists()
+
+        where:
+        format | json
+        'text' | false
+        'json' | true
     }
 
     void 'Run terraform apply on a local resource'() {
@@ -151,7 +168,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         result2.task(':tfApply').outcome == SUCCESS
 
         when:
-        BuildResult result3= getGradleRunner(['tfApply']).build()
+        BuildResult result3 = getGradleRunner(['tfApply']).build()
 
         then:
         result3.task(':tfInit').outcome == UP_TO_DATE

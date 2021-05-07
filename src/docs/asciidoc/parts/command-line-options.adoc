@@ -32,6 +32,17 @@ A number of task types support command-line options.
 | `false`
 | Auto-approve destruction of all mentioned resources.
 
+.2+<.^| `tfDestroyPlan`
+| `--targets`
+| list
+| {nbsp}
+| Select group of resources to apply.
+
+| `--json`
+| boolean
+| `false`
+| Write textual plan in JSON format.
+
 .3+<.^| `tfImport`
 | `--type`
 | string
@@ -75,7 +86,7 @@ A number of task types support command-line options.
 | `false`
 | Write validation output in JSON format.
 
-.5+<.^| `tfPlan`
+.3+<.^| `tfPlan`
 | `--targets`
 | list
 | {nbsp}
@@ -85,16 +96,6 @@ A number of task types support command-line options.
 | boolean
 | `false`
 | Write textual plan in JSON format.
-
-| `--destroy`
-| boolean
-| `false`
-| Generate a destruction plan instead.
-
-| `--targets`
-| list
-| {nbsp}
-| Select group of resources to apply.
 
 | `--replace`
 | boolean

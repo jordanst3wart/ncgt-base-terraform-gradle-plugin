@@ -51,13 +51,13 @@ class TerraformPlan extends AbstractTerraformTask {
         inputs.files(taskProvider('init'))
     }
 
-    /** Set to {@code true} if a plan to destroy all resources must be produced.
-     *
-     * Or pass {@code --destroy} on the command-line.
-     */
-    @Input
-    @Option(option = 'destroy', description = 'Generate a destruction plan')
-    boolean destructionPlan = false
+//    /** Set to {@code true} if a plan to destroy all resources must be produced.
+//     *
+//     * Or pass {@code --destroy} on the command-line.
+//     */
+//    @Input
+//    @Option(option = 'destroy', description = 'Generate a destruction plan')
+//    boolean destructionPlan = false
 
     /** Where the plan file will be written to.
      *
@@ -132,7 +132,7 @@ class TerraformPlan extends AbstractTerraformTask {
         }
 
         logger.lifecycle(
-            "The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut.toURI()}"
+            "The plan file has been generated into ${planOut.toURI()}"
         )
         logger.lifecycle("The textual representation of the plan file has been generated into ${textOut.toURI()}")
     }
@@ -149,9 +149,6 @@ class TerraformPlan extends AbstractTerraformTask {
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.identity {
             cmdArgs "-out=${planOutputFile.get()}"
-        }
-        if (destructionPlan) {
-            execSpec.cmdArgs '-destroy'
         }
         execSpec
     }
@@ -181,5 +178,5 @@ class TerraformPlan extends AbstractTerraformTask {
         }
     }
 
-    private boolean jsonReport = false
+    protected boolean jsonReport = false
 }
