@@ -26,7 +26,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.grolifant.api.v4.MapUtils
 
 import java.nio.file.FileVisitResult
@@ -104,7 +103,7 @@ class TerraformInit extends AbstractTerraformTask {
     final Provider<File> terraformInitStateFile
 
     TerraformInit() {
-        super('init', [Lock], [])
+        super('init', [], [])
         supportsInputs()
         supportsColor()
 
@@ -192,12 +191,6 @@ class TerraformInit extends AbstractTerraformTask {
         terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
-    /** Whether plugins should be verified.
-     *
-     */
-    @Internal
-    boolean verifyPlugins = true
-
     /** Add specific command-line options for the command.
      * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
      * to {@code terraform init}.
@@ -224,7 +217,6 @@ class TerraformInit extends AbstractTerraformTask {
         }
 
         execSpec.cmdArgs "-backend=${!skipConfigureBackends}"
-        execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
 
         getBackendConfigValues().each { String k, String v ->
             execSpec.cmdArgs "-backend-config=$k=$v"
