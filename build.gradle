@@ -62,7 +62,7 @@ test {
 gradleTest {
 
     ext {
-        minVersion = '4.8'
+        minVersion = '4.9'
     }
     versions minVersion
     // tag::gradleTestVersions[]

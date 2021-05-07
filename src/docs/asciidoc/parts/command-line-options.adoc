@@ -43,16 +43,11 @@ A number of task types support command-line options.
 | `false`
 | Write textual plan in JSON format.
 
-.3+<.^| `tfImport`
-| `--type`
+.2+<.^| `tfImport`
+| `--path`
 | string
 | {nbsp}
-| Type of resource to import e.g. `aws_ecs_cluster`
-
-| `--name`
-| string
-| {nbsp}
-| Name of resource to import as specified in `.tf` file
+| Resource to import e.g. `aws_ecs_cluster.my_cluster`
 
 | `--id`
 | string
@@ -125,16 +120,11 @@ A number of task types support command-line options.
 | {nbsp}
 | Local state file path (relative to Terraform source directory) to push to remote state.
 
-.2+<.^| `tfStateRm`
-| `--type`
+.1+<.^| `tfStateRm`
+| `--path`
 | string
 | {nbsp}
-| Type of resource to remove e.g. `aws_ecs_cluster`
-
-| `--name`
-| string
-| {nbsp}
-| Name of resource to remove as specified in `.tf` file
+| Resource to remove e.g. `aws_ecs_cluster.my_cluster`
 
 .3+<.^| `tfUntaint`
 | `--path`

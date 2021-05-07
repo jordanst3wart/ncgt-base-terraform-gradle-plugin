@@ -553,6 +553,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      *
      * @since 0.10.0
      */
+    @Internal
     protected TerraformMajorVersion getTerraformMajorVersion() {
         def tssName = sourceSet?.name
 
