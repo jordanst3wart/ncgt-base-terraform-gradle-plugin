@@ -35,7 +35,7 @@ apply from: rootProject.file('gradle/integration-tests.gradle')
 apply from: rootProject.file('gradle/codenarc.gradle')
 
 repositories {
-    jcenter()
+    mavenCentral()
 
     if (!notSnapshot()) {
         mavenLocal()
