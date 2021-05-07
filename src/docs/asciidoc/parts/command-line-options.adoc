@@ -10,11 +10,16 @@ A number of task types support command-line options.
 | Default
 | Purpose
 
-<.^| `tfApply`
+.2+<.^| `tfApply`
 | `--targets`
 | list
 | {nbsp}
 | Select group of resources to apply.
+
+| `--replace`
+| boolean
+| `false`
+| Select group of resources to replace.
 
 .2+<.^| `tfDestroy`
 | `--targets`
@@ -70,7 +75,7 @@ A number of task types support command-line options.
 | `false`
 | Write validation output in JSON format.
 
-.3+<.^| `tfPlan`
+.5+<.^| `tfPlan`
 | `--targets`
 | list
 | {nbsp}
@@ -85,6 +90,16 @@ A number of task types support command-line options.
 | boolean
 | `false`
 | Generate a destruction plan instead.
+
+| `--targets`
+| list
+| {nbsp}
+| Select group of resources to apply.
+
+| `--replace`
+| boolean
+| `false`
+| Select group of resources to replace.
 
 <.^| `tfShowState`
 | `--json`
@@ -119,6 +134,22 @@ A number of task types support command-line options.
 | string
 | {nbsp}
 | Name of resource to remove as specified in `.tf` file
+
+.3+<.^| `tfUntaint`
+| `--path`
+| string
+| {nbsp}
+| Resource to untaint.
+
+| `--allow-missing`
+| boolean
+| `false`
+| Allow task to succeed even if the resource is missing.
+
+| `--ignore-remote-version`
+| boolean
+| `false`
+| Continue if remote and local Terraform versions differ from Terraform Cloud.
 
 <.^| `tfValidate`
 | `--json`

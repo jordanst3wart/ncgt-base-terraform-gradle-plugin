@@ -56,16 +56,15 @@ class TerraformUntaint extends AbstractTerraformTask {
         this.ignoreRemoteVersion = flag
     }
 
-
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        if(allowMissing) {
+        if (allowMissing) {
             execSpec.cmdArgs '-allow-missing'
         }
 
-        if(ignoreRemoteVersion) {
+        if (ignoreRemoteVersion) {
             execSpec.cmdArgs '-ignore-remote-version'
         }
 
