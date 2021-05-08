@@ -18,39 +18,29 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
-import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.configuration.ConsoleOutput
-import org.gradle.api.model.ReplacedBy
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformMajorVersion
-import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
-import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
-import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
-import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 
 import java.util.concurrent.ConcurrentHashMap
 
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
-import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_0
 import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
@@ -63,7 +53,7 @@ import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
  */
 @CompileStatic
 @SuppressWarnings('MethodCount')
-abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension> {
+abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
     /**
      *
@@ -127,14 +117,12 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     @Deprecated
-    @ReplacedBy('logProgress')
     void unsetLogLevel() {
         logger.warn('unsetLogLevel is deprecated. Use setLogProgress instead.')
         this.logProgress = false
     }
 
     @Deprecated
-    @ReplacedBy('logProgress')
     @SuppressWarnings('DuplicateStringLiteral')
     void setLogLevel(String lvl) {
         logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
@@ -142,42 +130,10 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     @Deprecated
-    @ReplacedBy('logProgress')
     @SuppressWarnings('DuplicateStringLiteral')
     void setLogLevel(LogLevel lvl) {
         logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
         logProgress = lvl == LogLevel.INFO || lvl == LogLevel.DEBUG
-    }
-
-    /** Replace current environment with new one.
-     *
-     * Calling this will also remove any project extension environment from this task.
-     *
-     * @param args New environment key-value map of properties.
-     */
-    @Override
-    void setEnvironment(Map<String, ?> args) {
-        noProjectEnvironment = true
-        super.setEnvironment(defaultEnvironment)
-        environment(args)
-    }
-
-    /** Environment for running the exe
-     *
-     * <p> Calling this will resolve all lazy-values in the variable map.
-     *
-     * @return Map of environmental variables that will be passed.
-     */
-    @Override
-    Map<String, String> getEnvironment() {
-        if (noProjectEnvironment) {
-            super.environment
-        } else {
-            Map<String, String> combinedEnv = [:]
-            combinedEnv.putAll(projectTerraform.environment)
-            combinedEnv.putAll(super.environment)
-            combinedEnv
-        }
     }
 
     /** Adds AWS environmental variables to Terraform runtime environment.
@@ -200,31 +156,12 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
 
     @Override
     void exec() {
-        TerraformExecSpec execSpec = buildExecSpec()
-        createPluginCacheDir(terraformrc)
-
-        Action<ExecSpec> runner = new Action<ExecSpec>() {
-            @Override
-            void execute(ExecSpec spec) {
-                execSpec.copyToExecSpec(spec)
-            }
-        }
-
         if (terraformLogLevel) {
             logDir.get().mkdirs()
         }
 
-        logger.info "Using Terraform environment: ${terraformEnvironment}"
-        if (this.stdoutCapture) {
-            this.stdoutCapture.get().withOutputStream { strm ->
-                execSpec.standardOutput(strm)
-                projectOperations.exec(runner).assertNormalExitValue()
-            }
-        } else {
-            projectOperations.exec(runner).assertNormalExitValue()
-        }
+        super.exec()
     }
-
     /** Command-line parameter for no colour.
      *
      */
@@ -234,12 +171,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      *
      */
     protected static final String JSON_FORMAT = '-json'
-
-    /** Project operations that replaces legacy methods on the {@link org.gradle.api.Project} class and which
-     * are safe to use in configuration cache environments.
-     */
-    @Internal
-    protected final ProjectOperations projectOperations
 
     /**
      *
@@ -252,22 +183,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         List<Class> configExtensions,
         List<TerraformExtensionConfigTypes> terraformConfigExtensions
     ) {
-        super()
-        this.projectOperations = ProjectOperations.find(project)
-        this.command = cmd
-        this.projectTerraform = project.extensions.getByType(TerraformExtension)
-        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
-
-        terraformExtension = extensions.create(
-            TerraformExtension.NAME,
-            TerraformExtension,
-            this,
-            terraformConfigExtensions
-        )
-
-        withConfigExtensions(configExtensions)
-        withTerraformConfigExtensions(terraformConfigExtensions)
-        environment(defaultEnvironment)
+        super(cmd, configExtensions, terraformConfigExtensions)
 
         sourceDirProvider = project.provider {
             sourceSet.srcDir.get()
@@ -291,6 +207,11 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
 
         this.sourceFiles = project.fileTree(sourceDirProvider)
         this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate')
+    }
+
+    @Override
+    protected Provider<File> getWorkingDirForCommand() {
+        sourceDir
     }
 
     /**
@@ -386,67 +307,8 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         }
     }
 
-    /** When command is run, capture the standard output
-     *
-     * @param output Output file
-     */
-    protected void captureStdOutTo(Provider<File> output) {
-        this.stdoutCapture = output
-    }
-
-    protected TerraformExecSpec buildExecSpec() {
-        TerraformExecSpec execSpec = createExecSpec()
-        addExecutableToExecSpec(execSpec)
-        configureExecSpec(execSpec)
-    }
-
-    /** Creates a {@link TerraformExecSpec}.
-     *
-     * @return {@link TerraformExecSpec}. Never {@code null}.
-     */
-    @Override
-    protected TerraformExecSpec createExecSpec() {
-        new TerraformExecSpec(projectOperations, toolExtension.resolver)
-    }
-
-    /** Configures a {@link TerraformExecSpec}.
-     *
-     * @param execSpec Specification to be configured
-     * @return Configured specification
-     */
-    @Override
-    protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
-        configureExecSpecForCmd(execSpec, terraformCommand, defaultCommandParameters)
-        addCommandSpecificsToExecSpec(execSpec)
-        execSpec
-    }
-
-    /** Configures execution specification for a specific command.
-     *
-     * @param execSpec Specification to configure.
-     * @param tfcmd Terraform command.
-     * @param cmdParams Default command parameters.
-     * @return Configures specification.
-     */
-    protected TerraformExecSpec configureExecSpecForCmd(
-        TerraformExecSpec execSpec,
-        String tfcmd,
-        List<String> cmdParams
-    ) {
-        Map<String, String> tfEnv = terraformEnvironment
-        execSpec.identity {
-            command tfcmd
-            workingDir sourceDir
-            environment tfEnv
-            cmdArgs cmdParams
-        }
-
-        execSpec.environment(environment)
-        execSpec
-    }
-
-    @SuppressWarnings('DuplicateStringLiteral')
     @Input
+    @Override
     protected Map<String, String> getTerraformEnvironment() {
         TerraformUtils.terraformEnvironment(
             terraformrc,
@@ -458,7 +320,7 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
     }
 
     /**
-     * Additional sources that are not in the source set directory, but for which cahnges will
+     * Additional sources that are not in the source set directory, but for which changes will
      * require a re-run of the task.
      *
      * This includes files such as local modules or files that provide variables directly or
@@ -469,7 +331,9 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
      * @since 0.10
      */
     @InputFiles
-    protected final Provider<List<File>> secondarySources
+    protected Provider<List<File>> getSecondarySources() {
+        this.secondarySources
+    }
 
     /** Adds a boolean command-line option with correct formatting to the execution specification.
      *
@@ -503,49 +367,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         }
     }
 
-    @Override
-    @Internal
-    protected TerraformExtension getToolExtension() {
-        this.terraformExtension
-    }
-
-    /** Add specific command-line options for the command.
-     /** Add specific command-line options for the command.
-     *
-     * @param execSpec
-     * @return execSpec
-     */
-    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        execSpec.cmdArgs(commandLineProviders*.get().flatten())
-        execSpec
-    }
-
-    /** Retunbs the {@code terraform} command this task is implementing.
-     *
-     * @return Terraform command as string
-     */
-    @Internal
-    protected String getTerraformCommand() {
-        this.command
-    }
-
-    /** Adds a command-line provider.
-     *
-     * @param provider
-     */
-    protected void addCommandLineProvider(Provider<List<String>> provider) {
-        this.commandLineProviders.add(provider)
-    }
-
-    /** Returns a list of the default command parameters.
-     *
-     * @return Default command parameters
-     */
-    @Internal
-    protected List<String> getDefaultCommandParameters() {
-        this.defaultCommandParameters
-    }
-
     /**
      * Tries to determine the current terraform version group
      *
@@ -562,57 +383,6 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         } else {
             throw new TerraformConfigurationException("Source set is not associated for task ${name}")
         }
-    }
-
-    /** To be called subclass constructor for defining specific configuration extensions that are
-     * supported.
-     *
-     * @param configExtensions
-     */
-    private void withConfigExtensions(List<Class> configExtensions) {
-        for (Class it : configExtensions) {
-            TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension) it.newInstance(this)
-            extensions.add(cex.name, cex)
-            cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
-                inputs.property "config-extension-${cex.name}-${idx}", eval
-            }
-            commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
-        }
-    }
-
-    private void withTerraformConfigExtensions(
-        List<TerraformExtensionConfigTypes> configExtensions
-    ) {
-        configExtensions.eachWithIndex { TerraformExtensionConfigTypes cfgType, Integer idx ->
-            inputs.property "${TerraformExtension.NAME}-extension-${idx}", {
-                -> cfgType.accessor.apply(terraformExtension).toString()
-            }
-
-            commandLineProviders.add(project.provider { ->
-                cfgType.accessor.apply(terraformExtension).commandLineArgs
-            })
-        }
-    }
-
-    @SuppressWarnings('UnnecessaryCast')
-    static private Map<String, Object> getDefaultEnvironment() {
-        // tag::default-environment[]
-        if (OS.windows) {
-            [
-                TEMP        : System.getenv('TEMP'),
-                TMP         : System.getenv('TMP'),
-                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
-                HOMEPATH    : System.getenv('HOMEPATH'),
-                USERPROFILE : System.getenv('USERPROFILE'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ] as Map<String, Object>
-        } else {
-            [
-                HOME        : System.getProperty('user.home'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ] as Map<String, Object>
-        }
-        // end::default-environment[]
     }
 
     @Synchronized
@@ -639,18 +409,13 @@ abstract class AbstractTerraformTask extends AbstractExecWrapperTask<TerraformEx
         new ConcurrentHashMap<String, TerraformMajorVersion>()
 
     private Object sourceSetProxy
-    private boolean noProjectEnvironment = false
+
     private String terraformLogLevel = 'TRACE'
-    private Provider<File> stdoutCapture
-    private final String command
-    private final List<String> defaultCommandParameters = []
-    private final TerraformExtension terraformExtension
-    private final List<Provider<List<String>>> commandLineProviders = []
+
     private final Provider<File> sourceDirProvider
     private final Provider<File> dataDirProvider
     private final Provider<File> logDirProvider
     private final Provider<File> reportsDirProvider
-    private final TerraformExtension projectTerraform
-    private final TerraformRCExtension terraformrc
     private final ConfigurableFileTree sourceFiles
+    private final Provider<List<File>> secondarySources
 }

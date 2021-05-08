@@ -21,6 +21,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtApply
+import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
@@ -32,6 +34,9 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTas
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
+    public static final String CUSTOM_FMT_CHECK = 'tfFmtCheckCustomDirectories'
+    public static final String CUSTOM_FMT_APPLY = 'tfFmtApplyCustomDirectories'
+
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
 
@@ -43,5 +48,8 @@ class TerraformPlugin implements Plugin<Project> {
             }
         })
         terraformSourceSets.create(DEFAULT_SOURCESET_NAME)
+
+        def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
+        project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
     }
 }

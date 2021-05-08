@@ -152,6 +152,24 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         destFile.text == FILE_CONTENTS
     }
 
+    void 'tfShowState should cause tfApply to be executed'() {
+        setup:
+        getGradleRunner(['tfApply']).build()
+
+        when:
+        BuildResult result = getGradleRunner(['tfShowState']).build()
+
+        then:
+        result.task(':tfShowState').outcome == SUCCESS
+        result.task(':tfApply') == null
+
+        when:
+        BuildResult result2 = getGradleRunner(['tfShowState']).build()
+
+        then:
+        result2.task(':tfShowState').outcome == SUCCESS
+    }
+
     void 'Plan should not run twice if nothing changed'() {
         when:
         BuildResult result = getGradleRunner(['tfPlan']).build()

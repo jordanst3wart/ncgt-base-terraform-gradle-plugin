@@ -16,32 +16,38 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.tasks.Input
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.process.ExecResult
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-/** The {@code terraform fmt -write=true} command.
+import javax.inject.Inject
+
+/**
+ * Checks the format of Terraform source in an arbitrary collection of directories.
  *
  * @author Schalk W. Cronjé
  *
- * @since 0.10.0
+ * @since 0.10
  */
 @CompileStatic
-class TerraformFmtApply extends AbstractTerraformTask {
-
-    TerraformFmtApply() {
-        super('fmt', [], [])
-    }
-
-    @Input
-    boolean recursive = false
+class TerraformCustomFmtApply extends AbstractTerraformCustomFmt {
 
     @Override
-    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        super.addCommandSpecificsToExecSpec(execSpec)
+    final Provider<Set<File>> getSourceDirectories() {
+        checkTaskProvider.get().sourceDirectories
+    }
 
+    @Inject
+    TerraformCustomFmtApply(TaskProvider<TerraformCustomFmtCheck> checkTaskProvider) {
+        super()
+        this.checkTaskProvider = checkTaskProvider
+    }
+
+    protected void addCommandSpecificsForFmt(TerraformExecSpec execSpec) {
         execSpec.cmdArgs '-write=true'
 
-        if (recursive) {
+        if (checkTaskProvider.get().recursive) {
             execSpec.cmdArgs '-recursive'
         }
 
@@ -50,7 +56,12 @@ class TerraformFmtApply extends AbstractTerraformTask {
         } else {
             execSpec.cmdArgs '-list=false'
         }
-
-        execSpec
     }
+
+    @Override
+    protected void handleExecResult(ExecResult result) {
+        result.assertNormalExitValue()
+    }
+
+    private final TaskProvider<TerraformCustomFmtCheck> checkTaskProvider
 }

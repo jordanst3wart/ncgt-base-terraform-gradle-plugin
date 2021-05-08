@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'commons-httpclient:commons-httpclient:3.1'

@@ -107,8 +107,11 @@ class TerraformApply extends AbstractTerraformTask {
     }
 
     @InputFile
-    protected final Provider<File> planFile
+    protected Provider<File> getPlanFile() {
+        this.planFile
+    }
 
+    private final Provider<File> planFile
     private final Provider<File> tracker
     private final TerraformPlanProvider planProvider
 }

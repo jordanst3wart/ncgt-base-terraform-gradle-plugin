@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
@@ -42,11 +41,11 @@ class TerraformFmtCheck extends AbstractTerraformTask {
 
         execSpec.cmdArgs '-check'
 
-        if (logging.level == LogLevel.INFO) {
+        if (logger.infoEnabled) {
             execSpec.cmdArgs '-diff'
         }
 
-        if (logging.level != LogLevel.QUIET) {
+        if (!logger.quietEnabled) {
             execSpec.cmdArgs '-list=true'
         }
 

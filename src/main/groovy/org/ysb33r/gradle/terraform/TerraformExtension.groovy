@@ -32,6 +32,7 @@ import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreSourceSet
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.core.Version
@@ -107,18 +108,21 @@ class TerraformExtension extends AbstractToolExtension {
      * @param configExtensions Configuration extensions that have to be added. Has to implement
      * {@link TerraformExtensionEmbeddable} interface.
      */
-    TerraformExtension(AbstractTerraformTask task, List<TerraformExtensionConfigTypes> configExtensions) {
+    TerraformExtension(AbstractTerraformBaseTask task, List<TerraformExtensionConfigTypes> configExtensions) {
         super(task, NAME)
         executableDetails = [:]
-        configExtensions.each { TerraformExtensionConfigTypes config ->
-            switch (config.type) {
-                case Variables:
-                    addVariablesExtension(task)
-                    break
-                default:
-                    throw new TerraformConfigurationException(
-                        "${config.type.canonicalName} is not a supported extension for ${this.class.canonicalName}"
-                    )
+
+        if (task instanceof AbstractTerraformTask) {
+            configExtensions.each { TerraformExtensionConfigTypes config ->
+                switch (config.type) {
+                    case Variables:
+                        addVariablesExtension((AbstractTerraformTask) task)
+                        break
+                    default:
+                        throw new TerraformConfigurationException(
+                            "${config.type.canonicalName} is not a supported extension for ${this.class.canonicalName}"
+                        )
+                }
             }
         }
     }

@@ -1,0 +1,20 @@
+== Custom formatting of source code
+
+As from 0.10 to tasks are provided by `it.jobble.terraform` to allow checking and formatting of Terraform source code in arbitrary directories. These two tasks are
+
+* `tfFmtCheckCustomDirectories`
+* `tfFmtApplyCustomDirectories`
+
+
+[source,groovy]
+----
+tfFmtCheckCustomDirectories {
+  dirs 'modules-a/tf', 'modules-b/tf' // <1>
+  recursive = true // <2>
+}
+----
+<1> One or more directories with terraform code
+<2> Whether to descend into child directories.
+Default is `true`.
+(Unlike `tfFmtCheck`).
+
