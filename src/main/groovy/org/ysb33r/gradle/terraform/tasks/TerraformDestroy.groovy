@@ -31,8 +31,8 @@ import javax.inject.Inject
 class TerraformDestroy extends AbstractTerraformApplyTask {
 
     @Inject
-    TerraformDestroy(TerraformPlanProvider plan) {
-        super(plan, 'destroy')
+    TerraformDestroy(TerraformPlanProvider plan, String workspaceName) {
+        super(plan, 'destroy', workspaceName)
 
         doLast {
             plan.get().internalTrackerFile.get().delete()

@@ -38,8 +38,8 @@ class AbstractTerraformApplyTask extends AbstractTerraformTask {
      * @param plan {@link TerraformPlan} task that this is bound to.
      * @param cmd Command that is implemented
      */
-    protected AbstractTerraformApplyTask(TerraformPlanProvider planProvider, String cmd) {
-        super(cmd, [ResourceFilter], [])
+    protected AbstractTerraformApplyTask(TerraformPlanProvider planProvider, String cmd, String workspaceName) {
+        super(cmd, [ResourceFilter], [], workspaceName)
         supportsInputs()
         supportsColor()
 

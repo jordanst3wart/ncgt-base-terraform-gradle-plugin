@@ -15,8 +15,11 @@
  */
 package org.ysb33r.gradle.terraform
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.Named
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Transformer
 import org.gradle.api.file.FileTree
@@ -30,16 +33,21 @@ import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
+import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
+import org.ysb33r.grolifant.api.core.LegacyLevel
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
+import java.util.function.BiFunction
 import java.util.function.Function
 
 import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.OUTPUT
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createWorkspaceTasksByConvention
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
 /** Describes a Terraform source set
@@ -82,6 +90,14 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.name = name
         this.displayName = displayName
         this.patternSet.include('**/*.tf', '**/*.tfvars', '*.tfstate')
+        this.outputVariablesProviderMap = [:]
+
+        this.outputVariablesProviderFunction = new BiFunction<String, String, Provider<Map<String, ?>>>() {
+            @Override
+            Provider<Map<String, ?>> apply(String sourceSetName, String workspaceName) {
+                createOutputVariablesProvider(terraformrc, projectOperations, tasks, sourceSetName, workspaceName)
+            }
+        }
 
         sourceDir = objects.property(File)
         dataDir = objects.property(File)
@@ -108,22 +124,9 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             projectOperations.buildDirDescendant("reports/tf/${name}")
         )
 
+        outputVariablesProviderMap[DEFAULT_WORKSPACE] = outputVariablesProviderFunction.apply(name, DEFAULT_WORKSPACE)
+
         vars = new Variables(this.sourceDir)
-
-        String outputTaskName = taskName(name, OUTPUT.command)
-        def outputTaskProvider = projectOperations.provider {
-            (TerraformOutput) tasks.withType(TerraformOutput).matching { TerraformOutput t -> t.name == outputTaskName }
-                .getByName(outputTaskName)
-        }
-
-        def cache = new OutputVariablesCache(
-            projectOperations,
-            terraformrc,
-            outputTaskProvider
-        )
-        this.outputVariablesProvider = projectOperations.provider({ ->
-            cache.map
-        } as Callable<Map<String, ?>>)
 
         this.closureCleaner = { Project project, Object varsContainer, Closure cfg ->
             Closure cleaned = ((Closure) cfg.clone()).dehydrate().rehydrate(varsContainer, project, project)
@@ -135,6 +138,15 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.secondarySourcesProvider = projectOperations.provider({ List<Object> files ->
             projectOperations.fileize(files)
         }.curry(this.secondarySources))
+
+        this.workspaces = createWorkspaceContainer(tempProjectReference, objects)
+        def xref = this
+        this.workspaces.all(new Action<Workspace>() {
+            @Override
+            void execute(Workspace ws) {
+                createWorkspaceTasksByConvention(tempProjectReference, xref, ws.name)
+            }
+        })
     }
 
     /** The display name is the string representation of the source set.
@@ -233,7 +245,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     /**
      * Additional sources that affects infrastructure.
      *
-     * @param files Anthing convertible to a file.
+     * @param files Anything convertible to a file.
      *
      * @since 0.10.
      */
@@ -306,13 +318,28 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * values will be cached for the remainder of of the build. If you want updates values, ensure the relavent
      * {@link org.ysb33r.gradle.terraform.tasks.TerraformApply} task is run before invoking the provider.
      *
+     * @param workspaceName which workspace this is for. Defaults to {@code default} workspace if not supplied.
+     *
      * @return Provider for reading output values. THe values are returned in a raw format which basically is just the
      *   JSON output parsed into some form of map.
      *
      * @since 0.9.0
      */
-    Provider<Map<String, ?>> getRawOutputVariables() {
-        this.outputVariablesProvider
+    Provider<Map<String, ?>> getRawOutputVariables(String workspaceName = DEFAULT_WORKSPACE) {
+        def provider = this.outputVariablesProviderMap[workspaceName]
+
+        if (provider == null) {
+            projectOperations.provider({ Map<String, Provider<Map<String, ?>>> map ->
+                def p = this.outputVariablesProviderMap[workspaceName]
+                if (p == null) {
+                    throw new TerraformConfigurationException("Requested workspace ${workspaceName} was not defined")
+                } else {
+                    p.get()
+                }
+            }.curry(this.outputVariablesProviderMap) as Callable<Map<String, ?>>)
+        } else {
+            provider
+        }
     }
 
     /** Returns a provider to a specific output variable.
@@ -321,13 +348,15 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * values will be cached for the remainder of of the build. If you want updates values, ensure the relavent
      * {@link org.ysb33r.gradle.terraform.tasks.TerraformApply} task is run before invoking the provider.
      *
-     * @return Provider for value of specific output variable. If the vairable is not a primitive type, it is up to
+     * @param varName Name of specific variable.
+     * @param workspaceName which workspace this is for. Defaults to {@code default} workspace if not supplied.
+     * @return Provider for value of specific output variable. If the variable is not a primitive type, it is up to
      * the caller to do further processing,
      *
      * @since 0.9.0
      */
-    Provider<Object> rawOutputVariable(String varName) {
-        this.outputVariablesProvider.map(new Transformer<Object, Map<String, ?>>() {
+    Provider<Object> rawOutputVariable(String varName, String workspaceName = DEFAULT_WORKSPACE) {
+        getRawOutputVariables(workspaceName).map(new Transformer<Object, Map<String, ?>>() {
             @Override
             Object transform(Map<String, ?> stringMap) {
                 stringMap[varName]['value']
@@ -397,15 +426,96 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         patternSet.include(closure)
     }
 
+    /**
+     * Adds one or more workspaces.
+     *
+     * @since 0.10.0
+     */
+    void workspaces(String... workspaceNames) {
+        for (String ws : workspaceNames) {
+            this.workspaces.create(ws)
+
+            outputVariablesProviderFunction.apply(name, ws)
+        }
+    }
+
+    /**
+     * List of additional workspaces.
+     *
+     * @return Names of workspaces other than {@code default}.
+     *
+     * @since 0.10.0
+     */
+    List<String> getWorkspaceNames() {
+        this.workspaces*.name
+    }
+
+    /**
+     * Flags whether workspaces have been defined.
+     *
+     * @return {@code true} is one or more workspaces have been defined
+     *
+     * @since 0.10.0
+     */
+    boolean hasWorkspaces() {
+        !this.workspaces.empty
+    }
+
+    static class Workspace implements Named {
+        final String name
+
+        Workspace(String n) {
+            this.name = n
+        }
+    }
+
+    @CompileDynamic
+    private static NamedDomainObjectContainer<Workspace> createWorkspaceContainer(
+        Project tempProjectReference,
+        ObjectFactory objects
+    ) {
+        if (LegacyLevel.PRE_5_5) {
+            tempProjectReference.container(Workspace)
+        } else {
+            objects.domainObjectContainer(Workspace)
+        }
+    }
+
+    private static Provider<Map<String, ?>> createOutputVariablesProvider(
+        TerraformRCExtension terraformrc,
+        ProjectOperations projectOperations,
+        TaskContainer tasks,
+        String sourceSetName,
+        String workspaceName
+    ) {
+        String outputTaskName = taskName(sourceSetName, OUTPUT.command, workspaceName)
+
+        def outputTaskProvider = projectOperations.provider {
+            (TerraformOutput) tasks.getByName(outputTaskName)
+        }
+
+        def cache = new OutputVariablesCache(
+            projectOperations,
+            terraformrc,
+            outputTaskProvider
+        )
+
+        projectOperations.provider({ ->
+            cache.map
+        } as Callable<Map<String, ?>>)
+    }
+
     private final Property<File> sourceDir
     private final Property<File> dataDir
     private final Property<File> logDir
     private final Property<File> reportsDir
     private final ProjectOperations projectOperations
     private final Variables vars
-    private final Provider<Map<String, ?>> outputVariablesProvider
+    private final Map<String, Provider<Map<String, ?>>> outputVariablesProviderMap
     private final PatternSet patternSet = new PatternSet()
     private final Function<Closure, Closure> closureCleaner
     private final List<Object> secondarySources
     private final Provider<List<File>> secondarySourcesProvider
+    private final NamedDomainObjectContainer<Workspace> workspaces
+    private final BiFunction<String, String, Provider<Map<String, ?>>> outputVariablesProviderFunction
 }

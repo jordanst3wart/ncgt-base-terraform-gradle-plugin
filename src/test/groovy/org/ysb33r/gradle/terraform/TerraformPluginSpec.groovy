@@ -20,6 +20,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformPlan
+import spock.lang.Issue
 import spock.lang.Specification
 
 class TerraformPluginSpec extends Specification {
@@ -48,5 +49,27 @@ class TerraformPluginSpec extends Specification {
         project.tasks.getByName('tfReleaseInit') instanceof TerraformInit
         project.tasks.getByName('tfReleasePlan') instanceof TerraformPlan
         project.tasks.getByName('tfReleaseApply') instanceof TerraformApply
+    }
+
+    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/34')
+    void 'Workspaces adds extra tasks'() {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform'
+
+        when:
+        project.allprojects {
+            terraformSourceSets {
+                joe {
+                    workspaces 'biden'
+                }
+            }
+        }
+
+        TerraformSourceSets tss = project.terraformSourceSets
+
+        then:
+        project.tasks.getByName('tfJoeApplyBiden') instanceof TerraformApply
+        !project.tasks.findByName('tfJoeFmtCheckBiden')
+        !project.tasks.findByName('tfJoeInitBiden')
     }
 }

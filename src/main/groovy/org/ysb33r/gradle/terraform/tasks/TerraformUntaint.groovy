@@ -21,6 +21,8 @@ import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 
+import javax.inject.Inject
+
 /** The {@code terraform untaint} command.
  *
  * @author Schalk W. Cronjé
@@ -30,8 +32,9 @@ import org.ysb33r.gradle.terraform.config.Lock
 @CompileStatic
 class TerraformUntaint extends AbstractTerraformTask {
 
-    TerraformUntaint() {
-        super('untaint', [Lock], [])
+    @Inject
+    TerraformUntaint(String workspaceName) {
+        super('untaint', [Lock], [], workspaceName)
         supportsColor()
     }
 

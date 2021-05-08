@@ -33,8 +33,8 @@ class TerraformPlanProvider {
     @Delegate
     final TaskProvider<TerraformPlan> plan
 
-    TerraformPlanProvider(Project project, String sourceSetName) {
-        String taskName = TerraformConvention.taskName(sourceSetName, 'plan')
+    TerraformPlanProvider(Project project, String sourceSetName, String workspaceName) {
+        String taskName = TerraformConvention.taskName(sourceSetName, 'plan', workspaceName)
         if (LegacyLevel.PRE_5_0) {
             plan = providerPre50(project, taskName)
         } else {

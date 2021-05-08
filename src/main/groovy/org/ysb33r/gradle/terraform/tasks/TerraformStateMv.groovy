@@ -20,6 +20,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
+import javax.inject.Inject
+
 /** The {@code terraform state mv} command.
  *
  * @author Schalk W. Cronjé
@@ -29,8 +31,9 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 @CompileStatic
 class TerraformStateMv extends AbstractTerraformStateTask {
 
-    TerraformStateMv() {
-        super('mv')
+    @Inject
+    TerraformStateMv(String workspaceName) {
+        super('mv', workspaceName)
     }
 
     /** The source path.

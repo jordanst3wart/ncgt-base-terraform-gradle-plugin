@@ -21,6 +21,12 @@ A number of task types support command-line options.
 | `false`
 | Select group of resources to replace.
 
+<.^| `tfCleanupWorkspaces`
+| `--force`
+| boolean
+| `false`
+| Force removal of dangling workspaces even if state still exists.
+
 .2+<.^| `tfDestroy`
 | `--targets`
 | list
