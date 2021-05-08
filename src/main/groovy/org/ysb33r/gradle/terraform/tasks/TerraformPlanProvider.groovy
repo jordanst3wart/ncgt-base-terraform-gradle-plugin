@@ -18,12 +18,9 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.grolifant.api.core.LegacyLevel
-
-import java.util.concurrent.Callable
 
 /** A provider of a {@link TerraformPlan} task instance.
  *
@@ -34,7 +31,7 @@ import java.util.concurrent.Callable
 @CompileStatic
 class TerraformPlanProvider {
     @Delegate
-    final Provider<TerraformPlan> plan
+    final TaskProvider<TerraformPlan> plan
 
     TerraformPlanProvider(Project project, String sourceSetName) {
         String taskName = TerraformConvention.taskName(sourceSetName, 'plan')
@@ -46,10 +43,8 @@ class TerraformPlanProvider {
     }
 
     @CompileDynamic
-    private Provider<TerraformPlan> providerPre50(Project project, String taskName) {
-        project.provider({ ->
-            project.tasks.getByName(taskName)
-        } as Callable<TerraformPlan>)
+    private TaskProvider<TerraformPlan> providerPre50(Project project, String taskName) {
+        project.tasks.named(taskName) as TaskProvider<TerraformPlan>
     }
 
     @CompileDynamic

@@ -16,7 +16,15 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.config.ResourceFilter
+import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import javax.inject.Inject
 import java.time.LocalDateTime
@@ -30,13 +38,21 @@ import java.util.concurrent.Callable
  * @since 0.1
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformApplyTask {
+class TerraformApply extends AbstractTerraformTask {
 
     @Inject
     TerraformApply(TerraformPlanProvider plan) {
-        super(plan, 'apply')
+        super('apply', [Lock, StateOptionsFull], [])
         supportsAutoApprove()
-
+        supportsInputs()
+        supportsColor()
+        planProvider = plan
+        planFile = planProvider.map(new Transformer<File, TerraformPlan>() {
+            @Override
+            File transform(TerraformPlan terraformPlan) {
+                terraformPlan.planOutputFile.get()
+            }
+        })
         tracker = project.provider({ ->
             plan.get().internalTrackerFile.get()
         } as Callable<File>)
@@ -46,9 +62,56 @@ class TerraformApply extends AbstractTerraformApplyTask {
         }
 
         outputs.file(tracker).optional()
-        inputs.files(taskProvider('init'))
         inputs.files(taskProvider('plan'))
+
+        if (LegacyLevel.PRE_5_0) {
+            dependsOn(plan.get())
+        }
     }
 
+    /** Select specific resources.
+     *
+     * @param resourceNames List of resources to target.
+     *
+     * @since 0.10.0
+     */
+    @Option(option = 'target', description = 'List of resources to target')
+    void setTargets(List<String> resourceNames) {
+        planProvider.configure {
+            it.extensions.getByType(ResourceFilter).target(resourceNames)
+        }
+    }
+
+    /** Mark resources to be replaced.
+     *
+     * @param resourceNames List of resources to target.
+     *
+     * @since 0.10.0
+     */
+    @Option(option = 'replace', description = 'List of resources to replace')
+    void setReplacements(List<String> resourceNames) {
+        planProvider.configure {
+            it.extensions.getByType(ResourceFilter).replace(resourceNames)
+        }
+    }
+
+    @Override
+    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec.cmdArgs(planFile.map(new Transformer<String, File>() {
+            @Override
+            String transform(File plan) {
+                plan.absolutePath
+            }
+        }))
+    }
+
+    @InputFile
+    protected Provider<File> getPlanFile() {
+        this.planFile
+    }
+
+    private final Provider<File> planFile
     private final Provider<File> tracker
+    private final TerraformPlanProvider planProvider
 }

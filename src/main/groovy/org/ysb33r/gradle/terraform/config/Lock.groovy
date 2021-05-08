@@ -20,6 +20,9 @@ import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 /** Allows for lock configurations on a task.
  *
+ * On Terraform v0.15+ anything set here is ignored if used with
+ *   {@link org.ysb33r.gradle.terraform.tasks.TerraformInit}.
+ *
  * @since 0.1
  */
 @CompileStatic

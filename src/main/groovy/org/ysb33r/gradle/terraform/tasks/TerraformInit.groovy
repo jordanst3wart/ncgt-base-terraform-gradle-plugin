@@ -26,7 +26,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.TerraformMajorVersion
 import org.ysb33r.grolifant.api.v4.MapUtils
 
 import java.nio.file.FileVisitResult
@@ -38,6 +38,8 @@ import java.time.LocalDateTime
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static java.nio.file.Files.readSymbolicLink
+import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_11_OR_OLDER
+import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_12
 
 /** Equivalent of {@code terraform init}.
  *
@@ -104,7 +106,7 @@ class TerraformInit extends AbstractTerraformTask {
     final Provider<File> terraformInitStateFile
 
     TerraformInit() {
-        super('init', [Lock], [])
+        super('init', [], [])
         supportsInputs()
         supportsColor()
 
@@ -194,8 +196,10 @@ class TerraformInit extends AbstractTerraformTask {
 
     /** Whether plugins should be verified.
      *
+     * @deprecated Only used for Terraform 0.12 or older
      */
     @Internal
+    @Deprecated
     boolean verifyPlugins = true
 
     /** Add specific command-line options for the command.
@@ -224,7 +228,6 @@ class TerraformInit extends AbstractTerraformTask {
         }
 
         execSpec.cmdArgs "-backend=${!skipConfigureBackends}"
-        execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
 
         getBackendConfigValues().each { String k, String v ->
             execSpec.cmdArgs "-backend-config=$k=$v"
@@ -242,6 +245,10 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs('-reconfigure')
         }
 
+        TerraformMajorVersion verGroup = terraformMajorVersion
+        if (verGroup == VERSION_11_OR_OLDER || verGroup == VERSION_12) {
+            execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
+        }
         execSpec
     }
 

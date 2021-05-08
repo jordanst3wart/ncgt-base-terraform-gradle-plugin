@@ -16,30 +16,41 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.tasks.options.Option
+import org.gradle.api.tasks.Input
+import org.ysb33r.gradle.terraform.TerraformExecSpec
 
-/** Equivalent of {@code terraform 0.12upgrade}.
+/** The {@code terraform fmt -write=true} command.
+ *
+ * @author Schalk W. Cronjé
  *
  * @since 0.10.0
  */
 @CompileStatic
-class TerraformUpgrade012 extends AbstractTerraformTask {
+class TerraformFmtApply extends AbstractTerraformTask {
 
-    TerraformUpgrade012() {
-        super('0.12upgrade', [], [])
-        alwaysOutOfDate()
+    TerraformFmtApply() {
+        super('fmt', [], [])
     }
 
-    /** Set auto-approve mode.
-     *
-     * Once set it cannot be unset for the duration of the Gradle task graph execution.
-     *
-     * @param state {@code true} will auto-approve upgrade.
-     */
-    @Option(option = 'approve', description = 'Auto-approve upgrade of sources to Terraform v0.12')
-    void setAutoApprove(Boolean state) {
-        if (state) {
-            supportsYes()
+    @Input
+    boolean recursive = false
+
+    @Override
+    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        super.addCommandSpecificsToExecSpec(execSpec)
+
+        execSpec.cmdArgs '-write=true'
+
+        if (recursive) {
+            execSpec.cmdArgs '-recursive'
         }
+
+        if (logger.infoEnabled) {
+            execSpec.cmdArgs '-list=true'
+        } else {
+            execSpec.cmdArgs '-list=false'
+        }
+
+        execSpec
     }
 }

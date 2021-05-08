@@ -14,11 +14,11 @@ terraform {
 }
 
 task runGradleTest  {
-    dependsOn tfInit, tfPlan, tfApply, tfShowState, terraformWrapper, tfOutput
+    dependsOn tfInit, tfApply, tfShowState, terraformWrapper, tfOutput
 
     doLast {
         assert file('src/tf/main/terraform.tfstate').exists()
-        assert file("${buildDir}/reports/tf/main/main.tf.plan").exists()
+        assert file("${buildDir}/tf/main/main.tf.plan").exists()
         assert fileToBeCreated.exists()
     }
 }

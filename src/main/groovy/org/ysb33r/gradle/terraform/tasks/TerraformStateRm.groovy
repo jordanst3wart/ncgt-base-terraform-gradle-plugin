@@ -33,33 +33,42 @@ class TerraformStateRm extends AbstractTerraformStateTask {
         super('rm')
     }
 
+    /**
+     * The resource path
+     *
+     * @return The resource path that was set.
+     *
+     * @since 0.10
+     */
     @Input
-    String getResourceType() {
-        this.type
-    }
-
-    @Input
-    String getResourceName() {
-        this.resourceName
+    String getResourcePath() {
+        this.path ?: "${type}.${resourceName}"
     }
 
     @Option(option = 'type', description = 'Type of resource to remove')
     void setResourceType(String id) {
+        logger.warn '--type / setResourceType is deprecated. Use --path / setResourcePath instead.'
         this.type = id
     }
 
     @Option(option = 'name', description = 'Name of resource to remove')
     void setResourceName(String id) {
+        logger.warn '--name / setResourceName is deprecated. Use --path / setResourcePath instead.'
         this.resourceName = id
     }
 
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs "${resourceType}.${resourceName}"
+        execSpec.cmdArgs(resourcePath)
         execSpec
     }
 
+    private String path
+
+    @Deprecated
     private String type
+
+    @Deprecated
     private String resourceName
 }

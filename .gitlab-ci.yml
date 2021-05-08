@@ -33,7 +33,7 @@ jdk11:
         - pages
         - tags
 
-test:gradle_4.7,4.9:
+test:gradle_4.9,4.10.3:
     stage: test
     image: openjdk:8
     except:

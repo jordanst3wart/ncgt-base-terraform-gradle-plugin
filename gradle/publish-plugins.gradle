@@ -37,6 +37,11 @@ pluginBundle {
             displayName = 'Terraform remote state in S3'
             description = 'Simplifies the storigin of Terraform remote state in S3'
         }
+        terraformCheckPlugin {
+            id = 'org.ysb33r.terraform.check'
+            displayName = 'Terraform source checks'
+            description = 'Adds Terraform source format validation into the check lifecycle'
+        }
     }
 }
 

@@ -10,11 +10,16 @@ A number of task types support command-line options.
 | Default
 | Purpose
 
-<.^| `tfApply`
+.2+<.^| `tfApply`
 | `--targets`
 | list
 | {nbsp}
 | Select group of resources to apply.
+
+| `--replace`
+| boolean
+| `false`
+| Select group of resources to replace.
 
 .2+<.^| `tfDestroy`
 | `--targets`
@@ -27,16 +32,22 @@ A number of task types support command-line options.
 | `false`
 | Auto-approve destruction of all mentioned resources.
 
-.3+<.^| `tfImport`
-| `--type`
-| string
+.2+<.^| `tfDestroyPlan`
+| `--targets`
+| list
 | {nbsp}
-| Type of resource to import e.g. `aws_ecs_cluster`
+| Select group of resources to apply.
 
-| `--name`
+| `--json`
+| boolean
+| `false`
+| Write textual plan in JSON format.
+
+.2+<.^| `tfImport`
+| `--path`
 | string
 | {nbsp}
-| Name of resource to import as specified in `.tf` file
+| Resource to import e.g. `aws_ecs_cluster.my_cluster`
 
 | `--id`
 | string
@@ -81,10 +92,10 @@ A number of task types support command-line options.
 | `false`
 | Write textual plan in JSON format.
 
-| `--destroy`
+| `--replace`
 | boolean
 | `false`
-| Generate a destruction plan instead.
+| Select group of resources to replace.
 
 <.^| `tfShowState`
 | `--json`
@@ -109,16 +120,27 @@ A number of task types support command-line options.
 | {nbsp}
 | Local state file path (relative to Terraform source directory) to push to remote state.
 
-.2+<.^| `tfStateRm`
-| `--type`
+.1+<.^| `tfStateRm`
+| `--path`
 | string
 | {nbsp}
-| Type of resource to remove e.g. `aws_ecs_cluster`
+| Resource to remove e.g. `aws_ecs_cluster.my_cluster`
 
-| `--name`
+.3+<.^| `tfUntaint`
+| `--path`
 | string
 | {nbsp}
-| Name of resource to remove as specified in `.tf` file
+| Resource to untaint.
+
+| `--allow-missing`
+| boolean
+| `false`
+| Allow task to succeed even if the resource is missing.
+
+| `--ignore-remote-version`
+| boolean
+| `false`
+| Continue if remote and local Terraform versions differ from Terraform Cloud.
 
 <.^| `tfValidate`
 | `--json`

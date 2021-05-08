@@ -166,7 +166,9 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     }
 
     @Internal
-    protected final ProjectOperations projectOperations
+    ProjectOperations getProjectOperations() {
+        this.projectOperations
+    }
 
     protected AbstractRemoteStateConfigGenerator() {
         this.destDir = project.objects.property(File)
@@ -196,6 +198,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     @Internal
     abstract protected String getTemplateResourcePath()
 
+    private final ProjectOperations projectOperations
     private final Property<File> destDir
     private final Property<File> outputFile
     private String start = '@@'

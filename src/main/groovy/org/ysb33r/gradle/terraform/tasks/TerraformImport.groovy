@@ -44,14 +44,16 @@ class TerraformImport extends AbstractTerraformTask {
         alwaysOutOfDate()
     }
 
+    /**
+     * The resource path
+     *
+     * @return The resource path that was set.
+     *
+     * @since 0.10
+     */
     @Input
-    String getResourceType() {
-        this.type
-    }
-
-    @Input
-    String getResourceName() {
-        this.resourceName
+    String getResourcePath() {
+        this.path ?: "${type}.${resourceName}"
     }
 
     @Input
@@ -60,12 +62,16 @@ class TerraformImport extends AbstractTerraformTask {
     }
 
     @Option(option = 'type', description = 'Type of resource to import')
+    @Deprecated
     void setResourceType(String id) {
+        logger.warn '--type / setResourceType is deprecated. Use --path / setResourcePath instead.'
         this.type = id
     }
 
     @Option(option = 'name', description = 'Name of resource to import')
+    @Deprecated
     void setResourceName(String id) {
+        logger.warn '--name / setResourceName is deprecated. Use --path / setResourcePath instead.'
         this.resourceName = id
     }
 
@@ -77,12 +83,16 @@ class TerraformImport extends AbstractTerraformTask {
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs "${resourceType}.${resourceName}", resourceIdentifier
+        execSpec.cmdArgs(resourcePath, resourceIdentifier)
         execSpec
     }
 
+    @Deprecated
     private String type
-    private String resourceName
-    private String id
 
+    @Deprecated
+    private String resourceName
+
+    private String path
+    private String id
 }

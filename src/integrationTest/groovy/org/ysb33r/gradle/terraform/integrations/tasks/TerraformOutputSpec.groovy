@@ -19,7 +19,6 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
-import org.ysb33r.grashicorp.HashicorpUtils
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 
@@ -66,7 +65,7 @@ class TerraformOutputSpec extends IntegrationSpecification {
 
         then:
         result.task(":${taskName}").outcome == SUCCESS
-        new File(buildDir,'reports/tf/main/main.outputs.tf').exists()
+        new File(buildDir, 'reports/tf/main/main.outputs.tf').exists()
     }
 
     void 'Access outputs as provider'() {
@@ -95,12 +94,12 @@ class TerraformOutputSpec extends IntegrationSpecification {
             projectDir,
             [
                 'testOutput',
-                '-i','-s'
+                '-i', '-s'
             ]
         ).withTestKitDir(testkitDir).build()
 
         then:
-        result.task(":testOutput").outcome == SUCCESS
+        result.task(':testOutput').outcome == SUCCESS
     }
 
     void createTfSpec() {

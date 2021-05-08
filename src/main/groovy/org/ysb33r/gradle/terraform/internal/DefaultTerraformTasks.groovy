@@ -18,6 +18,9 @@ package org.ysb33r.gradle.terraform.internal
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
+import org.ysb33r.gradle.terraform.tasks.TerraformDestroyPlan
+import org.ysb33r.gradle.terraform.tasks.TerraformFmtApply
+import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 import org.ysb33r.gradle.terraform.tasks.TerraformImport
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
@@ -27,8 +30,8 @@ import org.ysb33r.gradle.terraform.tasks.TerraformShowState
 import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
 import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
 import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
-import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade012
-import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade013
+import org.ysb33r.gradle.terraform.tasks.TerraformUntaint
+import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade
 import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 
 /** Maps terraform tasks to conventions.
@@ -36,7 +39,7 @@ import org.ysb33r.gradle.terraform.tasks.TerraformValidate
  * @author Schalk W. Cronjé
  *
  * @since 0.8.0
-*/
+ */
 @CompileStatic
 enum DefaultTerraformTasks {
     INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
@@ -45,13 +48,16 @@ enum DefaultTerraformTasks {
     OUTPUT(2, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
     APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
-    DESTROY(12, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
+    DESTROY_PLAN(14, 'destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),
+    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
     VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
     STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
-    UPGRADE_012(40,'upgrade012', TerraformUpgrade012,'Upgrades source to v0.12'),
-    UPGRADE_013(41,'upgrade013', TerraformUpgrade013,'Upgrades source to v0.13')
+    UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
+    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version'),
+    FMT_CHECK(50,'fmtCheck', TerraformFmtCheck,'Checks whether files are correctly formatted'),
+    FMT_APPLY(51,'fmtApply', TerraformFmtApply,'Formats source files in source set')
 
     static List<DefaultTerraformTasks> ordered() {
         DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
