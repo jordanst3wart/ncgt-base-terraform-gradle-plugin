@@ -67,7 +67,10 @@ class TerraformInitSpec extends IntegrationSpecification {
     void 'Run terraform (0.13+) init on a project with a single plugin'() {
         setup:
         String providerVersion = '2.70.0'
-        File pluginDir = new File(testkitDir, "caches/terraform.d/registry.terraform.io/hashicorp/aws/${providerVersion}/${HashicorpUtils.osArch(OS)}")
+        File pluginDir = new File(
+            testkitDir,
+            "caches/terraform.d/registry.terraform.io/hashicorp/aws/${providerVersion}/${HashicorpUtils.osArch(OS)}"
+        )
         new File(srcDir, 'init.tf').text = """
         provider "aws" {
           version = "${providerVersion}"

@@ -16,9 +16,11 @@
 package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
+import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionEmbeddable
@@ -30,8 +32,10 @@ import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreSourceSet
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.core.Version
 import org.ysb33r.grolifant.api.v4.MapUtils
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
@@ -40,6 +44,7 @@ import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
+import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -77,7 +82,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '0.14.7'
+    public static final String TERRAFORM_DEFAULT = '0.15.3'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -85,6 +90,7 @@ class TerraformExtension extends AbstractToolExtension {
      */
     TerraformExtension(Project project) {
         super(project)
+        executableDetails = [:]
         if (Downloader.downloadSupported) {
             addVersionResolver(projectOperations)
             executable([version: TERRAFORM_DEFAULT])
@@ -102,19 +108,30 @@ class TerraformExtension extends AbstractToolExtension {
      * @param configExtensions Configuration extensions that have to be added. Has to implement
      * {@link TerraformExtensionEmbeddable} interface.
      */
-    TerraformExtension(AbstractTerraformTask task, List<TerraformExtensionConfigTypes> configExtensions) {
+    TerraformExtension(AbstractTerraformBaseTask task, List<TerraformExtensionConfigTypes> configExtensions) {
         super(task, NAME)
-        configExtensions.each { TerraformExtensionConfigTypes config ->
-            switch (config.type) {
-                case Variables:
-                    addVariablesExtension(task)
-                    break
-                default:
-                    throw new TerraformConfigurationException(
-                        "${config.type.canonicalName} is not a supported extension for ${this.class.canonicalName}"
-                    )
+        executableDetails = [:]
+
+        if (task instanceof AbstractTerraformTask) {
+            configExtensions.each { TerraformExtensionConfigTypes config ->
+                switch (config.type) {
+                    case Variables:
+                        addVariablesExtension((AbstractTerraformTask) task)
+                        break
+                    default:
+                        throw new TerraformConfigurationException(
+                            "${config.type.canonicalName} is not a supported extension for ${this.class.canonicalName}"
+                        )
+                }
             }
         }
+    }
+
+    @Override
+    void executable(Map<String, ?> opts) {
+        super.executable(opts)
+        executableDetails.clear()
+        executableDetails.putAll(opts)
     }
 
     /** Use this to configure a system path search for {@code Terraform}.
@@ -246,6 +263,37 @@ class TerraformExtension extends AbstractToolExtension {
         TerraformUtils.terraformPath(projectOperations, file)
     }
 
+    /**
+     * If the version is set via a version string return that, otherwise run terraform and parse the output
+     *
+     * @return The Terraform primary version or {@link TerraformMajorVersion#UNKNOWN} if version could be matched to
+     *   something known to this system
+     */
+    TerraformMajorVersion resolveTerraformVersion() {
+        String ver
+        if (executableDetails[VERSION_KEY]) {
+            ver = stringize(executableDetails[VERSION_KEY])
+        } else {
+            TerraformExecSpec tes = new TerraformExecSpec(projectOperations, resolver)
+            def strm = new ByteArrayOutputStream()
+            tes.standardOutput(strm)
+            tes.executable(resolvableExecutable)
+            tes.command(VERSION_CMD_ARGS)
+
+            Action<ExecSpec> runner = new Action<ExecSpec>() {
+                @Override
+                void execute(ExecSpec spec) {
+                    tes.copyToExecSpec(spec)
+                }
+            }
+
+            projectOperations.exec(runner).assertNormalExitValue()
+            ver = strm.toString().readLines()[0].replaceFirst('Terraform v', '')
+        }
+
+        TerraformMajorVersion.fromMinor(Version.of(ver).minor)
+    }
+
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) projectExtension
     }
@@ -318,9 +366,12 @@ class TerraformExtension extends AbstractToolExtension {
 
     @SuppressWarnings('UnnecessaryCast')
     private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
+    private static final String VERSION_KEY = 'version'
+    private static final String VERSION_CMD_ARGS = VERSION_KEY
 
     private Boolean warnOnNewVersion
     private final Map<String, Object> env
+    private final Map<String, Object> executableDetails
 
 }
 

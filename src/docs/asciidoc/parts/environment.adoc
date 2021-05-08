@@ -4,7 +4,7 @@ Gradle execution environment is not passed down to Terraform by default with the
 
 [source,groovy]
 ----
-include::{sourcedir}/tasks/AbstractTerraformTask.groovy[tags=default-environment,indent=0]
+include::{sourcedir}/tasks/AbstractTerraformBaseTask.groovy[tags=default-environment,indent=0]
 ----
 
 Environmental variables can be defined at two levels:

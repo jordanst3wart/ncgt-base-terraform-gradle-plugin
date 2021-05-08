@@ -51,13 +51,13 @@ class TerraformPlan extends AbstractTerraformTask {
         inputs.files(taskProvider('init'))
     }
 
-    /** Set to {@code true} if a plan to destroy all resources must be produced.
-     *
-     * Or pass {@code --destroy} on the command-line.
-     */
-    @Input
-    @Option(option = 'destroy', description = 'Generate a destruction plan')
-    boolean destructionPlan = false
+//    /** Set to {@code true} if a plan to destroy all resources must be produced.
+//     *
+//     * Or pass {@code --destroy} on the command-line.
+//     */
+//    @Input
+//    @Option(option = 'destroy', description = 'Generate a destruction plan')
+//    boolean destructionPlan = false
 
     /** Where the plan file will be written to.
      *
@@ -65,9 +65,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanOutputFile() {
-        reportsDir.map( { File reportDir ->
+        dataDir.map({ File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan")
-        } as Transformer<File,File>)
+        } as Transformer<File, File>)
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -76,9 +76,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanReportOutputFile() {
-        reportsDir.map( { File reportDir ->
+        reportsDir.map({ File reportDir ->
             new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-        } as Transformer<File,File>)
+        } as Transformer<File, File>)
     }
 
     /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
@@ -99,6 +99,15 @@ class TerraformPlan extends AbstractTerraformTask {
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
+    }
+
+    /** Mark resources to be replaces.
+     *
+     * @param resourceNames List of resources to target.
+     */
+    @Option(option = 'replace', description = 'List of resources to replace')
+    void setReplacements(List<String> resourceNames) {
+        extensions.getByType(ResourceFilter).replacements = resourceNames
     }
 
     /** Where to write the report in human-readable or JSON format.
@@ -123,7 +132,7 @@ class TerraformPlan extends AbstractTerraformTask {
         }
 
         logger.lifecycle(
-            "The ${destructionPlan ? 'destruction' : ''} plan file has been generated into ${planOut.toURI()}"
+            "The plan file has been generated into ${planOut.toURI()}"
         )
         logger.lifecycle("The textual representation of the plan file has been generated into ${textOut.toURI()}")
     }
@@ -140,9 +149,6 @@ class TerraformPlan extends AbstractTerraformTask {
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.identity {
             cmdArgs "-out=${planOutputFile.get()}"
-        }
-        if (destructionPlan) {
-            execSpec.cmdArgs '-destroy'
         }
         execSpec
     }
@@ -172,5 +178,5 @@ class TerraformPlan extends AbstractTerraformTask {
         }
     }
 
-    private boolean jsonReport = false
+    protected boolean jsonReport = false
 }

@@ -31,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributes
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
 @RestoreSystemProperties
@@ -62,7 +63,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         }
 
         tfApply {
-            logLevel = 'DEBUG'
+            logProgress = true
         }
         """
     }
@@ -100,16 +101,11 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     }
 
     @Unroll
-    void 'Run terraform plan on a local resource (#state)'() {
+    void 'Run terraform plan on a local resource (#format)'() {
         setup:
-        File planFile = new File(buildDir, 'reports/tf/main/main.tf.plan')
+        File planFile = new File(buildDir, 'tf/main/main.tf.plan')
         File textFile = new File(buildDir, "reports/tf/main/main.tf.plan.${json ? 'json' : 'txt'}")
         def cmdLine = json ? ['--json'] : []
-        if (destroy) {
-            buildFile.withWriterAppend { w ->
-                w.println 'tfPlan.destructionPlan = true'
-            }
-        }
 
         when:
         BuildResult result = getGradleRunner(['tfPlan'] + cmdLine).build()
@@ -120,9 +116,31 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         textFile.exists()
 
         where:
-        destroy | state     | json
-        false   | 'normal'  | false
-        true    | 'destroy' | true
+        format | json
+        'text' | false
+        'json' | true
+    }
+
+    @Unroll
+    void 'Create destroy plan (#format)'() {
+        setup:
+        File planFile = new File(buildDir, 'tf/main/main.tf.destroy.plan')
+        File textFile = new File(buildDir, "reports/tf/main/main.tf.destroy.plan.${json ? 'json' : 'txt'}")
+        def cmdLine = json ? ['--json'] : []
+
+        when:
+        BuildResult result = getGradleRunner(['tfApply', 'tfDestroyPlan'] + cmdLine).build()
+
+        then:
+        result.task(':tfApply').outcome == SUCCESS
+        result.task(':tfDestroyPlan').outcome == SUCCESS
+        planFile.exists()
+        textFile.exists()
+
+        where:
+        format | json
+        'text' | false
+        'json' | true
     }
 
     void 'Run terraform apply on a local resource'() {
@@ -132,6 +150,48 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         then:
         result.task(':tfApply').outcome == SUCCESS
         destFile.text == FILE_CONTENTS
+    }
+
+    void 'tfShowState should cause tfApply to be executed'() {
+        setup:
+        getGradleRunner(['tfApply']).build()
+
+        when:
+        BuildResult result = getGradleRunner(['tfShowState']).build()
+
+        then:
+        result.task(':tfShowState').outcome == SUCCESS
+        result.task(':tfApply') == null
+
+        when:
+        BuildResult result2 = getGradleRunner(['tfShowState']).build()
+
+        then:
+        result2.task(':tfShowState').outcome == SUCCESS
+    }
+
+    void 'Plan should not run twice if nothing changed'() {
+        when:
+        BuildResult result = getGradleRunner(['tfPlan']).build()
+
+        then:
+        result.task(':tfPlan').outcome == SUCCESS
+
+        when:
+        BuildResult result2 = getGradleRunner(['tfApply']).build()
+
+        then:
+        result2.task(':tfInit').outcome == UP_TO_DATE
+        result2.task(':tfPlan').outcome == UP_TO_DATE
+        result2.task(':tfApply').outcome == SUCCESS
+
+        when:
+        BuildResult result3 = getGradleRunner(['tfApply']).build()
+
+        then:
+        result3.task(':tfInit').outcome == UP_TO_DATE
+        result3.task(':tfPlan').outcome == UP_TO_DATE
+        result3.task(':tfApply').outcome == UP_TO_DATE
     }
 
     void 'Run terraform destroy on a local resource'() {

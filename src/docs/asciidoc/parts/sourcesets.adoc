@@ -4,6 +4,9 @@ When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceS
 
 * `tfApply`
 * `tfDestroy`
+* `tfDestroyPlan`
+* `tfFmtCheck`
+* `tfFmtApply`
 * `tfImport`
 * `tfInit`
 * `tfOutput`
@@ -13,8 +16,8 @@ When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceS
 * `tfStatePush` (`terraform state push`)
 * `tfStateRm` (`terraform state rm`)
 * `tfValidate`
-* `tfUpgrade012`
-* `tfUpgrade013`
+* `tfUntaint`
+* `tfUpgrade`
 
 
 If additional source sets are needed they can be added by convention i.e.

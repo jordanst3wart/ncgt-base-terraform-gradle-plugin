@@ -13,33 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.tasks
+package org.ysb33r.gradle.terraform.errors
 
 import groovy.transform.CompileStatic
-import org.gradle.api.tasks.options.Option
+import groovy.transform.InheritConstructors
+import org.ysb33r.grolifant.api.errors.ExecutionException
 
-/** Equivalent of {@code terraform 0.13upgrade}.
+/** Thrown when the specific version of terraform does not support upgrading.
+ *
+ * @author Schalk W. Cronjé
  *
  * @since 0.10.0
  */
 @CompileStatic
-class TerraformUpgrade013 extends AbstractTerraformTask {
-
-    TerraformUpgrade013() {
-        super('0.13upgrade', [], [])
-        alwaysOutOfDate()
-    }
-
-    /** Set auto-approve mode.
-     *
-     * Once set it cannot be unset for the duration of the Gradle task graph execution.
-     *
-     * @param state {@code true} will auto-approve upgrade.
-     */
-    @Option(option = 'approve', description = 'Auto-approve upgrade of sources to Terraform v0.13')
-    void setAutoApprove(Boolean state) {
-        if (state) {
-            supportsYes()
-        }
-    }
+@InheritConstructors
+class TerraformUpgradeNotSupportedException extends ExecutionException {
 }
