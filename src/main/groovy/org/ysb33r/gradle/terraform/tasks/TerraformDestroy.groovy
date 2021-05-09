@@ -17,8 +17,13 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.config.ResourceFilter
+import org.ysb33r.gradle.terraform.config.StateOptionsFull
 
 import javax.inject.Inject
+import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform destroy}.
  *
@@ -28,18 +33,55 @@ import javax.inject.Inject
  * @since 0.1
  */
 @CompileStatic
-class TerraformDestroy extends AbstractTerraformApplyTask {
+class TerraformDestroy extends AbstractTerraformTask {
 
     @Inject
     TerraformDestroy(TerraformPlanProvider plan, String workspaceName) {
-        super(plan, 'destroy', workspaceName)
+        super('destroy', [Lock, StateOptionsFull], [], workspaceName)
+        supportsInputs()
+        supportsColor()
+
+        addCommandLineProvider(
+            projectOperations.provider({ ->
+                plan.get().extensions.getByType(TerraformExtension).allVariables.commandLineArgs +
+                    plan.get().extensions.getByType(Lock).commandLineArgs +
+                    plan.get().extensions.getByType(StateOptionsFull).commandLineArgs
+            } as Callable<List<String>>)
+        )
 
         doLast {
             plan.get().internalTrackerFile.get().delete()
         }
 
         inputs.files(taskProvider('init'))
-        inputs.files(taskProvider('apply'))
+
+        /*
+                super('apply', [Lock, StateOptionsFull], [], workspaceName)
+        supportsAutoApprove()
+        supportsInputs()
+        supportsColor()
+        planProvider = plan
+        planFile = planProvider.map(new Transformer<File, TerraformPlan>() {
+            @Override
+            File transform(TerraformPlan terraformPlan) {
+                terraformPlan.planOutputFile.get()
+            }
+        })
+        tracker = project.provider({ ->
+            plan.get().internalTrackerFile.get()
+        } as Callable<File>)
+
+        doLast {
+            tracker.get().text = LocalDateTime.now().toString()
+        }
+
+        outputs.file(tracker).optional()
+        inputs.files(taskProvider('plan'))
+
+        if (LegacyLevel.PRE_5_0) {
+            dependsOn(plan.get())
+        }
+         */
     }
 
     /** Set auto-approve mode.
@@ -53,5 +95,10 @@ class TerraformDestroy extends AbstractTerraformApplyTask {
         if (state) {
             supportsAutoApprove()
         }
+    }
+
+    @Option(option = 'target', description = 'List of resources to target')
+    void setTargets(List<String> resourceNames) {
+        extensions.getByType(ResourceFilter).targets = resourceNames
     }
 }

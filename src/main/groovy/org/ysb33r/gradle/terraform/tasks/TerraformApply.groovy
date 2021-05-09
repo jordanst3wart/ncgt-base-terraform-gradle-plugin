@@ -77,9 +77,7 @@ class TerraformApply extends AbstractTerraformTask {
      */
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
-        planProvider.configure {
-            it.extensions.getByType(ResourceFilter).target(resourceNames)
-        }
+        planProvider.get().extensions.getByType(ResourceFilter).target(resourceNames)
     }
 
     /** Mark resources to be replaced.
@@ -90,9 +88,7 @@ class TerraformApply extends AbstractTerraformTask {
      */
     @Option(option = 'replace', description = 'List of resources to replace')
     void setReplacements(List<String> resourceNames) {
-        planProvider.configure {
-            it.extensions.getByType(ResourceFilter).replace(resourceNames)
-        }
+        planProvider.get().extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
     @Override
