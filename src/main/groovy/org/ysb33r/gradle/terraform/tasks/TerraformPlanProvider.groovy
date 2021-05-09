@@ -15,7 +15,6 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
-
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
