@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
+import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
@@ -28,6 +29,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformMajorVersion
@@ -154,8 +156,24 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         TerraformUtils.terraformPath(projectOperations, file)
     }
 
+    /**
+     * The workspace name.
+     *
+     * @return Current workspace name. {@code null} for workspace-agnostic tasks.
+     *
+     * @since 0.10
+     */
+    @Internal
+    String getWorkspaceName() {
+        this.workspaceName
+    }
+
     @Override
     void exec() {
+        if (switchWorkspaceBeforeExecution) {
+            switchWorkspace()
+        }
+
         if (terraformLogLevel) {
             logDir.get().mkdirs()
         }
@@ -177,11 +195,14 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      * @param command Command to be executed. See https://www.terraform.io/docs/commands/index.html for details.
      * @param configExtensions Configuration extensions to be added to this task.
      * @param terraformConfigExtensions Configuration extensions that are added to the terraform task extension.
+     * @param workspaceName Name of workspace this task is associated with. Set to {@code null} for tasks that are
+     *   workspace-agnostic
      */
     protected AbstractTerraformTask(
         String cmd,
         List<Class> configExtensions,
-        List<TerraformExtensionConfigTypes> terraformConfigExtensions
+        List<TerraformExtensionConfigTypes> terraformConfigExtensions,
+        String workspaceName
     ) {
         super(cmd, configExtensions, terraformConfigExtensions)
 
@@ -207,6 +228,25 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
         this.sourceFiles = project.fileTree(sourceDirProvider)
         this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate')
+        this.workspaceName = workspaceName
+    }
+
+    /**
+     * Indicated whether this task is associated with a source set which has workspaces other than just default.
+     *
+     * @return {@code true} if there are workspaces. If the task is workspace-agnostic it will return {@code false}
+     * even if the associated sourceset has workspaces.
+     *
+     * @since 0.10
+     */
+    @SuppressWarnings('UnnecessaryGetter')
+    protected boolean hasWorkspaces() {
+        if (workspaceName == null) {
+            false
+        } else {
+            TerraformSourceDirectorySet tsds = getSourceSet()
+            tsds == null ? false : tsds.hasWorkspaces()
+        }
     }
 
     @Override
@@ -215,7 +255,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     }
 
     /**
-     * Files in the source direcotyr that act as input files to determine up to date status.
+     * Files in the source directory that act as input files to determine up to date status.
      *
      * @return File collection
      *
@@ -236,8 +276,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      */
     @CompileDynamic
     protected Provider<AbstractTerraformTask> taskProvider(String command) {
+        def ws = workspaceName
         Provider<String> taskName = projectOperations.provider { ->
-            TerraformConvention.taskName(sourceSet.name, command)
+            TerraformConvention.taskName(sourceSet.name, command, ws)
         }
 
         if (PRE_5_0) {
@@ -385,6 +426,87 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         }
     }
 
+    /** This task is workspace aware, but workspaces should not be switched
+     *
+     * @since 0.10
+     */
+    protected void doNotSwitchWorkspace() {
+        this.switchWorkspaceBeforeExecution = false
+    }
+
+    /**
+     * Switches workspaces to the correct one if the source set has workspaces and the current workspace is not the
+     * correct one. If no additional workspace or the task is workspace agnostic, then it will do-nothing.
+     *
+     * @since 0.10
+     */
+    protected void switchWorkspace() {
+        if (hasWorkspaces()) {
+            def workspaces = listWorkspaces()
+            String current = workspaces.find { k, v -> v == true }.key
+
+            if (current != workspaceName) {
+                if (workspaces.containsKey(workspaceName)) {
+                    runWorkspaceSubcommand('select', workspaceName)
+                } else {
+                    runWorkspaceSubcommand('new', workspaceName)
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs a {@code terraform workspace} subcommand.
+     *
+     * @param cmd Subcommand to run.
+     * @return Output from command.
+     *
+     * @since 0.10
+     */
+    protected String runWorkspaceSubcommand(String cmd, String... args) {
+        TerraformExecSpec execSpec = createExecSpec()
+        addExecutableToExecSpec(execSpec)
+        Map<String, String> tfEnv = terraformEnvironment
+        def strm = new ByteArrayOutputStream()
+        execSpec.identity {
+            command 'workspace'
+            workingDir sourceDir
+            environment tfEnv
+            cmdArgs cmd
+            cmdArgs args
+            standardOutput(strm)
+        }
+        execSpec.environment(environment)
+        Action<ExecSpec> runner = new Action<ExecSpec>() {
+            @Override
+            void execute(ExecSpec spec) {
+                execSpec.copyToExecSpec(spec)
+            }
+        }
+
+        logDir.get().mkdirs()
+        projectOperations.exec(runner).assertNormalExitValue()
+        strm.toString()
+    }
+
+    /**
+     * Lists the workspaces as currently known to Terraform
+     *
+     * @return List of workspaces.
+     */
+    @SuppressWarnings('UnnecessarySubstring')
+    protected Map<String, Boolean> listWorkspaces() {
+        runWorkspaceSubcommand('list').readLines().findAll {
+            !it.empty
+        }.collectEntries {
+            if (it.startsWith('*')) {
+                [it.substring(1).trim(), true]
+            } else {
+                [it.trim(), false]
+            }
+        }
+    }
+
     @Synchronized
     private static TerraformMajorVersion loadTerraformVersion(
         String sourceSetName,
@@ -409,9 +531,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         new ConcurrentHashMap<String, TerraformMajorVersion>()
 
     private Object sourceSetProxy
-
     private String terraformLogLevel = 'TRACE'
-
+    private boolean switchWorkspaceBeforeExecution = true
+    private final String workspaceName
     private final Provider<File> sourceDirProvider
     private final Provider<File> dataDirProvider
     private final Provider<File> logDirProvider

@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
@@ -28,7 +27,9 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
@@ -40,24 +41,18 @@ import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionCo
 @CompileStatic
 class TerraformPlan extends AbstractTerraformTask {
 
-    TerraformPlan() {
+    @Inject
+    TerraformPlan(String workspaceName) {
         super(
             'plan',
             [Lock, StateOptionsFull, ResourceFilter],
-            [VARIABLES]
+            [VARIABLES],
+            workspaceName
         )
         supportsInputs()
         supportsColor()
         inputs.files(taskProvider('init'))
     }
-
-//    /** Set to {@code true} if a plan to destroy all resources must be produced.
-//     *
-//     * Or pass {@code --destroy} on the command-line.
-//     */
-//    @Input
-//    @Option(option = 'destroy', description = 'Generate a destruction plan')
-//    boolean destructionPlan = false
 
     /** Where the plan file will be written to.
      *
@@ -65,8 +60,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanOutputFile() {
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         dataDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}.tf.plan")
+            new File(reportDir, "${sourceSet.name}${ws}.tf.plan")
         } as Transformer<File, File>)
     }
 
@@ -76,8 +72,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     Provider<File> getPlanReportOutputFile() {
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         reportsDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
+            new File(reportDir, "${sourceSet.name}${ws}.tf.plan.${jsonReport ? 'json' : 'txt'}")
         } as Transformer<File, File>)
     }
 
@@ -87,8 +84,9 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Internal
     Provider<File> getInternalTrackerFile() {
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         project.provider({ ->
-            new File(reportsDir.get(), '.tracker')
+            new File(reportsDir.get(), "${ws}.tracker")
         } as Callable<File>)
     }
 

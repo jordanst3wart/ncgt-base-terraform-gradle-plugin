@@ -41,8 +41,8 @@ import java.util.concurrent.Callable
 class TerraformApply extends AbstractTerraformTask {
 
     @Inject
-    TerraformApply(TerraformPlanProvider plan) {
-        super('apply', [Lock, StateOptionsFull], [])
+    TerraformApply(TerraformPlanProvider plan, String workspaceName) {
+        super('apply', [Lock, StateOptionsFull], [], workspaceName)
         supportsAutoApprove()
         supportsInputs()
         supportsColor()

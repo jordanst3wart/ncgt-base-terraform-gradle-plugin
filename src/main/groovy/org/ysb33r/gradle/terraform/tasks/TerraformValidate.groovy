@@ -20,6 +20,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
+import javax.inject.Inject
+
 /** Equivalent of {@code terraform validate}.
  *
  * @since 0.1
@@ -27,8 +29,9 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 @CompileStatic
 class TerraformValidate extends AbstractTerraformTask {
 
-    TerraformValidate() {
-        super('validate', [], [])
+    @Inject
+    TerraformValidate(String workspaceName) {
+        super('validate', [], [], workspaceName)
         supportsColor()
         inputs.files(taskProvider('init'))
     }

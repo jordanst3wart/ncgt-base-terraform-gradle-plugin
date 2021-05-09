@@ -28,7 +28,7 @@ import org.ysb33r.gradle.terraform.errors.TerraformUpgradeNotSupportedException
 class TerraformUpgrade extends AbstractTerraformTask {
 
     TerraformUpgrade() {
-        super(null, [], [])
+        super(null, [], [], null)
         alwaysOutOfDate()
     }
 
