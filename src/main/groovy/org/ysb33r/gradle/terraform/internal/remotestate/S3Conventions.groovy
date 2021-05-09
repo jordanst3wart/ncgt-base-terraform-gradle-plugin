@@ -113,7 +113,7 @@ class S3Conventions {
     }
 
     private static String newTaskName(String sourceSetName) {
-        "create${taskName(sourceSetName, 's3BackendConfiguration').capitalize()}"
+        "create${taskName(sourceSetName, 's3BackendConfiguration', null).capitalize()}"
     }
 
     private static Action<RemoteStateAwsS3ConfigGenerator> defaultRemoteStateName(

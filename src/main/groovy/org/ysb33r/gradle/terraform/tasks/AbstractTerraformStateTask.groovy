@@ -27,8 +27,8 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 @CompileStatic
 class AbstractTerraformStateTask extends AbstractTerraformTask {
 
-    protected AbstractTerraformStateTask(final String subcmd) {
-        super('state', [], [])
+    protected AbstractTerraformStateTask(final String subcmd, final String workspaceName) {
+        super('state', [], [], workspaceName)
         this.subcmd = subcmd
         alwaysOutOfDate()
     }

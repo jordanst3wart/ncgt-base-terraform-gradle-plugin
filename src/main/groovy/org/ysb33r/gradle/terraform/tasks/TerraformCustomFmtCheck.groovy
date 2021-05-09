@@ -53,7 +53,7 @@ class TerraformCustomFmtCheck extends AbstractTerraformCustomFmt {
                 @Override
                 Set<File> call() throws Exception {
                     projectOperations.fileize(sourceDirs).findAll {
-                        it.directory
+                        it.exists() && it.directory
                     }.toSet()
                 }
             }

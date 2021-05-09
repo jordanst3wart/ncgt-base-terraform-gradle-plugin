@@ -106,7 +106,7 @@ class TerraformInit extends AbstractTerraformTask {
     final Provider<File> terraformInitStateFile
 
     TerraformInit() {
-        super('init', [], [])
+        super('init', [], [], null)
         supportsInputs()
         supportsColor()
 

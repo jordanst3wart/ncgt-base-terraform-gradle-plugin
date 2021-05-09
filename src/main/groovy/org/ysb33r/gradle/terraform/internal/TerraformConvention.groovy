@@ -22,9 +22,10 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
-import org.ysb33r.grolifant.api.core.LegacyLevel
 
+import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.APPLY
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
+import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_4_10
 
 /** Provide convention naming.
  *
@@ -35,17 +36,35 @@ class TerraformConvention {
 
     public static final String DEFAULT_SOURCESET_NAME = 'main'
     public static final String TERRAFORM_INIT = DefaultTerraformTasks.INIT.command
+    public static final String DEFAULT_WORKSPACE = 'default'
 
     /** Provides a task name
      *
      * @param sourceSetName Name of source set the task will be associated with.
      * @param commandType The Terraform command that this task will wrap.
      * @return Name of take
+     * @deprecated
      */
+    @Deprecated
     static String taskName(String sourceSetName, String commandType) {
+        taskName(sourceSetName, commandType, DEFAULT_WORKSPACE)
+    }
+
+    /** Provides a task name
+     *
+     * @param sourceSetName Name of source set the task will be associated with.
+     * @param commandType The Terraform command that this task will wrap.
+     * @param workspaceName Name of workspace. if {@code null} will act as if workspace-agnostic
+     * @return Name of task
+     *
+     * @since 0.10
+     */
+    static String taskName(String sourceSetName, String commandType, String workspaceName) {
+        boolean agnostic = workspaceName ? DefaultTerraformTasks.byCommand(commandType).workspaceAgnostic : true
+        String workspace = workspaceName == DEFAULT_WORKSPACE || agnostic ? '' : workspaceName.capitalize()
         sourceSetName == DEFAULT_SOURCESET_NAME ?
-            "tf${commandType.capitalize()}" :
-            "tf${sourceSetName.capitalize()}${commandType.capitalize()}"
+            "tf${commandType.capitalize()}${workspace}" :
+            "tf${sourceSetName.capitalize()}${commandType.capitalize()}${workspace}"
     }
 
     /** Returns the default text used for a Terraform source set
@@ -62,16 +81,42 @@ class TerraformConvention {
     /** Creates or registers the tasks associated with a sourceset using specific conventions
      *
      * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>         Init} and source directories will be {@code src/tf/<sourceSetName>}.
+     * {@code terraform<SourceSetName>     Init} and source directories will be {@code src/tf/<sourceSetName>}.
      *
      * @param project Project Project to attache source set to.
      * @param sourceSetName Name of Terraform source set.
      */
     static void createTasksByConvention(Project project, TerraformSourceDirectorySet sourceSet) {
-        if (LegacyLevel.PRE_4_10) {
-            createTasks(sourceSet, project)
-        } else {
-            registerTasks(sourceSet, project)
+        createWorkspaceTasksByConvention(project, sourceSet, DEFAULT_WORKSPACE)
+    }
+
+    /** Creates or registers the tasks associated with an additional worksapce in a sourceset.
+     *
+     * For any source set other than {@code main}, tasks will be named using a pattern such as
+     * {@code terraform<SourceSetName>            Init<WorkspaceName>}.
+     *
+     * @param project Project to attach source set to.
+     * @param sourceSetName Name of Terraform source set.
+     * @param workspaceName Name of workspace
+     */
+    static void createWorkspaceTasksByConvention(
+        Project project,
+        TerraformSourceDirectorySet sourceSet,
+        String workspaceName
+    ) {
+        if (!project.tasks.findByName(taskName(sourceSet.name, APPLY.command, workspaceName))) {
+            DefaultTerraformTasks.ordered().each {
+                boolean requireTask = workspaceName == DEFAULT_WORKSPACE ||
+                    workspaceName != DEFAULT_WORKSPACE && !it.workspaceAgnostic
+                if (requireTask) {
+                    String newTaskName = taskName(sourceSet.name, it.command, workspaceName)
+                    if (PRE_4_10) {
+                        createTasks(sourceSet, project, workspaceName, it, newTaskName)
+                    } else {
+                        registerTasks(sourceSet, project, workspaceName, it, newTaskName)
+                    }
+                }
+            }
         }
     }
 
@@ -95,59 +140,70 @@ class TerraformConvention {
 
     private static void registerTasks(
         TerraformSourceDirectorySet sourceSet,
-        Project project
+        Project project,
+        String workspaceName,
+        DefaultTerraformTasks taskDetails,
+        String newTaskName
     ) {
-        if (!project.tasks.findByName(taskName(sourceSet.name, TERRAFORM_INIT))) {
-            String name = sourceSet.name
-            DefaultTerraformTasks.ordered().each {
-                def taskConfigurator = taskConfigurator(sourceSet, it)
-                TaskProvider<AbstractTerraformTask> taskProvider
-                if (it.dependsOnProvider) {
-                    taskProvider = project.tasks.register(
-                        taskName(name, it.command),
-                        it.type,
-                        it.dependsOnProvider.newInstance(project, name)
-                    ) as TaskProvider<AbstractTerraformTask>
-                } else {
-                    taskProvider = project.tasks.register(
-                        taskName(name, it.command),
-                        it.type
-                    ) as TaskProvider<AbstractTerraformTask>
-                }
-
-                taskProvider.configure(taskConfigurator)
-            }
+        def taskConfigurator = taskConfigurator(sourceSet, taskDetails)
+        TaskProvider<AbstractTerraformTask> taskProvider
+        if (taskDetails.dependsOnProvider) {
+            taskProvider = project.tasks.register(
+                newTaskName,
+                taskDetails.type,
+                taskDetails.dependsOnProvider.newInstance(project, sourceSet.name, workspaceName),
+                workspaceName
+            ) as TaskProvider<AbstractTerraformTask>
+        } else if (taskDetails.workspaceAgnostic) {
+            taskProvider = project.tasks.register(
+                newTaskName,
+                taskDetails.type
+            ) as TaskProvider<AbstractTerraformTask>
+        } else {
+            taskProvider = project.tasks.register(
+                newTaskName,
+                taskDetails.type,
+                workspaceName
+            ) as TaskProvider<AbstractTerraformTask>
         }
+
+        taskProvider.configure(taskConfigurator)
     }
 
     @CompileDynamic
     private static void createTasks(
         TerraformSourceDirectorySet sourceSet,
-        Project project
+        Project project,
+        String workspaceName,
+        DefaultTerraformTasks taskDetails,
+        String newTaskName
     ) {
         String name = sourceSet.name
-        if (!project.tasks.findByName(taskName(sourceSet.name, TERRAFORM_INIT))) {
-            DefaultTerraformTasks.ordered().each {
-                AbstractTerraformTask newTask
-                if (it.dependsOnProvider) {
-                    newTask = project.tasks.create(
-                        taskName(name, it.command),
-                        it.type,
-                        it.dependsOnProvider.newInstance(project, name)
-                    )
-                } else {
-                    newTask = project.tasks.create(
-                        taskName(name, it.command),
-                        it.type
-                    )
-                }
-                newTask.sourceSet = sourceSet
-                newTask.group = TERRAFORM_TASK_GROUP
-                newTask.description = "${it.description} for '${name}'"
-                if (it != DefaultTerraformTasks.INIT) {
-                    newTask.mustRunAfter taskName(name, TERRAFORM_INIT)
-                }
-            }
+        AbstractTerraformTask newTask
+        if (taskDetails.dependsOnProvider) {
+            newTask = project.tasks.create(
+                newTaskName,
+                taskDetails.type,
+                taskDetails.dependsOnProvider.newInstance(project, name, workspaceName),
+                workspaceName
+            )
+        } else if (taskDetails.workspaceAgnostic) {
+            newTask = project.tasks.create(
+                newTaskName,
+                taskDetails.type
+            )
+        } else {
+            newTask = project.tasks.create(
+                newTaskName,
+                taskDetails.type,
+                workspaceName
+            )
+        }
+        newTask.sourceSet = sourceSet
+        newTask.group = TERRAFORM_TASK_GROUP
+        newTask.description = "${taskDetails.description} for '${name}'"
+        if (taskDetails != DefaultTerraformTasks.INIT) {
+            newTask.mustRunAfter taskName(name, TERRAFORM_INIT, workspaceName)
         }
     }
 }

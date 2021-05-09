@@ -3,6 +3,7 @@
 When the `org.ysb33r.terraform` plugin is applied, it adds the `terraformSourceSets` extension which contain the `main` source set. Associated with this source set is the default folder of `src/tf/main` and a number of tasks including:
 
 * `tfApply`
+* `tfCleanupWorkspaces`
 * `tfDestroy`
 * `tfDestroyPlan`
 * `tfFmtCheck`
@@ -53,11 +54,27 @@ terraformSourceSets {
     remote.s3 { // <4>
 
     }
+
+    workspaces 'alpha', 'beta' // <5>
   }
 }
 ----
 <1> Source directory, which will also be the working directory for terraform.
 <2> Configure any variables that are specific to the source set. See <<variables,Variables block>> for more details.
 <3> Additional sources that should affect re-running of tasks, but which are not directly part of the existing source set.
-<4> If you applied the `org.ysb33r.terraform.remotestate.s3` plugin you can also configure remtoe state on a per-source set basis.
+<4> If you applied the `org.ysb33r.terraform.remotestate.s3` plugin you can also configure remote state on a per-source set basis.
   See <<ConfigureRemoteS3,configuring remote S3 state>> for more details.
+<5> Adds additional workspaces to the source set.
+
+=== Workspaces
+
+As from 0.10, Terraform workspaces are supported.
+This plugin suite adds naming conventions to easily deal with workspaces.
+If you add a workspace called `alpha` then the apply task for this workspace will be `tfApplyAlpha`.
+If you add a workspace called `beta` to a source set called `release`, then the apply task will be `tfReleaseApplyBeta`.
+These conventions only apply to tasks which are workstate/state-aware in terraform.
+For instance there will be no task named `tfInitAlpha` or `tfFmtCheckAlpha`.
+There is also no need to switch workspaces, as the plugin will do that under the hood automatically.
+If you run `./gradlew tfApplyAlpha tfApplyBeta tfApplyGamma tfOutput`, the plugin will automatically performa a `terraform select` before executing `terraform apply` or `terraform output`.
+
+If you decide to remove workspaces, simply cleanup the state by running the appropriate `tfDestroy` task(s) and then remove the workspaces from the `terraformSourceSets` DSL. Finally run `tfCleanupWorkspaces`.

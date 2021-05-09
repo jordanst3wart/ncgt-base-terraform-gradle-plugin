@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
+import org.ysb33r.gradle.terraform.tasks.TerraformCleanupWorkspaces
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
 import org.ysb33r.gradle.terraform.tasks.TerraformDestroyPlan
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtApply
@@ -41,39 +42,68 @@ import org.ysb33r.gradle.terraform.tasks.TerraformValidate
  * @since 0.8.0
  */
 @CompileStatic
+@SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
-    INIT(0, 'init', TerraformInit, 'Initialises Terraform'),
+    INIT(0, 'init', TerraformInit, 'Initialises Terraform', true),
     IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
     SHOW(2, 'showState', TerraformShowState, 'Generates a report on the current state'),
     OUTPUT(2, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', TerraformPlanProvider),
+    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', false, TerraformPlanProvider),
     DESTROY_PLAN(14, 'destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),
-    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', TerraformPlanProvider),
+    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', false, TerraformPlanProvider),
     VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
     STATE_RM(32, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
     UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
-    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version'),
-    FMT_CHECK(50,'fmtCheck', TerraformFmtCheck,'Checks whether files are correctly formatted'),
-    FMT_APPLY(51,'fmtApply', TerraformFmtApply,'Formats source files in source set')
+    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version', true),
+    FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted', true),
+    FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set', true),
+    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true)
 
     static List<DefaultTerraformTasks> ordered() {
         DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
+    }
+
+    /**
+     * Find instance by command name
+     *
+     * @param cmd Command
+     * @return Task metadata
+     * @throw {@link IllegalArgumentException} is no match
+     *
+     * @since 0.10.0
+     */
+    static DefaultTerraformTasks byCommand(String cmd) {
+        def task = values().find { cmd == it.command }
+        if (!task) {
+            throw new IllegalArgumentException("${cmd} is not a valid command alias for a Terraform task")
+        }
+        task
     }
 
     final int order
     final String command
     final Class type
     final String description
+    final boolean workspaceAgnostic
     final Class dependsOnProvider
 
-    private DefaultTerraformTasks(int order, String name, Class type, String description, Class dependsOn = null) {
+    @SuppressWarnings('ParameterCount')
+    private DefaultTerraformTasks(
+        int order,
+        String name,
+        Class type,
+        String description,
+        boolean workspaceAgnostic = false,
+        Class dependsOn = null
+    ) {
         this.order = order
         this.command = name
         this.type = type
         this.description = description
+        this.workspaceAgnostic = workspaceAgnostic
         this.dependsOnProvider = dependsOn
     }
 }

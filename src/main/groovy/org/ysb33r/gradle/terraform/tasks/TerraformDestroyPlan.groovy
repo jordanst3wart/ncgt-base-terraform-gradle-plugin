@@ -19,6 +19,9 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
+
+import javax.inject.Inject
 
 /**
  * Generates a destroy plan
@@ -27,17 +30,25 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
  */
 @CompileStatic
 class TerraformDestroyPlan extends TerraformPlan {
+
+    @Inject
+    TerraformDestroyPlan(String workspaceName) {
+        super(workspaceName)
+    }
+
     @Override
     Provider<File> getPlanOutputFile() {
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         dataDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}.tf.destroy.plan")
+            new File(reportDir, "${sourceSet.name}${ws}.tf.destroy.plan")
         } as Transformer<File, File>)
     }
 
     @Override
     Provider<File> getPlanReportOutputFile() {
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         reportsDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
+            new File(reportDir, "${sourceSet.name}${ws}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
         } as Transformer<File, File>)
     }
 
@@ -47,4 +58,5 @@ class TerraformDestroyPlan extends TerraformPlan {
         execSpec.cmdArgs '-destroy'
         execSpec
     }
+
 }

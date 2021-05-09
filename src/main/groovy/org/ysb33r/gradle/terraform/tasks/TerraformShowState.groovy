@@ -22,7 +22,9 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
@@ -32,13 +34,14 @@ import java.util.concurrent.Callable
 @CompileStatic
 class TerraformShowState extends AbstractTerraformTask {
 
-    TerraformShowState() {
-        super('show', [], [])
-
+    @Inject
+    TerraformShowState(String workspaceName) {
+        super('show', [], [], workspaceName)
+        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->
-                new File(reportsDir.get(), "${sourceSet.name}.status.${json ? 'tf.json' : 'tf'}")
+                new File(reportsDir.get(), "${sourceSet.name}${ws}.status.${json ? 'tf.json' : 'tf'}")
             } as Callable<File>))
 
         supportsColor(false)

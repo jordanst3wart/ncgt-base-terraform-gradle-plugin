@@ -22,6 +22,8 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.StateOptionsConcurrency
 
+import javax.inject.Inject
+
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 
 /** Equivalent of {@code terraform import}.
@@ -33,11 +35,13 @@ import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionCo
 @CompileStatic
 class TerraformImport extends AbstractTerraformTask {
 
-    TerraformImport() {
+    @Inject
+    TerraformImport(String workspaceName) {
         super(
             'import',
             [Lock, StateOptionsConcurrency],
-            [VARIABLES]
+            [VARIABLES],
+            workspaceName
         )
         supportsInputs()
         supportsColor()

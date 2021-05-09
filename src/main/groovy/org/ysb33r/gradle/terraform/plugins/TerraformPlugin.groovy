@@ -21,9 +21,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtApply
 import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
 
+import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.FMT_APPLY
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
 
@@ -36,20 +38,31 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTas
 class TerraformPlugin implements Plugin<Project> {
     public static final String CUSTOM_FMT_CHECK = 'tfFmtCheckCustomDirectories'
     public static final String CUSTOM_FMT_APPLY = 'tfFmtApplyCustomDirectories'
+    public static final String FORMAT_ALL = 'tfFormatAll'
 
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
+
+        def formatAll = project.tasks.register(FORMAT_ALL)
+        formatAll.configure {
+            it.group = 'terraform'
+            it.description = 'Formats all terraform source'
+        }
 
         TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
         terraformSourceSets.all(new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {
                 createTasksByConvention(project, tsds)
+                formatAll.configure {
+                    it.dependsOn(project.tasks.named(TerraformConvention.taskName(tsds.name, FMT_APPLY.command)))
+                }
             }
         })
         terraformSourceSets.create(DEFAULT_SOURCESET_NAME)
 
         def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
-        project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
+        def applyProvider = project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
+        formatAll.configure { it.dependsOn applyProvider }
     }
 }

@@ -52,7 +52,7 @@ class OutputVariablesCache {
         this.tmpDirProvider = outputTask.map {
             def sourceSetName = it.sourceSet.name
             projectOperations.buildDirDescendant(
-                "tmp/tf-output-var-cache/${toSafeFileName(sourceSetName)}.tmp.---.json"
+                "tmp/tf-output-var-cache/${toSafeFileName(sourceSetName)}.${it.workspaceName ?: ''}.tmp.---.json"
             ).get()
         }
     }
@@ -66,6 +66,7 @@ class OutputVariablesCache {
         this.outputs
     }
 
+    @SuppressWarnings('LineLength')
     private void populateMap() {
         TerraformExecSpec execSpec = buildExecSpec()
         Action<ExecSpec> runner = new Action<ExecSpec>() {
@@ -75,7 +76,7 @@ class OutputVariablesCache {
             }
         }
 
-        log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}"
+        log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}/${outputTask.workspaceName}"
         File tmpFile = tmpDirProvider.get()
         tmpFile.parentFile.mkdirs()
         try {
@@ -84,7 +85,7 @@ class OutputVariablesCache {
                 projectOperations.exec(runner).assertNormalExitValue()
             }
             outputs.putAll(new JsonSlurper().parse(tmpFile) as Map<String, ?>)
-            log.debug "Loaded sourceset ${outputTask.sourceSet.name} output variables with ${outputs}"
+            log.debug "Loaded sourceset ${outputTask.sourceSet.name}/${outputTask.workspaceName} output variables with ${outputs}"
         } finally {
             tmpFile.delete()
         }
