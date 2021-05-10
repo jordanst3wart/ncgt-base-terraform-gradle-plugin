@@ -54,34 +54,6 @@ class TerraformDestroy extends AbstractTerraformTask {
         }
 
         inputs.files(taskProvider('init'))
-
-        /*
-                super('apply', [Lock, StateOptionsFull], [], workspaceName)
-        supportsAutoApprove()
-        supportsInputs()
-        supportsColor()
-        planProvider = plan
-        planFile = planProvider.map(new Transformer<File, TerraformPlan>() {
-            @Override
-            File transform(TerraformPlan terraformPlan) {
-                terraformPlan.planOutputFile.get()
-            }
-        })
-        tracker = project.provider({ ->
-            plan.get().internalTrackerFile.get()
-        } as Callable<File>)
-
-        doLast {
-            tracker.get().text = LocalDateTime.now().toString()
-        }
-
-        outputs.file(tracker).optional()
-        inputs.files(taskProvider('plan'))
-
-        if (LegacyLevel.PRE_5_0) {
-            dependsOn(plan.get())
-        }
-         */
     }
 
     /** Set auto-approve mode.
