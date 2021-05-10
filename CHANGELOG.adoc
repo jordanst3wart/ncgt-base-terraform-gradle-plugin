@@ -20,8 +20,11 @@
 * {issue}37[#37] - Certain features are only enabled for specific terraform versions.
 * {issue}38[#38] - On `tfStateRm` and `tfImport`, `--path` has replaced the `--type` and `--name`.
 * {issue}39[#39] - `tfPlan` & `tfApply` supports ability to replace resources.
-* {issue}40[#40] - task `tfDestroyPlan` added to create aspecific destruction plan. `--destroy` parameter on `tfPlan` is no longer supported. Use this new task instead.
+* {issue}40[#40] - task `tfDestroyPlan` added to create a specific destruction plan. `--destroy` parameter on `tfPlan` is no longer supported. Use this new task instead.
 
+=== Bugs
+
+* {issue}41[#41] - `tfDestroy` should not cause `tfApply` to be executed.
 
 === Other
 

@@ -203,6 +203,22 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         !destFile.exists()
     }
 
+    void 'tfApply should not run again when tfDestroy is called'() {
+        when: 'Infrastructure is applied'
+        getGradleRunner(['tfApply']).build()
+
+        and: 'Sources are modified'
+        destFile << "\n\n\n"
+
+        and: 'tfDestroy is called without tfApply preceding it'
+        BuildResult result = getGradleRunner(['tfDestroy', '--approve']).build()
+
+        then: 'Only tfDestroy should be executed'
+        result.task(':tfDestroy').outcome == SUCCESS
+        result.task(':tfApply') == null
+        result.task(':tfPlan') == null
+    }
+
     GradleRunner getGradleRunner(List<String> tasks) {
         getGradleRunner(
             IS_GROOVY_DSL,

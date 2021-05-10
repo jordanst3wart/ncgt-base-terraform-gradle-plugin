@@ -15,12 +15,11 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskContainer
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
-import org.ysb33r.grolifant.api.core.LegacyLevel
 
 /** A provider of a {@link TerraformPlan} task instance.
  *
@@ -31,24 +30,13 @@ import org.ysb33r.grolifant.api.core.LegacyLevel
 @CompileStatic
 class TerraformPlanProvider {
     @Delegate
-    final TaskProvider<TerraformPlan> plan
+    final Provider<TerraformPlan> plan
 
     TerraformPlanProvider(Project project, String sourceSetName, String workspaceName) {
         String taskName = TerraformConvention.taskName(sourceSetName, 'plan', workspaceName)
-        if (LegacyLevel.PRE_5_0) {
-            plan = providerPre50(project, taskName)
-        } else {
-            plan = provider(project, taskName)
+        TaskContainer tasks = project.tasks
+        this.plan = project.provider {
+            (TerraformPlan) tasks.getByName(taskName)
         }
-    }
-
-    @CompileDynamic
-    private TaskProvider<TerraformPlan> providerPre50(Project project, String taskName) {
-        project.tasks.named(taskName) as TaskProvider<TerraformPlan>
-    }
-
-    @CompileDynamic
-    private TaskProvider<TerraformPlan> provider(Project project, String taskName) {
-        project.tasks.named(taskName, TerraformPlan)
     }
 }
