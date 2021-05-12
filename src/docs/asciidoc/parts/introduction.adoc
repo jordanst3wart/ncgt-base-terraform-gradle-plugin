@@ -20,6 +20,9 @@ Integrating these two products delivers a pwerful combination, but also presents
 
 Using Terraform with Gradle means that the former no longer needs to be installed. Just specify the version and Gradle will bootstrap the correct version. If the version is already in cache (`~/gradle/native-binaries/`), Gradle will just reuse it.
 
-
+.Support this project
+****
+If this project is useful to you, you may want to consider donating to the associated https://www.patreon.com/bePatron?u=55368021[Patreon account]
+****
 
 
