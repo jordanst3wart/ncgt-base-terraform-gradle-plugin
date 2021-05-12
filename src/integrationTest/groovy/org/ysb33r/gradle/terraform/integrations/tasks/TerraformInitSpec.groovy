@@ -23,6 +23,7 @@ import org.ysb33r.grashicorp.HashicorpUtils
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 
+import static org.gradle.testkit.runner.TaskOutcome.NO_SOURCE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
@@ -60,8 +61,8 @@ class TerraformInitSpec extends IntegrationSpecification {
         BuildResult result = gradleRunner.build()
 
         then:
-        result.task(":${taskName}").outcome == SUCCESS
-        new File(testkitDir, 'caches/terraform.d').exists()
+        result.task(":${taskName}").outcome == NO_SOURCE
+
     }
 
     void 'Run terraform (0.13+) init on a project with a single plugin'() {
@@ -85,6 +86,7 @@ class TerraformInitSpec extends IntegrationSpecification {
         result.task(":${taskName}").outcome == SUCCESS
         pluginDir.exists()
         pluginDir.listFiles().find { it.name.startsWith('terraform-') }
+        new File(testkitDir, 'caches/terraform.d').exists()
     }
 
     void 'Run terraform (0.12) init on a project with a single plugin'() {

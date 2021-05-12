@@ -12,7 +12,13 @@ As of version {revnumber} of this plugin, the minimum supported Gradle version i
 include::{includetopdir}/build.gradle[tags=gradleTestVersions,indent=0]
 ----
 
+.Support this project
+****
+If this project is useful to you, you may want to consider donating to the associated https://www.patreon.com/bePatron?u=55368021[Patreon account]
+****
+
 Previous versions of the plugin may support older versions of Gradle. See the specific version's documentation for more details.
+
 
 .Product version documentation
 [cols="4*"]

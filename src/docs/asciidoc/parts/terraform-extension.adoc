@@ -19,4 +19,29 @@ terraform {
 <1> Set new Terraform version
 <2> Do not bootstrap Terraform, but rather use the binary at the specified location.
 
+=== Setting Terraform version for source set
+
+Sometimes you might need one of your source sets to run with an older version of Terraform.
+For instance, you might want to upgrade, but one of the source sets will take more work and leaving it at an older version for a period might be a good solution.
+
+Assuming that you have sourceSet called `monkey`, this can be achieved via task actions
+
+.build.gradle
+[source,groovy]
+----
+tasks.all { Task t -> // <1>
+    if(t.name.startsWith('tfMonkey')) {
+        t.terraform.executable version: '1.2.3'
+    }
+}
+
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t -> // <2>
+    if(t.name startsWith('tfMonkey')) {
+        t.terraform.executable version: '1.2.3'
+    }
+}
+----
+<1> Using `tasks.all` is a simple solution, especially for groovyDSL.
+<2> Using `withType` is an alternative. The typing will help Kotlin DSL users.
 
