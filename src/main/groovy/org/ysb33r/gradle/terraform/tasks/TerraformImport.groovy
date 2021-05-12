@@ -72,16 +72,21 @@ class TerraformImport extends AbstractTerraformTask {
         this.type = id
     }
 
-    @Option(option = 'name', description = 'Name of resource to import')
+    @Option(option = 'name', description = 'Name of resource to import (Deprecated)')
     @Deprecated
     void setResourceName(String id) {
         logger.warn '--name / setResourceName is deprecated. Use --path / setResourcePath instead.'
         this.resourceName = id
     }
 
-    @Option(option = 'id', description = 'Identifier of resource to import')
+    @Option(option = 'id', description = 'Identifier of resource to import (Deprecated)')
     void setResourceIdentifier(String id) {
         this.id = id
+    }
+
+    @Option(option = 'path', description = 'Resource path to import')
+    void setResourcePath(String id) {
+        this.path = id
     }
 
     @Override

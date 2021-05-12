@@ -25,6 +25,7 @@
 === Bugs
 
 * {issue}41[#41] - `tfDestroy` should not cause `tfApply` to be executed.
+* {issue}42[#42] - Skip tasks if no source files in source directory.
 
 === Other
 

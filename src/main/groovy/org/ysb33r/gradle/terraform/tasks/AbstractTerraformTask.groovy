@@ -29,6 +29,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
@@ -262,6 +263,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      * @since 0.10.0
      */
     @InputFiles
+    @SkipWhenEmpty
     protected FileCollection getSourceFiles() {
         this.sourceFiles
     }

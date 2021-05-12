@@ -48,13 +48,18 @@ class TerraformStateRm extends AbstractTerraformStateTask {
         this.path ?: "${type}.${resourceName}"
     }
 
-    @Option(option = 'type', description = 'Type of resource to remove')
+    @Option(option = 'path', description = 'Resource path to remove')
+    void setResourcePath(String id) {
+        this.path = id
+    }
+
+    @Option(option = 'type', description = 'Type of resource to remove (Deprecated)')
     void setResourceType(String id) {
         logger.warn '--type / setResourceType is deprecated. Use --path / setResourcePath instead.'
         this.type = id
     }
 
-    @Option(option = 'name', description = 'Name of resource to remove')
+    @Option(option = 'name', description = 'Name of resource to remove (Deprecated)')
     void setResourceName(String id) {
         logger.warn '--name / setResourceName is deprecated. Use --path / setResourcePath instead.'
         this.resourceName = id
