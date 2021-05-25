@@ -8,101 +8,42 @@ buildscript {
 }
 
 plugins {
-    id 'groovy'
-    id 'maven'
-    id 'codenarc'
     id 'idea'
-    id 'java-gradle-plugin'
-    id 'org.ysb33r.gradletest' version '2.0'
-    id 'org.asciidoctor.jvm.convert' version '3.2.0'
-    id 'org.asciidoctor.editorconfig' version '3.2.0'
-    id 'com.gradle.plugin-publish' version '0.11.0'
-    id 'com.github.hierynomus.license' version '0.14.0'
-    id 'org.ysb33r.vfs' version '1.0'
-    id 'org.ajoberstar.git-publish' version '2.1.1'
-    id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5'
+    id 'org.ysb33r.gradletest' version '2.0' apply false
+    id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
+    id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
+    id 'com.gradle.plugin-publish' version '0.11.0' apply false
+    id 'com.github.hierynomus.license' version '0.14.0' apply false
+    id 'org.ysb33r.vfs' version '1.0' apply false
+    id 'org.ajoberstar.git-publish' version '2.1.1' apply false
+    id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5' apply false
 }
 
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
-
-ext {
-    spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
-    notSnapshot = { !version.endsWith('-SNAPSHOT') }
-}
-
-apply from: rootProject.file('gradle/integration-tests.gradle')
-apply from: rootProject.file('gradle/codenarc.gradle')
-
-repositories {
-    mavenCentral()
-
-    if (!notSnapshot()) {
-        mavenLocal()
-    }
-}
-
-dependencies {
-    compile localGroovy()
-    compile gradleApi()
-    compile "org.ysb33r.gradle:grolifant-core:${grolifantVer}"
-    compile "org.ysb33r.gradle:grolifant50:${grolifantVer}" // TODO: Set to be grolifant60
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
-
-    testCompile("org.spockframework:spock-core:1.3-groovy-${spockGroovyVer}") {
-        exclude module: 'groovy-all'
-    }
-    testCompile gradleTestKit()
-}
-
-test {
-    systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
-}
-
-gradleTest {
-
+allprojects {
     ext {
-        minVersion = '4.9'
+        spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
+        notSnapshot = { !version.endsWith('-SNAPSHOT') }
+        terraformTestCacheDir = rootProject.file("${buildDir}/terraform-binaries")
+
+        codedTerraformVersion = (project(':terraform-gradle-base').file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy').readLines().grep {
+            it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/
+        })[0].replaceFirst(~/^(.+?["'])/, '').replaceFirst(~/(["'].*)$/, '')
+
+        // Always list the primary test version as the first one in this list.
+        terraformTestVersions = [codedTerraformVersion, '0.12.24']
     }
-    versions minVersion
-    // tag::gradleTestVersions[]
-    versions '4.10.3', '5.6.3', '6.3', '6.8.1'
-    // end::gradleTestVersions[]
 
-    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
-    dependsOn jar, cacheTerraformBinaries
-    shouldRunAfter integrationTest
-    testKitStrategy = directoryPerTest
-}
-
-license {
-    header = rootProject.file('gradle/license/HEADER')
-    strictCheck = true
-    ignoreFailures = false
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-        groovy = 'SLASHSTAR_STYLE'
+    tasks.withType(Test).configureEach {
+        systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
     }
-    ext.year = '2017-2021'
-    excludes([
-        '**/*.adoc', '**/*.md',
-        '**/*.properties',
-        '**/*dsl.*Spec.groovy',
-        '**/*.json'
-    ])
+
+    repositories {
+        mavenCentral()
+
+        if (!notSnapshot()) {
+            mavenLocal()
+        }
+    }
 }
 
-task landingPage(type: org.asciidoctor.gradle.jvm.AsciidoctorTask)
-
-apply from : 'gradle/build-documentation.gradle'
-apply from : 'gradle/publish-plugins.gradle'
-
-publishPlugins.mustRunAfter installDocs
-
-task release {
-    group "Release"
-    description "Lifecycle task for release a new version"
-    onlyIf notSnapshot
-    onlyIf { !gradle.startParameter.offline }
-    dependsOn build, publishPlugins, installDocs
-}
+apply from: 'gradle/cache-terraform-binaries.gradle'
