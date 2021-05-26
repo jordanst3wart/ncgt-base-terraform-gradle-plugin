@@ -30,6 +30,7 @@ class TerraformFmtApply extends AbstractTerraformTask {
 
     TerraformFmtApply() {
         super('fmt', [], [], null)
+        doesNotRequireSessionCredentials()
     }
 
     @Input

@@ -30,6 +30,7 @@ class TerraformUpgrade extends AbstractTerraformTask {
     TerraformUpgrade() {
         super(null, [], [], null)
         alwaysOutOfDate()
+        doesNotRequireSessionCredentials()
     }
 
     /** Set auto-approve mode.

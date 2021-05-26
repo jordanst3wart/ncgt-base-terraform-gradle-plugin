@@ -38,12 +38,14 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
+import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.v4.StringUtils
 
 import java.util.concurrent.ConcurrentHashMap
 
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_0
 import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
@@ -181,9 +183,25 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
         super.exec()
     }
-    /** Command-line parameter for no colour.
-     *
-     */
+
+    @Override
+    @SuppressWarnings('UnnecessaryGetter')
+    protected TerraformExecSpec buildExecSpec() {
+        TerraformExecSpec spec = super.buildExecSpec()
+        if (requiresSessionCredentials) {
+            spec.environment(CredentialsCache.get(
+                this.projectName,
+                getSourceSet().name,
+                workspaceName ?: DEFAULT_WORKSPACE,
+                getSourceSet().getCredentialProviders(workspaceName ?: DEFAULT_WORKSPACE)
+            ))
+        }
+        spec
+    }
+
+/** Command-line parameter for no colour.
+ *
+ */
     protected static final String NO_COLOR = '-no-color'
 
     /** Command-line parameter for JSON output.
@@ -230,6 +248,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         this.sourceFiles = project.fileTree(sourceDirProvider)
         this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate')
         this.workspaceName = workspaceName
+        this.projectName = project.name
     }
 
     /**
@@ -437,6 +456,15 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     }
 
     /**
+     * This specific task does not interact with state and thus does not require
+     * any session credentials.
+     *
+     * @since 0.11
+     */
+    protected void doesNotRequireSessionCredentials() {
+        this.requiresSessionCredentials = false
+    }
+    /**
      * Switches workspaces to the correct one if the source set has workspaces and the current workspace is not the
      * correct one. If no additional workspace or the task is workspace agnostic, then it will do-nothing.
      *
@@ -535,6 +563,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     private Object sourceSetProxy
     private String terraformLogLevel = 'TRACE'
     private boolean switchWorkspaceBeforeExecution = true
+    private boolean requiresSessionCredentials = true
     private final String workspaceName
     private final Provider<File> sourceDirProvider
     private final Provider<File> dataDirProvider
@@ -542,4 +571,5 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     private final Provider<File> reportsDirProvider
     private final ConfigurableFileTree sourceFiles
     private final Provider<List<File>> secondarySources
+    private final String projectName
 }

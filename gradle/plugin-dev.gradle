@@ -16,10 +16,6 @@ dependencies {
 }
 
 gradleTest {
-
-    ext {
-        minVersion = '4.9'
-    }
     versions gradleTestMinVersion
 
     // tag::gradleTestVersions[]
@@ -45,7 +41,8 @@ license {
         '**/*.adoc', '**/*.md',
         '**/*.properties',
         '**/*dsl.*Spec.groovy',
-        '**/*.json'
+        '**/*.json',
+        '**/*.tf'
     ])
 }
 

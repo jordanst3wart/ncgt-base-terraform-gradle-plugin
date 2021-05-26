@@ -6,3 +6,4 @@
 :inttestdir: {includetopdir}/src/integrationTest/groovy/org/ysb33r/gradle/terraform
 :gradletestdir: {includetopdir}/src/gradleTest
 :groovydoc: ../api/org/ysb33r/gradle/terraform
+:terraform: Terraform

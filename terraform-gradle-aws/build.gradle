@@ -12,6 +12,11 @@ apply from: rootProject.file('gradle/plugin-dev.gradle')
 apply from: rootProject.file('gradle/integration-tests.gradle')
 apply from: rootProject.file('gradle/codenarc.gradle')
 
+dependencies {
+    compile "software.amazon.awssdk:sts:${awsSdkVersion}"
+    compile project(':terraform-gradle-base')
+}
+
 pluginBundle {
     website = 'https://ysb33rOrg.gitlab.io/terraform-gradle-plugin'
     vcsUrl  = 'https://gitlab.com/ysb33rOrg/terraform-gradle-plugin.git'

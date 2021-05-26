@@ -58,7 +58,9 @@ class TerraformUtils {
     /** Get all AWS-related environmental variables.
      *
      * @return Map of environmental variables.
+     * @deprecated
      */
+    @Deprecated
     static Map<String, String> awsEnvironment() {
         System.getenv().findAll { k, v -> k.startsWith('AWS_') }
     }

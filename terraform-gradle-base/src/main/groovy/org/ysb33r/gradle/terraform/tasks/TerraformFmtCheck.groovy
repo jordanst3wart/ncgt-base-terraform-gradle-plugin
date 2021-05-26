@@ -30,6 +30,7 @@ class TerraformFmtCheck extends AbstractTerraformTask {
 
     TerraformFmtCheck() {
         super('fmt', [], [], null)
+        doesNotRequireSessionCredentials()
     }
 
     @Input

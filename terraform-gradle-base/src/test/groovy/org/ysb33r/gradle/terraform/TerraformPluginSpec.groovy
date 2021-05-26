@@ -65,8 +65,6 @@ class TerraformPluginSpec extends Specification {
             }
         }
 
-        TerraformSourceSets tss = project.terraformSourceSets
-
         then:
         project.tasks.getByName('tfJoeApplyBiden') instanceof TerraformApply
         !project.tasks.findByName('tfJoeFmtCheckBiden')

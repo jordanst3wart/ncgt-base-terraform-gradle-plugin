@@ -103,7 +103,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         project.tasks.createTfS3BackendConfiguration.awsRegion.get() == region
 
         when: 'the variables are analysed'
-        Map<String, String> vars = ((Variables)tss.getByName('main').variables).escapedVars
+        Map<String, String> vars = ((Variables) tss.getByName('main').variables).escapedVars
 
         then: 'remote_state map will be passed to terraform'
         vars.remote_state
@@ -123,7 +123,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         main.name == CONFIG_FILE_NAME
         main.parentFile.name == 'tfS3BackendConfiguration'
         additional.parentFile.name == 'tfAdditionalS3BackendConfiguration'
-        main.parentFile.parentFile == new File(project.buildDir,'tfRemoteState')
+        main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
         project.tasks.createTfS3BackendConfiguration.destinationDir.get() == main.parentFile
     }
 

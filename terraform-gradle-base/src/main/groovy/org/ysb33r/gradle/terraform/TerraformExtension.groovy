@@ -248,7 +248,11 @@ class TerraformExtension extends AbstractToolExtension {
     /** Adds AWS environmental variables to Terraform runtime environment.
      *
      * @since 0.6.0
+     *
+     * @deprecated Use the {@code org.ysb33r.terraform.aws} plugin instead and fine control AWS authentication in the
+     *   source sets.
      */
+    @Deprecated
     void useAwsEnvironment() {
         environment awsEnvironment()
     }

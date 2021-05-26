@@ -12,15 +12,18 @@ plugins {
   id 'org.ysb33r.terraform.wrapper'        version '{revnumber}'  // <4>
   id 'org.ysb33r.terraform.remotestate.s3' version '{revnumber}'  // <5>
   id 'org.ysb33r.terraform.check'          version '{revnumber}'  // <6>
+  id 'org.ysb33r.terraform.aws'            version '{revnumber}'  // <7>
+  id 'org.ysb33r.terraform.gitlab'         version '{revnumber}'  // <8>
 }
 ----
 <1> Base plugin provides `terraform` extension.
 <2> Conventions for `terraform` including source sets and tasks created by convention.
 <3> This plugin is normally not applied directly, but deals specifically with Terraform configuration
 <4> This plugin is usually only applied at the root project and deals with the creation of `terraformw` wrappers.
-<5> Simplifies storing of remote state in S3. See <<RemoteStateS3.Remote State in S3>>.
+<5> Simplifies storing of remote state in S3. See <<RemoteStateS3,Remote State in S3>>.
 <6> Add `tfFmtCheck` and similar tasks for other Terraform source sets to the `check` lifecycle task.
-
+<7> Adds an `aws` extension to a source set which can be used to simplify authentication including assumed roles. See <<AWS,AWS support>>.
+<8> Adds a `gitlab` extension to a source set which can be used to simplify authentication for the Terraform Gitlab provider. See <<GITLAB,Gitlab support>>
 NOTE: You need at least Gradle {minimum-gradle-version} to use these plugins.
 
 === Base plugin

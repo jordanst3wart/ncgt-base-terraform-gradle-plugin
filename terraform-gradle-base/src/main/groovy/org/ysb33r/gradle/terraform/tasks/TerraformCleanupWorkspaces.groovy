@@ -34,6 +34,7 @@ class TerraformCleanupWorkspaces extends AbstractTerraformTask {
     TerraformCleanupWorkspaces() {
         super('workspace', [], [], null)
         alwaysOutOfDate()
+        doesNotRequireSessionCredentials()
     }
 
     @Option(option = 'force', description = 'Forces local removal of workspaces')

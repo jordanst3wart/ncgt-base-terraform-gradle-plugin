@@ -33,6 +33,8 @@ import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
+import org.ysb33r.gradle.terraform.credentials.SessionCredentials
+import org.ysb33r.gradle.terraform.credentials.SessionCredentialsProvider
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
@@ -77,7 +79,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @param displayName Display name of source set.
      */
     @Inject
-    @SuppressWarnings('ParameterCount')
+    @SuppressWarnings(['ParameterCount', 'MethodSize'])
     TerraformSourceDirectorySet(
         Project tempProjectReference,
         ObjectFactory objects,
@@ -147,6 +149,36 @@ class TerraformSourceDirectorySet implements PatternFilterable {
                 createWorkspaceTasksByConvention(tempProjectReference, xref, ws.name)
             }
         })
+
+        this.workspaceSessionCredentialsTransformer = new Transformer<Set<SessionCredentials>, String>() {
+            @Override
+            Set<SessionCredentials> transform(String ws) {
+                Set<SessionCredentials> creds = []
+                for (SessionCredentialsProvider scp : sessionCredentialsProviders) {
+                    if (scp.hasCredentials()) {
+                        creds.add(scp.getCredentialsEnvForWorkspace(ws).get())
+                    }
+                }
+                creds
+            }
+        }
+
+        def wsps = [workspaceNames, DEFAULT_WORKSPACE].flatten() as List<String>
+        for (String wsName : wsps) {
+            sessionCredentialsProviders.each { scp ->
+                if (scp.hasCredentials()) {
+                    scp.getCredentialsEnvForWorkspace(wsName)
+                }
+            }
+        }
+        wsps.collectEntries { String wsName ->
+            [
+                wsName,
+                sessionCredentialsProviders.each { scp ->
+                    scp.getCredentialsEnvForWorkspace(wsName)
+                }
+            ]
+        }
     }
 
     /** The display name is the string representation of the source set.
@@ -461,6 +493,32 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         !this.workspaces.empty
     }
 
+    /**
+     * Registers a credentials provider.
+     *
+     * @param provider New credentials provider.
+     *
+     * @since 0.11
+     */
+    void registerCredentialProvider(SessionCredentialsProvider provider) {
+        this.sessionCredentialsProviders.add(provider)
+    }
+
+    /**
+     * Returns the credential providers on a per workspace basis.
+     *
+     * @param Name of workspace. Defaults to {@code default} is not supplied.
+     * @return Set of credentials for a specific workspace.
+     *
+     * @since 0.11
+     */
+    Provider<Set<SessionCredentials>> getCredentialProviders(String wsName = DEFAULT_WORKSPACE) {
+        projectOperations.map(
+            projectOperations.provider { -> wsName },
+            workspaceSessionCredentialsTransformer
+        )
+    }
+
     static class Workspace implements Named {
         final String name
 
@@ -518,4 +576,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     private final Provider<List<File>> secondarySourcesProvider
     private final NamedDomainObjectContainer<Workspace> workspaces
     private final BiFunction<String, String, Provider<Map<String, ?>>> outputVariablesProviderFunction
+    private final Set<SessionCredentialsProvider> sessionCredentialsProviders = []
+    private final Transformer<Set<SessionCredentials>, String> workspaceSessionCredentialsTransformer
 }

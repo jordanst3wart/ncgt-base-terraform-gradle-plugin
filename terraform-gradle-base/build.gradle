@@ -30,7 +30,8 @@ pluginBundle {
         'docker',
         'virtualbox','vmware', 'hyper-v', 'parallels', 'qemu', 'vsphere',
         'vagrant',
-        'ansible', 'chef', 'powershell', 'salt'
+        'ansible', 'chef', 'powershell', 'salt',
+        'gitlab'
     ]
 
     plugins {
@@ -63,6 +64,11 @@ pluginBundle {
             id = 'org.ysb33r.terraform.check'
             displayName = 'Terraform source checks'
             description = 'Adds Terraform source format validation into the check lifecycle'
+        }
+        terraformGitlabPlugin {
+            id = 'org.ysb33r.terraform.gitlab'
+            displayName = 'Terraform Gitlab provider support'
+            description = 'Authentication support for the Gitlab provider in Terraform'
         }
     }
 }

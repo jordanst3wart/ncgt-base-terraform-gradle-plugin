@@ -23,7 +23,7 @@ allprojects {
     ext {
         spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
         notSnapshot = { !version.endsWith('-SNAPSHOT') }
-        terraformTestCacheDir = rootProject.file("${buildDir}/terraform-binaries")
+        terraformTestCacheDir = file("${rootProject.buildDir}/terraform-binaries")
 
         codedTerraformVersion = (project(':terraform-gradle-base').file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy').readLines().grep {
             it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/

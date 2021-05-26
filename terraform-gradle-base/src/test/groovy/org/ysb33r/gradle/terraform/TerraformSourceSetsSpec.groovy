@@ -98,12 +98,6 @@ class TerraformSourceSetsSpec extends Specification {
     void 'Can add workspaces'() {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
-        def varAction = new Action<VariablesSpec>() {
-            @Override
-            void execute(VariablesSpec vs) {
-                vs.var 'foo2', 'bar2'
-            }
-        }
 
         when:
         project.allprojects {
@@ -120,7 +114,6 @@ class TerraformSourceSetsSpec extends Specification {
         then:
         main.hasWorkspaces()
         main.workspaceNames.size() == 3
-
     }
 
     void configureFourSourceSets() {
@@ -157,6 +150,7 @@ class TerraformSourceSetsSpec extends Specification {
             }
         }
     }
+
     static class TestExtension {
         final ProviderFactory providers
 

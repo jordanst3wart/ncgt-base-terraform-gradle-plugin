@@ -62,9 +62,9 @@ class TerraformInitSpec extends IntegrationSpecification {
 
         then:
         result.task(":${taskName}").outcome == NO_SOURCE
-
     }
 
+    @SuppressWarnings('LineLength')
     void 'Run terraform (0.13+) init on a project with a single plugin'() {
         setup:
         String providerVersion = '2.70.0'
@@ -96,7 +96,10 @@ class TerraformInitSpec extends IntegrationSpecification {
             executable version : '0.12.24'
         }
         '''
-        File pluginDir = new File(testkitDir, "caches/terraform.d/${HashicorpUtils.osArch(DownloadTestSpecification.OS)}")
+        File pluginDir = new File(
+            testkitDir,
+            "caches/terraform.d/${HashicorpUtils.osArch(DownloadTestSpecification.OS)}"
+        )
         new File(srcDir, 'init.tf').text = '''
 provider "aws" {
   version = "~> 2.0"

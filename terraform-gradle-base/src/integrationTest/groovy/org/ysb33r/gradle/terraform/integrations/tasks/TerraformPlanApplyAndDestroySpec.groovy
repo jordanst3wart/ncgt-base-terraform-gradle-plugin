@@ -208,7 +208,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         getGradleRunner(['tfApply']).build()
 
         and: 'Sources are modified'
-        destFile << "\n\n\n"
+        destFile << '\n\n\n'
 
         and: 'tfDestroy is called without tfApply preceding it'
         BuildResult result = getGradleRunner(['tfDestroy', '--approve']).build()

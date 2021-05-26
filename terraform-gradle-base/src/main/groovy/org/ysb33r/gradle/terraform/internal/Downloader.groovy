@@ -44,8 +44,8 @@ import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 class Downloader extends AbstractDistributionInstaller {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final OperatingSystem.Arch ARCH = OS.arch
+    public static final String TOOL_IDENTIFIER = 'terraform'
     public static final String BASEURI = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
-    private static final String TOOL_IDENTIFIER = 'terraform'
 
     /** Creates a downloader
      *

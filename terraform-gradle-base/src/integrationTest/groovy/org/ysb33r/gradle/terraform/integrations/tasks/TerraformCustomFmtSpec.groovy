@@ -49,9 +49,6 @@ class TerraformCustomFmtSpec extends IntegrationSpecification {
     }
 
     void 'Run tfFmt*CustomDirectories without directories will skip task'() {
-        setup:
-        def taskName = CUSTOM_FMT_CHECK
-
         when:
         BuildResult result1 = getGradleRunner(CUSTOM_FMT_CHECK).build()
         BuildResult result2 = getGradleRunner(CUSTOM_FMT_APPLY).build()

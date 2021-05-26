@@ -66,7 +66,9 @@ class TerraformWrapperSpec extends IntegrationSpecification {
         StringWriter err = new StringWriter()
         StringWriter out = new StringWriter()
         File wrapper = DownloadTestSpecification.OS.windows ? terraformw_bat : terraformw
-        List<String> envVars = DownloadTestSpecification.OS.windows ? ['DEBUG=1', "TEMP=${System.getenv('TEMP')}"] : ['DEBUG=1']
+        List<String> envVars = DownloadTestSpecification.OS.windows ?
+            ['DEBUG=1', "TEMP=${System.getenv('TEMP')}"] :
+            ['DEBUG=1']
         Process runWrapper = "${wrapper.absolutePath} -version".execute(envVars, wrapper.parentFile)
         runWrapper.consumeProcessOutput(out, err)
         runWrapper.waitForOrKill(1000)
