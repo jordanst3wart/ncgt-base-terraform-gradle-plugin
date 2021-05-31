@@ -1,0 +1,35 @@
+plugins {
+    id 'groovy'
+    id 'codenarc'
+    id 'java-gradle-plugin'
+    id 'org.ysb33r.gradletest'
+    id 'com.gradle.plugin-publish'
+    id 'com.github.hierynomus.license'
+    id 'org.ysb33r.cloudci.appveyor.testreporter'
+}
+
+apply from: rootProject.file('gradle/plugin-dev.gradle')
+apply from: rootProject.file('gradle/integration-tests.gradle')
+apply from: rootProject.file('gradle/codenarc.gradle')
+
+dependencies {
+    compile "software.amazon.awssdk:sts:${awsSdkVersion}"
+    compile project(':terraform-gradle-base')
+}
+
+pluginBundle {
+    website = 'https://ysb33rOrg.gitlab.io/terraform-gradle-plugin'
+    vcsUrl  = 'https://gitlab.com/ysb33rOrg/terraform-gradle-plugin.git'
+    tags    = [
+        'terraform', 'hashicorp',
+        'amazon', 'aws'
+    ]
+
+    plugins {
+        terraformBasePlugin {
+            id = 'org.ysb33r.terraform.aws'
+            displayName = 'Terraform AWS helpers plugin'
+            description = 'Provides some additional helpers for the Terraform AWS provider'
+        }
+    }
+}

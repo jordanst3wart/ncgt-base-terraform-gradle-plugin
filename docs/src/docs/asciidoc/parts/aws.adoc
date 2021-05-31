@@ -1,0 +1,76 @@
+== AWS Credentials
+[[AWS]]
+
+.Configuring AWS credentials
+[source,groovy]
+----
+terraformSourceSets {
+    main {
+        aws {
+            useAwsCredentialsFromEnvironment() // <1>
+            useAwsCredentialsFromEnvironment 'production' // <2>
+            usePropertiesForAws 'my.access.key', 'my.access.secret' // <3>
+            usePropertiesForAws 'production',
+                    'my.access.key', 'my.access.secret' // <4>
+
+            useAwsCredentialsFromEnvironmentForAssumeRole { // <5>
+                roleArn = 'arn:.....'
+            }
+            useAwsCredentialsFromEnvironmentForAssumeRole 'production',
+                {  } // <6>
+            usePropertiesForAssumeRole 'my.access.key',
+                'my.access.secret', {  } // <7>
+            usePropertiesForAssumeRole 'production',
+                'my.access.key', 'my.access.secret', {  } // <8>
+            clearAllCredentials() // <9>
+        }
+    }
+}
+----
+<1> Use credentials from environment i.e. the `AWS_` variables.
+This is set to be the default for all workspaces, which are not specifically configured.
+<2> Use credentials from the environment for a specific workspace.
+<3> Use the values provided by the specific properties as the default for all workspaces.
+The properties are resolved by first looking for a Gradle property by the given name, failing that a System property and finally in the environment.
+For the latter the characters are uppercased and the dots replaced with underscores.
+For example `my.access.key` will become `MY_ACCESS_KEY`.
+The properties are lazily resolved i.e. only at time of running the specific {terraform} command.
+You can use a variant of this method by passing two providers instead of the property names. The provider should provide the two specific values.
+<4> Use the values provided by the properties for a specific workspace.
+As with the previous case there is a variant which takes two providers instead of the property names.
+<5> Use the credentials from the environment to set up an assumed role by default for all workspaces.
+This overrides `useAwsCredentialsFromEnvironment`.
+See <<AssumedRoleSpec,configuring the assumed role>> for details.
+<6> Use the credentials from the environment to set up an assumed role for a specific workspace.
+This overrides `useAwsCredentialsFromEnvironment` for a specific workspace.
+<7> Use the values provided by the specific properties as the default for all workspaces to set up assumed role authentication.
+There is also variation that takes providers instead of property names.
+This overrides `usePropertiesForAws`.
+<8> Use the values provided by the specific properties for a specific workspace to set up assumed role authentication
+There is also variation that takes providers instead of property names.
+This overrides `usePropertiesForAws` for the specific workspace.
+<9> Reset any existing credential configurations.
+
+NOTE: A workspace can only use either straight forward credentials or assumed role credentials.
+
+[[AssumedRoleSpec]]
+.Configuring the assumed role
+[source,groovy]
+----
+terraformSourceSets {
+    main {
+        aws {
+            useAwsCredentialsFromEnvironmentForAssumeRole {
+                roleArn = 'arn:.......' // <1>
+                region = 'us-east-1' // <2>
+                sessionName = '' // <3>
+                durationSeconds = 240  // <4>
+            }
+        }
+    }
+}
+----
+<1> ARN of the role to be assumed. *Required*.
+<2> Region where the session token is being obtained from. *Required*.
+<3> A session name to identify the current session. If not supplied, an opinionated value will be generated.
+<4> Expiry period for the session token. Defaults to 15min.

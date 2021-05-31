@@ -1,0 +1,9 @@
+:icons: font
+:resourcesdir: {includetopdir}/src/main/resources
+:source-highlighter: coderay
+:sourcedir: {includetopdir}/src/main/groovy/org/ysb33r/gradle/terraform
+:testdir: {includetopdir}/src/test/groovy/org/ysb33r/gradle/terraform
+:inttestdir: {includetopdir}/src/integrationTest/groovy/org/ysb33r/gradle/terraform
+:gradletestdir: {includetopdir}/src/gradleTest
+:groovydoc: ../api/org/ysb33r/gradle/terraform
+:terraform: Terraform
