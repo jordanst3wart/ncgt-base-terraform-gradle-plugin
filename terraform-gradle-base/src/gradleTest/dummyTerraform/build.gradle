@@ -1,0 +1,34 @@
+plugins {
+    id 'org.ysb33r.terraform'
+    id 'org.ysb33r.terraform.wrapper'
+    id 'org.ysb33r.terraform.gitlab'
+}
+
+ext {
+    fileToBeCreated = file("${buildDir}/local.txt")
+    gitlabToken = project.provider { -> 'abcdefghijklmnopq' }
+}
+
+terraform {
+    variables {
+        var 'foofile', terraformPath(fileToBeCreated)
+    }
+}
+
+terraformSourceSets {
+    main {
+        gitlab {
+            useProperty(gitlabToken)
+        }
+    }
+}
+
+task runGradleTest {
+    dependsOn tfInit, tfApply, tfShowState, terraformWrapper, tfOutput
+
+    doLast {
+        assert file('src/tf/main/terraform.tfstate').exists()
+        assert file("${buildDir}/tf/main/main.tf.plan").exists()
+        assert fileToBeCreated.exists()
+    }
+}

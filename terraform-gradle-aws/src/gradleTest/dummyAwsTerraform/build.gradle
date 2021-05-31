@@ -1,0 +1,27 @@
+plugins {
+    id 'org.ysb33r.terraform'
+    id 'org.ysb33r.terraform.aws'
+}
+
+ext {
+    fileToBeCreated = file("${buildDir}/reports/tf/main/main.production.tf.plan.txt")
+    awsKey = project.provider { -> 'abcdefghijklmnopq' }
+    awsSecret = project.provider { -> 'rstuvwxyz' }
+}
+
+terraformSourceSets {
+    main {
+        workspaces 'production'
+        aws {
+            usePropertiesForAws('production', awsKey, awsSecret)
+        }
+    }
+}
+
+task runGradleTest {
+    dependsOn tfInit, tfPlanProduction
+
+    doLast {
+        assert fileToBeCreated.text.contains("\"AWS_ACCESS_KEY_ID\"     = \"abcdefghijklmnopq\"")
+    }
+}

@@ -1,0 +1,80 @@
+apply plugin : 'org.ysb33r.vfs'
+
+ext {
+
+
+
+    currentOS = org.gradle.internal.os.OperatingSystem.current()
+    // These are Terraform plugins we are going to cache, so we don't have to download them everytime.
+    terraformTestPlugins = [
+        [name: 'local', version: '1.0.0'],
+        [name: 'aws', 'version': '1.0.0']
+    ]
+
+    terraformOsArch = { ->
+        def terraformArch
+        def terraformOS
+
+        if (currentOS.windows) {
+            terraformOS = 'windows'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.linux) {
+            terraformOS = 'linux'
+            if (System.getProperty('os.arch').contains('64')) {
+                terraformArch = 'amd64'
+            } else {
+                terraformArch = '386'
+            }
+        } else if (currentOS.macOsX) {
+            terraformOS = 'darwin'
+            terraformArch = 'amd64'
+        }
+
+        "${terraformOS}_${terraformArch}".toString()
+    }.call()
+}
+
+task cacheTerraformBinaries {
+
+    enabled = !project.gradle.startParameter.offline
+
+    terraformTestVersions.each { ver ->
+
+        final String relativePath = "terraform/${ver}/terraform_${ver}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
+        outputs.file target
+
+        doLast {
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
+            }
+        }
+    }
+
+    terraformTestPlugins.each { plugin ->
+        final String relativePath = "terraform-provider-${plugin.name}/${plugin.version}/terraform-provider-${plugin.name}_${plugin.version}_${terraformOsArch}.zip"
+        final File target = file("${terraformTestCacheDir}/${relativePath}")
+
+        outputs.file target
+        doLast {
+            if (!target.exists()) {
+                mkdir target.parentFile
+                vfs {
+                    cp "https://releases.hashicorp.com/${relativePath}",
+                        target,
+                        overwrite: true, recursive: false
+                }
+            }
+        }
+
+    }
+}

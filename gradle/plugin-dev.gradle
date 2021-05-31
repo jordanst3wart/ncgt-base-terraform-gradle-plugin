@@ -1,0 +1,52 @@
+
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
+dependencies {
+    compile localGroovy()
+    compile gradleApi()
+    compile "org.ysb33r.gradle:grolifant-core:${grolifantVer}"
+    compile "org.ysb33r.gradle:grolifant50:${grolifantVer}"
+    compile "org.ysb33r.gradle:grolifant60:${grolifantVer}"
+
+    testCompile("org.spockframework:spock-core:${spockMainVer}-groovy-${spockGroovyVer}") {
+        exclude module: 'groovy-all'
+    }
+    testCompile gradleTestKit()
+}
+
+gradleTest {
+    versions gradleTestMinVersion
+
+    // tag::gradleTestVersions[]
+    versions '4.10.3', '5.6.3', '6.3', '6.8.1'
+    // end::gradleTestVersions[]
+
+    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
+    dependsOn jar, ':cacheTerraformBinaries'
+    shouldRunAfter 'integrationTest'
+    testKitStrategy = directoryPerTest
+}
+
+license {
+    header = rootProject.file('gradle/license/HEADER')
+    strictCheck = true
+    ignoreFailures = false
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+        groovy = 'SLASHSTAR_STYLE'
+    }
+    ext.year = '2017-2021'
+    excludes([
+        '**/*.adoc', '**/*.md',
+        '**/*.properties',
+        '**/*dsl.*Spec.groovy',
+        '**/*.json',
+        '**/*.tf'
+    ])
+}
+
+publishPlugins {
+    onlyIf notSnapshot
+    mustRunAfter check, ':docs:installDocs'
+}
