@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 plugins {
     id 'org.asciidoctor.jvm.convert'
     id 'org.asciidoctor.editorconfig'
@@ -23,22 +21,21 @@ dependencies {
     groovyDoc "org.fusesource.jansi:jansi:1.18"
 }
 
-task groovydoc(type: Groovydoc) {
+tasks.register('groovydoc', Groovydoc) {
     destinationDir = file("${buildDir}/docs/groovydoc")
     docTitle = "Jobble Gradle Plugin Suite Combined API ${project.version}"
-    includePrivate = true
+    includePrivate = false
     groovyClasspath = configurations.groovyDoc
+    classpath= configurations.groovyDoc
 //    mustRunAfter gitPublishReset
-}
 
-rootProject.allprojects.each {
-    if (it != project) {
-        it.tasks.withType(Groovydoc).each { Groovydoc other ->
-            tasks.groovydoc.source other.source
-            tasks.groovydoc.classpath = tasks.groovydoc.classpath ? tasks.groovydoc.classpath + other.classpath : other.classpath
-        }
+    // A really dirty hack
+    ['terraform-gradle-base','terraform-gradle-aws'].each { String other ->
+        source rootProject.file("${other}/src/main/groovy")
     }
 }
+
+
 
 task landingPage(type: org.asciidoctor.gradle.jvm.AsciidoctorTask)
 
@@ -147,7 +144,7 @@ task installDocs(type: Copy) {
 
 task updateGitLabYmlInPages(type: Copy) {
     description 'Copies current GitLab CI configuration to pages branch'
-    from project.projectDir, {
+    from rootProject.projectDir, {
         include '.gitlab*'
     }
     into websitePublishFolder.parentFile

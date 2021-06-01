@@ -7,7 +7,6 @@ plugins {
     id 'org.asciidoctor.editorconfig'
     id 'com.gradle.plugin-publish'
     id 'com.github.hierynomus.license'
-    id 'org.ajoberstar.git-publish'
     id 'org.ysb33r.cloudci.appveyor.testreporter'
 }
 
