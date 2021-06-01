@@ -12,7 +12,7 @@ plugins {
     id 'org.ysb33r.gradletest' version '2.0' apply false
     id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
     id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
-    id 'com.gradle.plugin-publish' version '0.11.0' apply false
+    id 'com.gradle.plugin-publish' version '0.15.0' apply false
     id 'com.github.hierynomus.license' version '0.14.0' apply false
     id 'org.ysb33r.vfs' version '1.0' apply false
     id 'org.ajoberstar.git-publish' version '2.1.1' apply false
