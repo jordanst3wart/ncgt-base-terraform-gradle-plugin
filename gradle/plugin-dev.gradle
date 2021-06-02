@@ -46,6 +46,12 @@ license {
     ])
 }
 
+pluginBundle {
+    mavenCoordinates {
+        groupId = project.group
+    }
+}
+
 publishPlugins {
     onlyIf notSnapshot
     mustRunAfter check, ':docs:installDocs'
