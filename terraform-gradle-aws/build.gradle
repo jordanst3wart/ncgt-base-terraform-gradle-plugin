@@ -9,12 +9,11 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/plugin-dev.gradle')
-apply from: rootProject.file('gradle/integration-tests.gradle')
 apply from: rootProject.file('gradle/codenarc.gradle')
 
 dependencies {
-    compile "software.amazon.awssdk:sts:${awsSdkVersion}"
-    compile project(':terraform-gradle-base')
+    implementation "software.amazon.awssdk:sts:${awsSdkVersion}"
+    api project(':terraform-gradle-base')
 }
 
 pluginBundle {

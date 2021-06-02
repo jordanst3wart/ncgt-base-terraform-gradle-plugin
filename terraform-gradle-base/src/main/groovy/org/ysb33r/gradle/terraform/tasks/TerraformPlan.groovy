@@ -167,6 +167,7 @@ class TerraformPlan extends AbstractTerraformTask {
             'show',
             cmdParams
         )
+        addSessionCredentialsIfAvailable(execSpec)
 
         new Action<ExecSpec>() {
             @Override

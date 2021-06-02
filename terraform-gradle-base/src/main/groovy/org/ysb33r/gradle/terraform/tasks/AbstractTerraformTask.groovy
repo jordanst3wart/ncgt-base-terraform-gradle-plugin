@@ -184,10 +184,8 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         super.exec()
     }
 
-    @Override
     @SuppressWarnings('UnnecessaryGetter')
-    protected TerraformExecSpec buildExecSpec() {
-        TerraformExecSpec spec = super.buildExecSpec()
+    protected void addSessionCredentialsIfAvailable(TerraformExecSpec spec) {
         if (requiresSessionCredentials) {
             spec.environment(CredentialsCache.get(
                 this.projectName,
@@ -196,6 +194,12 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
                 getSourceSet().getCredentialProviders(workspaceName ?: DEFAULT_WORKSPACE)
             ))
         }
+    }
+
+    @Override
+    protected TerraformExecSpec buildExecSpec() {
+        TerraformExecSpec spec = super.buildExecSpec()
+        addSessionCredentialsIfAvailable(spec)
         spec
     }
 
