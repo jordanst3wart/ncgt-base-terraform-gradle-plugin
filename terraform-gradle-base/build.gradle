@@ -16,7 +16,7 @@ apply from: rootProject.file('gradle/codenarc.gradle')
 
 
 dependencies {
-    compile "net.sourceforge.nekohtml:nekohtml:1.9.14"
+    implementation "net.sourceforge.nekohtml:nekohtml:1.9.14"
 }
 
 pluginBundle {
