@@ -11,9 +11,7 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/plugin-dev.gradle')
-apply from: rootProject.file('gradle/integration-tests.gradle')
 apply from: rootProject.file('gradle/codenarc.gradle')
-
 
 dependencies {
     implementation "net.sourceforge.nekohtml:nekohtml:1.9.14"

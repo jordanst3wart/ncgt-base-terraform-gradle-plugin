@@ -1,12 +1,11 @@
 
 configurations {
-    integrationTestCompile {
-        extendsFrom testCompile
+    integrationTestImplementation {
+        extendsFrom testImplementation
     }
-    integrationTestRuntime {
-        extendsFrom integrationTestCompile, testRuntime
+    integrationTestRuntimeOnly {
+        extendsFrom integrationTestImplementation, testRuntimeOnly
     }
-
 }
 
 sourceSets {
@@ -14,11 +13,10 @@ sourceSets {
         java.srcDir file("src/integrationTest/java")
         groovy.srcDir file("src/integrationTest/groovy")
         resources.srcDir file("src/integrationTest/resources")
-        compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
-        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
+        compileClasspath = sourceSets.main.output + configurations.integrationTestCompileClasspath
+        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntimeClasspath
     }
 }
-
 
 task integrationTest(type: Test, dependsOn: jar) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
