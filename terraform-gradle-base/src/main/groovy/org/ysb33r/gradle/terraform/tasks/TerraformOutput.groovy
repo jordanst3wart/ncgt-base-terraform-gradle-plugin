@@ -52,6 +52,7 @@ class TerraformOutput extends AbstractTerraformTask {
         supportsColor(false)
         captureStdOutTo(statusReportOutputFile)
         inputs.files(taskProvider('init'))
+        mustRunAfter(taskProvider('plan'), taskProvider('apply'))
     }
 
     /** Whether output should be in JSON

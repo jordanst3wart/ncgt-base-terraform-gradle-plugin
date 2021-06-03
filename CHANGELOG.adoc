@@ -15,6 +15,10 @@
 * {issue}43[#43] - `tfOutput` should not cause `tfApply` or `tfPlan` to be invoked.
 * {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
 
+=== Other
+
+* Default version of terraform is `0.15.5`.
+
 // end::changelog[]
 
 == v0.10.0
