@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.helpers
+package org.ysb33r.gradle.terraform.testfixtures
 
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.grolifant.api.core.OperatingSystem

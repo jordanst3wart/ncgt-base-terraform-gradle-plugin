@@ -65,12 +65,11 @@ class ResourceFilter implements TerraformTaskConfigExtension {
 
     @Override
     List<String> getCommandLineArgs() {
-        Transform.toList((Collection) targets) {
+        [Transform.toList((Collection) targets) {
             "-target=${it}".toString()
-        }
-        Transform.toList((Collection) replacements) {
+        }, Transform.toList((Collection) replacements) {
             "-replace=${it}".toString()
-        }
+        }].flatten() as List<String>
     }
 
     private final AbstractTerraformTask terraformTask

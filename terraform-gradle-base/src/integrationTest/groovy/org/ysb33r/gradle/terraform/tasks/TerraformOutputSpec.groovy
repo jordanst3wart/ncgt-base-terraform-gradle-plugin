@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.integrations.tasks
+package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
-import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
+import org.ysb33r.gradle.terraform.testfixtures.DownloadTestSpecification
+import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
 import spock.lang.IgnoreIf
+import spock.lang.Issue
 import spock.util.environment.RestoreSystemProperties
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
@@ -66,6 +67,28 @@ class TerraformOutputSpec extends IntegrationSpecification {
         then:
         result.task(":${taskName}").outcome == SUCCESS
         new File(buildDir, 'reports/tf/main/main.outputs.tf').exists()
+    }
+
+    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/43')
+    void 'tfOutput should not invoke tfPlan or tfApply'() {
+        setup:
+        createTfSpec()
+
+        when:
+        BuildResult result = getGradleRunner(
+            IS_GROOVY_DSL,
+            projectDir,
+            [
+                'tfInit',
+                taskName,
+                '-i',
+            ]
+        ).withTestKitDir(testkitDir).build()
+
+        then:
+        result.task(":${taskName}").outcome == SUCCESS
+        result.task(":tfPlan") == null
+        result.task(":tfApply") == null
     }
 
     void 'Access outputs as provider'() {

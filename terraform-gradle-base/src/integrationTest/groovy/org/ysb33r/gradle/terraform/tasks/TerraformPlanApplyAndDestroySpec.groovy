@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.integrations.tasks
+package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
-import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
+import org.ysb33r.gradle.terraform.testfixtures.DownloadTestSpecification
+import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
 import spock.lang.IgnoreIf
+import spock.lang.Issue
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
 
@@ -217,6 +218,23 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         result.task(':tfDestroy').outcome == SUCCESS
         result.task(':tfApply') == null
         result.task(':tfPlan') == null
+    }
+
+    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/47')
+    void 'tfApply should pass target and replace parameters to tfPlan'() {
+        when: 'Infrastructure is applied'
+        BuildResult result1 = getGradleRunner(['tfApply', '--target', 'local_file.foo']).build()
+
+        then:
+        result1.task(':tfPlan').outcome == SUCCESS
+        result1.output.contains('-target=local_file.foo')
+
+        when:
+        BuildResult result2 = getGradleRunner(['tfApply', '--replace', 'local_file.foo']).build()
+
+        then:
+        result2.task(':tfPlan').outcome == SUCCESS
+        result2.output.contains('-replace=local_file.foo')
     }
 
     GradleRunner getGradleRunner(List<String> tasks) {
