@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.integrations
+package org.ysb33r.gradle.terraform.testfixtures
 
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
-
 import org.ysb33r.grolifant.api.core.OperatingSystem
 
 class IntegrationSpecification extends DownloadTestSpecification  {

@@ -59,8 +59,9 @@ test:gradle_6.0,6.3,6.8.1:
     except:
         - pages
         - tags
+    needs: ["jdk11"]
     dependencies:
-        - jdk8
+        - jdk11
     script: ./run-compatibility-test-on-ci.sh
 
 publish:

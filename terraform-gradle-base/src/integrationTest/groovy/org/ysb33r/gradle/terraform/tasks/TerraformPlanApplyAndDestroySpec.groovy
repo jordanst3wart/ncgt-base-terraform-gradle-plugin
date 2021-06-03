@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.integrations.tasks
+package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
-import org.ysb33r.gradle.terraform.integrations.IntegrationSpecification
+import org.ysb33r.gradle.terraform.testfixtures.DownloadTestSpecification
+import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties

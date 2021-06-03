@@ -28,7 +28,7 @@ package org.ysb33r.gradle.terraform.internal
 import org.gradle.api.Project
 import org.gradle.process.ExecResult
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.gradle.terraform.helpers.DownloadTestSpecification
+import org.ysb33r.gradle.terraform.testfixtures.DownloadTestSpecification
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties

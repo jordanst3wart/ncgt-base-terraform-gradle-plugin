@@ -25,9 +25,11 @@ import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.terraformEnvironment
 import static org.ysb33r.grolifant.api.v4.FileUtils.toSafeFileName
 
@@ -101,17 +103,24 @@ class OutputVariablesCache {
         )
 
         TerraformExecSpec execSpec = new TerraformExecSpec(projectOperations, terraformExt.resolver)
+        final String workspaceName = outputTask.workspaceName ?: DEFAULT_WORKSPACE
+        final String projectName = projectOperations.projectName
 
-        execSpec.identity {
+        execSpec.tap {
             executable terraformExt.resolvableExecutable.executable.absolutePath
             command 'output'
             cmdArgs '-json'
             workingDir outputTask.sourceSet.srcDir
             environment tfEnv
             environment outputTask.environment
-        }
 
-        execSpec
+            environment(CredentialsCache.get(
+                projectName,
+                outputTask.sourceSet.name,
+                workspaceName,
+                outputTask.sourceSet.getCredentialProviders(workspaceName)
+            ))
+        }
     }
 
     private TerraformOutput getOutputTask() {
