@@ -10,6 +10,11 @@
 * {issue}44[#44] - Support AWS credentials on Terraform source sets.
 * {issue}45[#45] - Support Gitlab credentials on Terraform source sets.
 
+=== Bugs
+
+* {issue}43[#43] - `tfOutput` should not cause `tfApply` or `tfPlan` to be invoked.
+* {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
+
 // end::changelog[]
 
 == v0.10.0

@@ -96,7 +96,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).targets = resourceNames
+        extensions.getByType(ResourceFilter).target(resourceNames)
     }
 
     /** Mark resources to be replaces.
@@ -105,7 +105,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Option(option = 'replace', description = 'List of resources to replace')
     void setReplacements(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).replacements = resourceNames
+        extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
     /** Where to write the report in human-readable or JSON format.
