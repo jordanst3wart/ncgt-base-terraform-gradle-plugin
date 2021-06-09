@@ -200,7 +200,7 @@ class TerraformInit extends AbstractTerraformTask {
      */
     @Internal
     @Deprecated
-    boolean verifyPlugins = true
+    boolean verifyPlugins = false
 
     /** Add specific command-line options for the command.
      * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
@@ -246,7 +246,7 @@ class TerraformInit extends AbstractTerraformTask {
         }
 
         TerraformMajorVersion verGroup = terraformMajorVersion
-        if (verGroup == VERSION_11_OR_OLDER || verGroup == VERSION_12) {
+        if (verifyPlugins && verGroup == VERSION_11_OR_OLDER || verGroup == VERSION_12) {
             execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
         }
         execSpec

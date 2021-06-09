@@ -23,7 +23,7 @@ gradleTest {
     versions gradleTestMinVersion
 
     // tag::gradleTestVersions[]
-    versions '4.10.3', '5.6.3', '6.3', '6.8.1'
+    versions '4.10.3', '5.6.3', '6.5.1', '7.0.2'
     // end::gradleTestVersions[]
 
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()

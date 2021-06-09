@@ -18,7 +18,7 @@
 
 === Other
 
-* Default version of terraform is `0.15.5`.
+* Default version of terraform is `1.0.0`.
 
 // end::changelog[]
 

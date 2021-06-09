@@ -64,6 +64,17 @@ test:gradle_6.0,6.3,6.8.1:
         - jdk11
     script: ./run-compatibility-test-on-ci.sh
 
+test:gradle_7.0.2:
+    stage: test
+    image: openjdk:11
+    except:
+        - pages
+        - tags
+    needs: ["jdk11"]
+    dependencies:
+        - jdk11
+    script: ./run-compatibility-test-on-ci.sh
+
 publish:
     stage: release
     image: openjdk:8
