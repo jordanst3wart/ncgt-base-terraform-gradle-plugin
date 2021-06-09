@@ -20,7 +20,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceSets
-import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.DefaultTerraformSourceSets
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -42,7 +41,6 @@ class TerraformBasePlugin implements Plugin<Project> {
             project.apply plugin: TerraformRCPlugin
         }
 
-        CredentialsCache.registerListener(project.gradle)
         ProjectOperations.maybeCreateExtension(project)
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
 

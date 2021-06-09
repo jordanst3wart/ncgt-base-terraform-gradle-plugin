@@ -20,6 +20,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
+import org.gradle.api.provider.Provider
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
@@ -29,7 +30,9 @@ import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.config.multilevel.VarsFilesPair
 import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreGlobal
 import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreSourceSet
+import org.ysb33r.gradle.terraform.credentials.SessionCredentials
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
+import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
@@ -99,6 +102,7 @@ class TerraformExtension extends AbstractToolExtension {
         }
         this.warnOnNewVersion = false
         this.env = [:]
+        this.credentialsCache = new CredentialsCache(projectOperations)
         addVariablesExtension()
     }
 
@@ -247,8 +251,7 @@ class TerraformExtension extends AbstractToolExtension {
 
     /** Adds AWS environmental variables to Terraform runtime environment.
      *
-     * @since 0.6.0
-     *
+     * @since 0.6.0*
      * @deprecated Use the {@code org.ysb33r.terraform.aws} plugin instead and fine control AWS authentication in the
      *   source sets.
      */
@@ -298,10 +301,32 @@ class TerraformExtension extends AbstractToolExtension {
         TerraformMajorVersion.fromMinor(Version.of(ver).minor)
     }
 
+    /**
+     * Returns a map of credentials for for a source set.
+     *
+     * This can be called multiple times during task execution as credentials may time out between tasks.
+     *
+     * @param sourceSetName Name of source set.
+     * @param workspaceName Name of workspace
+     * @param creds Session credential providers.
+     * @return Credentials for the specific sourceset-workspace combination
+     *
+     * @since 0.11
+     */
+    Map<String, String> credentialsCacheFor(
+        String sourceSetName,
+        String workspaceName,
+        Provider<Set<SessionCredentials>> creds
+    ) {
+        task ? globalExtension.credentialsCacheFor(sourceSetName, workspaceName, creds) :
+            this.credentialsCache.get(sourceSetName, workspaceName, creds)
+    }
+
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) projectExtension
     }
 
+    @Deprecated
     private void addVersionResolver(ProjectOperations projectOperations) {
         DownloaderFactory downloaderFactory = {
             Map<String, Object> options, String version, ProjectOperations p ->
@@ -376,20 +401,6 @@ class TerraformExtension extends AbstractToolExtension {
     private Boolean warnOnNewVersion
     private final Map<String, Object> env
     private final Map<String, Object> executableDetails
-
+    private final CredentialsCache credentialsCache
 }
-
-//    String getWorkspace() {
-//        (this.workspace == null && task != null) ? globalExtension.getWorkspace() : this.workspace
-//    }
-//
-//    void setWorkspace(final String ws) {
-//        this.workspace = ws
-//    }
-//
-//    void workspace(final String ws) {
-//        this.workspace = ws
-//    }
-//
-//    private String workspace
 

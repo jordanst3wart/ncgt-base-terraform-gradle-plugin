@@ -25,7 +25,6 @@ import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -104,7 +103,6 @@ class OutputVariablesCache {
 
         TerraformExecSpec execSpec = new TerraformExecSpec(projectOperations, terraformExt.resolver)
         final String workspaceName = outputTask.workspaceName ?: DEFAULT_WORKSPACE
-        final String projectName = projectOperations.projectName
 
         execSpec.tap {
             executable terraformExt.resolvableExecutable.executable.absolutePath
@@ -114,8 +112,7 @@ class OutputVariablesCache {
             environment tfEnv
             environment outputTask.environment
 
-            environment(CredentialsCache.get(
-                projectName,
+            environment(terraformExt.credentialsCacheFor(
                 outputTask.sourceSet.name,
                 workspaceName,
                 outputTask.sourceSet.getCredentialProviders(workspaceName)

@@ -14,6 +14,7 @@
 
 * {issue}43[#43] - `tfOutput` should not cause `tfApply` or `tfPlan` to be invoked.
 * {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
+* {issue}48[#48] - AWS credentials should not be cached between builds.
 
 === Other
 

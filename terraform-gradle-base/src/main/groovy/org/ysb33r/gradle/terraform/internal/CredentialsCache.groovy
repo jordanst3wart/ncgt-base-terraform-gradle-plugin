@@ -20,15 +20,11 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.Synchronized
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
-import org.gradle.BuildListener
-import org.gradle.BuildResult
-import org.gradle.api.initialization.Settings
-import org.gradle.api.invocation.Gradle
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.credentials.SessionCredentials
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Caches session credentials between tasks.
@@ -41,18 +37,21 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Slf4j
 class CredentialsCache {
 
+    CredentialsCache(ProjectOperations po) {
+        this.projectName = po.projectName
+    }
+
     @Synchronized
-    static Map<String, String> get(
-        String projectName,
+    Map<String, String> get(
         String sourceSetName,
         String workspaceName,
         Provider<Set<SessionCredentials>> creds
     ) {
         def key = new Key(projectName, sourceSetName, workspaceName)
-        if (!CREDENTIAL_SESSIONS.containsKey(key)) {
-            CREDENTIAL_SESSIONS.put(key, creds.get())
+        if (!credentialSessions.containsKey(key)) {
+            credentialSessions.put(key, creds.get())
         }
-        Set<SessionCredentials> oldSet = CREDENTIAL_SESSIONS.get(key)
+        Set<SessionCredentials> oldSet = credentialSessions.get(key)
         Map<String, String> env = [:]
         Set<SessionCredentials> newSet = Transform.toSet(oldSet) { SessionCredentials it ->
             if (it.expired) {
@@ -64,29 +63,8 @@ class CredentialsCache {
                 it
             }
         }
-        CREDENTIAL_SESSIONS.put(key, newSet)
+        credentialSessions.put(key, newSet)
         env
-    }
-
-    @SuppressWarnings('UnusedMethodParameter')
-    private static class Listener implements BuildListener {
-        void buildStarted(Gradle gradle) {
-        }
-
-        void settingsEvaluated(Settings settings) {
-        }
-
-        void projectsLoaded(Gradle gradle) {
-        }
-
-        void projectsEvaluated(Gradle gradle) {
-        }
-
-        @Synchronized
-        void buildFinished(BuildResult result) {
-            CREDENTIAL_SESSIONS.clear()
-            log.debug('Terraform credentials cache cleared')
-        }
     }
 
     @EqualsAndHashCode
@@ -103,18 +81,7 @@ class CredentialsCache {
         }
     }
 
-    @Synchronized
-    static void registerListener(Gradle gradle) {
-        if (!REGISTERED.get()) {
-            REGISTERED.set(true)
-            gradle.addBuildListener(new CredentialsCache.Listener())
-            log.debug('Terraform credentials cache build listener registered')
-        }
-    }
-
-    private static final AtomicBoolean REGISTERED = new AtomicBoolean(false)
-
-    private static final ConcurrentHashMap<Key, Set<SessionCredentials>> CREDENTIAL_SESSIONS =
+    private final String projectName
+    private final ConcurrentHashMap<Key, Set<SessionCredentials>> credentialSessions =
         new ConcurrentHashMap<Key, Set<SessionCredentials>>()
-
 }

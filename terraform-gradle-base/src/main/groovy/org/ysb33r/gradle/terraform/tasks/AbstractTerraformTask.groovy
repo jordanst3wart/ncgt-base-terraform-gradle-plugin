@@ -38,7 +38,6 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.v4.StringUtils
@@ -187,8 +186,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     @SuppressWarnings('UnnecessaryGetter')
     protected void addSessionCredentialsIfAvailable(TerraformExecSpec spec) {
         if (requiresSessionCredentials) {
-            spec.environment(CredentialsCache.get(
-                this.projectName,
+            spec.environment(terraformExtension.credentialsCacheFor(
                 getSourceSet().name,
                 workspaceName ?: DEFAULT_WORKSPACE,
                 getSourceSet().getCredentialProviders(workspaceName ?: DEFAULT_WORKSPACE)
