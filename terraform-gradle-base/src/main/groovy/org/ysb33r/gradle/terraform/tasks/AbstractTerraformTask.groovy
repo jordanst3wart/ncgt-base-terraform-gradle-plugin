@@ -178,7 +178,10 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
         if (terraformLogLevel) {
             logDir.get().mkdirs()
+
         }
+
+        TerraformUtils.terraformLogFile(name, logDir).delete()
 
         super.exec()
     }

@@ -74,8 +74,7 @@ class TerraformUtils {
      * @param logLevel Level of logging. Can be {@code null}.
      * @return Map of environmental variables
      *
-     * @since 0.9.0
-     *
+     * @since 0.9.0*
      * @deprecated
      */
     @Deprecated
@@ -97,7 +96,7 @@ class TerraformUtils {
     /** Obtain the required terraform execution environmental variables
      *
      * @param terraformrc {@link TerraformRCExtension}.
-     * @param name Name of the source set
+     * @param name Name of the task
      * @param dataDir Data directory provider
      * @param logDir Log directory provider
      * @param logLevel Level of logging. Can be {@code null}.
@@ -115,9 +114,22 @@ class TerraformUtils {
         [
             TF_DATA_DIR       : dataDir.get().absolutePath,
             TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
-            TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
+            TF_LOG_PATH       : terraformLogFile(name, logDir).absolutePath,
             TF_LOG            : logLevel ?: '',
         ]
+    }
+
+    /**
+     * Resolves the location of the log file.
+     *
+     * @param name Task name
+     * @param logDir Log dir provider
+     * @return Location of log file
+     *
+     * @since 0.11
+     */
+    static File terraformLogFile(String name, Provider<File> logDir) {
+        new File(logDir.get(), "${name}.log").absoluteFile
     }
 
     private static final String FORWARD_SLASH = '/'
