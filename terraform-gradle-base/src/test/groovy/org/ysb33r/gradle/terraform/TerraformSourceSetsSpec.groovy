@@ -116,6 +116,28 @@ class TerraformSourceSetsSpec extends Specification {
         main.workspaceNames.size() == 3
     }
 
+    void 'Can provide a tfvars file' () {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform'
+
+        project.allprojects {
+            terraformSourceSets {
+                main {
+                    variables {
+                        file 'foo.tfvars'
+                    }
+                }
+            }
+        }
+
+        when:
+        Variables vars = project.terraformSourceSets.getByName('main').variables
+
+        then:
+        vars.fileNames.contains('foo.tfvars')
+        vars.commandLineArgs.contains("-var-file=${project.file('src/tf/main/foo.tfvars')}".toString())
+    }
+
     void configureFourSourceSets() {
         project.allprojects {
             terraformSourceSets {
