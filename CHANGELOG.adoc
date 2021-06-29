@@ -7,6 +7,7 @@
 // tag::changelog[]
 === Features
 
+* {issue}11[#11] - `tfStatePull` task implemented
 * {issue}44[#44] - Support AWS credentials on Terraform source sets.
 * {issue}45[#45] - Support Gitlab credentials on Terraform source sets.
 
