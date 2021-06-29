@@ -24,13 +24,6 @@ import spock.lang.Issue
 import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
 
-import java.nio.file.FileVisitResult
-import java.nio.file.FileVisitor
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
-
-import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
@@ -67,38 +60,6 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
             logProgress = true
         }
         """
-    }
-
-    void cleanup() {
-        Files.walkFileTree(
-            new File(projectDir, 'build/tf/main/plugins').toPath(),
-            new FileVisitor<Path>() {
-                @Override
-                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (attrs.symbolicLink) {
-                        println "Deleting: ${file}"
-                        Files.delete(file)
-                    }
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                    println "Failed to visit: ${file}, because ${exc.message}"
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    CONTINUE
-                }
-            }
-        )
     }
 
     @Unroll
@@ -151,6 +112,18 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         then:
         result.task(':tfApply').outcome == SUCCESS
         destFile.text == FILE_CONTENTS
+    }
+
+    void 'Run terraform state pull after apply'() {
+        given:
+        File stateFile = new File(srcDir,'foo.tfstate')
+
+        when:
+        BuildResult result = getGradleRunner(['tfApply', 'tfStatePull', '--state-file','foo.tfstate']).build()
+
+        then:
+        result.task(':tfStatePull').outcome == SUCCESS
+        stateFile.exists()
     }
 
     void 'tfShowState should cause tfApply to be executed'() {

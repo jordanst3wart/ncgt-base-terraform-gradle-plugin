@@ -20,6 +20,7 @@ import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
 
 import javax.inject.Inject
 
@@ -35,14 +36,17 @@ class TerraformStatePull extends AbstractTerraformStateTask {
     @Inject
     TerraformStatePull(String workspaceName) {
         super('pull', workspaceName)
-        stateFileProvider = sourceDir.map({ String s, File it ->
-            new File(it, s)
-        }.curry(this.stateFile) as Transformer<File, File>)
+        stateFileProvider = sourceDir.map( new Transformer<File,File>() {
+            @Override
+            File transform(File file) {
+                stateFile ? new File(file,stateFile) : null
+            }
+        })
         captureStdOutTo(stateOutputFile)
     }
 
     @Option(option = 'state-file', description = 'where to write local state file (relative to tf directory)')
-    void setStateFileType(String path) {
+    void setStateFile(String path) {
         this.stateFile = path
     }
 
@@ -53,6 +57,9 @@ class TerraformStatePull extends AbstractTerraformStateTask {
 
     @Override
     void exec() {
+        if(!stateOutputFile.present) {
+            throw new TerraformExecutionException('No destination state file specified. Use --state-file.')
+        }
         super.exec()
         logger.lifecycle("\nState file has been written to ${stateOutputFile.get().absolutePath}\n")
     }

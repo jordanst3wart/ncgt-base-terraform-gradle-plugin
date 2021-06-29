@@ -20,6 +20,17 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.ysb33r.grolifant.api.core.OperatingSystem
 
+import java.nio.file.FileVisitResult
+import java.nio.file.FileVisitor
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+import static java.nio.file.FileVisitResult.CONTINUE
+
 class IntegrationSpecification extends DownloadTestSpecification  {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final boolean IS_KOTLIN_DSL = false
@@ -64,5 +75,37 @@ class IntegrationSpecification extends DownloadTestSpecification  {
         buildDir = new File(projectDir, 'build')
         projectCacheDir = new File(projectDir, '.gradle')
         buildFile = new File(projectDir, 'build.gradle')
+    }
+
+    void cleanup() {
+        Files.walkFileTree(
+            new File(projectDir, 'build/tf/main/plugins').toPath(),
+            new FileVisitor<Path>() {
+                @Override
+                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (attrs.symbolicLink) {
+                        println "Deleting: ${file}"
+                        Files.delete(file)
+                    }
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    println "Failed to visit: ${file}, because ${exc.message}"
+                    CONTINUE
+                }
+
+                @Override
+                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    CONTINUE
+                }
+            }
+        )
     }
 }
