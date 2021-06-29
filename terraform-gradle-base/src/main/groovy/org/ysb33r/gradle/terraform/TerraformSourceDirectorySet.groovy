@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
 import org.gradle.api.Action
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
@@ -560,22 +561,29 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             outputTaskProvider
         )
 
-        Property<Map<String, ?>> prop = createProperty(objectFactory1)
-        prop.set(projectOperations.provider({ ->
-            cache.map
-        } as Callable<Map<String, ?>>))
-        prop
+        createProperty(
+            objectFactory1,
+            projectOperations.provider({ ->
+                cache.map
+            } as Callable<Map<String, ?>>)) as Provider<Map<String, ?>>
     }
 
     @CompileDynamic
-    private static Property<Map<String, ?>> createProperty(ObjectFactory objectFactory1) {
-        if(LegacyLevel.PRE_5_1) {
-            objectFactory1.property(Map<String, ?>)
+    @TypeChecked
+    private static Provider<Map<String, Object>> createProperty(
+        ObjectFactory objectFactory1,
+        Provider<Map<String, ?>> lambda
+    ) {
+        if (LegacyLevel.PRE_5_1) {
+            def prop = objectFactory1.property(Map)
+            prop.set(lambda)
+            prop
         } else {
-            Property<Map<String, ?>> prop = objectFactory1.mapProperty(String,Object)
-            if(!LegacyLevel.PRE_6_5) {
+            def prop = objectFactory1.mapProperty(String, Object)
+            if (!LegacyLevel.PRE_6_5) {
                 prop.disallowUnsafeRead()
             }
+            prop.set(lambda)
             prop
         }
     }

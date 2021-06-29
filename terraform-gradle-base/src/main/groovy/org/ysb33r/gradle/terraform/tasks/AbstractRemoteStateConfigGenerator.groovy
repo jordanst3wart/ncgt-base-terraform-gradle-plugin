@@ -72,9 +72,20 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @param file Location of template file
      */
     void setTemplateFile(Object file) {
-        this.templateFile.set(projectOperations.provider({ ->
-            projectOperations.file(file)
-        } as Callable<File>))
+        projectOperations.updateFileProperty(this.templateFile, file)
+        this.textTemplate.set((String)null)
+    }
+
+    /**
+     * Use a string as a template.
+     *
+     * @param text Template that can be processed by Ant's {@code ReplaceTokens}.
+     *
+     * @since 0.11
+     */
+    void setTextTemplate(Object text) {
+        projectOperations.updateStringProperty(this.textTemplate,text)
+        this.templateFile.set((File)null)
     }
 
     /** Returns location of template file.
@@ -85,6 +96,16 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     @InputFile
     Provider<File> getTemplateFile() {
         this.templateFile
+    }
+
+    /** Returns text template.
+     *
+     * @return text of template if set.
+     */
+    @Optional
+    @Input
+    Provider<String> getTextTemplate() {
+        this.textTemplate
     }
 
     /** Sets new delimiters for tokens.
@@ -156,8 +177,8 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         Templates.generateFromTemplate(
             name,
             projectOperations,
-            templateResourcePath,
             templateFile,
+            textTemplate,
             backendConfigFile,
             start,
             end,
@@ -175,6 +196,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         this.outputFile = project.objects.property(File)
         this.templateFile = project.objects.property(File)
         this.projectOperations = ProjectOperations.find(project)
+        this.textTemplate = project.objects.property(String)
 
         this.outputFile.set(destDir.map(new Transformer<File, File>() {
             @Override
@@ -191,19 +213,13 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     @Internal
     abstract protected String getConfigFileName()
 
-    /** Returns the name of the default template resource path.
-     *
-     * @return Resource path as meant for {@link java.lang.Class#getResourceAsStream}.
-     */
-    @Internal
-    abstract protected String getTemplateResourcePath()
-
     private final ProjectOperations projectOperations
     private final Property<File> destDir
     private final Property<File> outputFile
     private String start = '@@'
     private String end = start
     private final Property<File> templateFile
+    private final Property<String> textTemplate
     private final Map<String, Object> tokens = [:] as TreeMap<String, Object>
 
 }

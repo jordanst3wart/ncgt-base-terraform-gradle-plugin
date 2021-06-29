@@ -10,6 +10,7 @@
 * {issue}11[#11] - `tfStatePull` task implemented
 * {issue}44[#44] - Support AWS credentials on Terraform source sets.
 * {issue}45[#45] - Support Gitlab credentials on Terraform source sets.
+* {issue}55[#55] - Support a text template for S3 backend.
 
 === Bugs
 
@@ -18,6 +19,10 @@
 * {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
 * {issue}48[#48] - AWS credentials should not be cached between builds.
 * {issue}49[#49] - Truncate log file before task calls Terraform.
+
+=== Breaking changes
+
+* `AbstractRemoteStateConfigGenerator.getTemplateResourcePath` is no longer supported as per {issue}55[#55].
 
 === Other
 

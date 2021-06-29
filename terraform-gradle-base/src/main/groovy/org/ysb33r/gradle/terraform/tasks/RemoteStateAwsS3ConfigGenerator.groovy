@@ -31,6 +31,11 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
     RemoteStateAwsS3ConfigGenerator() {
         group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
         description = 'Generates configuration for remote state in S3'
+        setTextTemplate("""
+bucket = "@@bucket_name@@"
+key    = "@@remote_state_name@@.tfstate"
+region = "@@aws_region@@"
+        """)
 
         this.awsRegion = project.objects.property(String)
         this.bucketName = project.objects.property(String)
@@ -101,15 +106,7 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
         CONFIG_FILE_NAME
     }
 
-    @Override
-    protected String getTemplateResourcePath() {
-        TEMPLATE_RESOURCE_PATH
-    }
-
     private final Property<String> awsRegion
     private final Property<String> remoteStateName
     private final Property<String> bucketName
-
-    @PackageScope
-    static final String TEMPLATE_RESOURCE_PATH = '/terraform-gradle-templates/aws-s3-remote-state.tf'
 }

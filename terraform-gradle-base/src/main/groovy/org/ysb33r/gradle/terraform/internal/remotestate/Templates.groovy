@@ -21,6 +21,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v5.FileUtils
 import org.ysb33r.grolifant.api.v4.MapUtils
@@ -31,65 +32,33 @@ class Templates {
     /** Generates a configuration file
      *
      * @param taskName Name of task that is request the generation
-     * @param project Project context
-     * @param templateResourcePath Resource path for default template
-     * @param templateFile ALternative template file if present
-     * @param outputFile Final output file
-     * @param beginToken Starting delimiter for tokens
-     * @param endToken Terminating delimiter for tokens
-     * @param tokens LIst of replacement tokens
-     * @return Location of generated file
-     * @deprecated
-     */
-    @SuppressWarnings('ParameterCount')
-    @Deprecated
-    static File generateFromTemplate(
-        String taskName,
-        Project project,
-        String templateResourcePath,
-        Provider<File> templateFile,
-        Provider<File> outputFile,
-        String beginToken,
-        String endToken,
-        Map<String, Object> tokens
-    ) {
-        generateFromTemplate(
-            taskName,
-            ProjectOperations.create(project),
-            templateResourcePath,
-            templateFile,
-            outputFile,
-            beginToken,
-            endToken,
-            tokens
-        )
-    }
-
-    /** Generates a configuration file
-     *
-     * @param taskName Name of task that is request the generation
      * @param projectOperations Project context
-     * @param templateResourcePath Resource path for default template
-     * @param templateFile ALternative template file if present
+     * @param templateFile A template file if present
+     * @param textTemplate A text template if available.
      * @param outputFile Final output file
      * @param beginToken Starting delimiter for tokens
      * @param endToken Terminating delimiter for tokens
-     * @param tokens LIst of replacement tokens
+     * @param tokens List of replacement tokens
      * @return Location of generated file
      */
     @SuppressWarnings('ParameterCount')
     static File generateFromTemplate(
         String taskName,
         ProjectOperations projectOperations,
-        String templateResourcePath,
         Provider<File> templateFile,
+        Provider<String> textTemplate,
         Provider<File> outputFile,
         String beginToken,
         String endToken,
         Map<String, Object> tokens
     ) {
+
+        if(!templateFile.present && !textTemplate.present) {
+            throw new TerraformConfigurationException("Either a text template or a file template has to be provided")
+        }
+
         File template = templateFile.present ? templateFile.get() :
-            useDefaultTemplate(projectOperations, taskName, templateResourcePath)
+            useStringTemplate(projectOperations, taskName, textTemplate.get())
 
         File backendConfigFile = outputFile.get()
         def configGenerator = new Action<CopySpec>() {
@@ -111,19 +80,16 @@ class Templates {
         backendConfigFile
     }
 
-    private static File useDefaultTemplate(
+    private static File useStringTemplate(
         ProjectOperations projectOperations,
         String filenamePrefix,
-        String templateResourcePath) {
+        String textTemplate
+    ) {
         File target = projectOperations
             .buildDirDescendant("tmp/${FileUtils.toSafeFileName(filenamePrefix)}.template.tf")
             .get()
         target.parentFile.mkdirs()
-        Templates.getResourceAsStream(templateResourcePath).withCloseable { strm ->
-            target.withOutputStream { output ->
-                output << strm
-            }
-        }
+        target.text = textTemplate
         target
     }
 }
