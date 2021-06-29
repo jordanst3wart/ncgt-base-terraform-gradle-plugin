@@ -1,6 +1,6 @@
 == Accessing Output Variables
 
-As from v0.9 is is possible to obtain access to output variables. This is an experimental feature and should be treated with care. Always have the correct task dependencies in place as to ensure that you get up to date values for the variables.
+As from v0.9 it is possible to obtain access to output variables. This is an experimental feature and should be treated with care. Always have the correct task dependencies in place as to ensure that you get up to date values for the variables.
 
 This feature is targeted at two use cases:
 
@@ -13,6 +13,22 @@ The output variables are effectively a map of the parsed JSON and can be accesse
 * link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariables[getRawOutputVariables].
 This returns a map of all of the variables.
 You can optionally supply a workspace name.
-* link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariable[getRawOutputVariable(name)]. This returns the value of a specific variable. If the value is not a Terraform primitive, you are responsible for trvaersing the values in the object. If you are unsure of the structure, run `tfOutput`  or the equivalent task for your source set using `--json` on the command-line and then inspect the output in the file was generated,
+* link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariable[getRawOutputVariable(name)]. This returns the value of a specific variable. If the value is not a Terraform primitive, you are responsible for traversing the values in the object. If you are unsure of the structure, run `tfOutput`  or the equivalent task for your source set using `--json` on the command-line and then inspect the output in the file was generated,
 
 Both of these methods return a Gradle `Provider`. The first extraction via  `get()` accessor will result in the values begin cached. For the rest of the build, the values are only read from the cache. Please delay accessing the required variables for as late as possible.
+
+.build.gradle
+[source,groovy]
+----
+terraformSourceSet {
+  s3Buckets {  // <1>
+
+  }
+  main {
+    var 'use_s3_bucket', terraformSourceSet.getByName('s3Buckets').rawOutputVariable('deploymentBucketName') // <2>
+  }
+
+}
+----
+<1> Assume that you have a source set that creates AWS S3 buckets and one of the outputs - `deploymentBucketName` - is the name of a deployment bucket.
+<2> LInk the bukcet naem as an input variable to the `main` source set. This will cause the `tfS3BucketsOutput` task to be executed, before any of the tasks related to the `main` source set is executed.

@@ -13,6 +13,7 @@
 
 === Bugs
 
+* {issue}53[#53] - NPE when running task `tfStatePull`.
 * {issue}43[#43] - `tfOutput` should not cause `tfApply` or `tfPlan` to be invoked.
 * {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
 * {issue}48[#48] - AWS credentials should not be cached between builds.
@@ -20,6 +21,7 @@
 
 === Other
 
+* {issue}52[#52] - Added usage example for `getRawOutputVariables`.
 * Default version of terraform is `1.0.0`.
 
 // end::changelog[]

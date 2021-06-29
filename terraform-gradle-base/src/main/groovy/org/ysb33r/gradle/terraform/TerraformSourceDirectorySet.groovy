@@ -89,6 +89,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         String displayName
     ) {
         this.projectOperations = ProjectOperations.create(tempProjectReference)
+        this.objectFactory = tempProjectReference.objects
         this.name = name
         this.displayName = displayName
         this.patternSet.include('**/*.tf', '**/*.tfvars', '*.tfstate')
@@ -97,7 +98,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.outputVariablesProviderFunction = new BiFunction<String, String, Provider<Map<String, ?>>>() {
             @Override
             Provider<Map<String, ?>> apply(String sourceSetName, String workspaceName) {
-                createOutputVariablesProvider(terraformrc, projectOperations, tasks, sourceSetName, workspaceName)
+                createOutputVariablesProvider(terraformrc, projectOperations, objectFactory, tasks, sourceSetName, workspaceName)
             }
         }
 
@@ -542,6 +543,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     private static Provider<Map<String, ?>> createOutputVariablesProvider(
         TerraformRCExtension terraformrc,
         ProjectOperations projectOperations,
+        ObjectFactory objectFactory1,
         TaskContainer tasks,
         String sourceSetName,
         String workspaceName
@@ -558,9 +560,24 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             outputTaskProvider
         )
 
-        projectOperations.provider({ ->
+        Property<Map<String, ?>> prop = createProperty(objectFactory1)
+        prop.set(projectOperations.provider({ ->
             cache.map
-        } as Callable<Map<String, ?>>)
+        } as Callable<Map<String, ?>>))
+        prop
+    }
+
+    @CompileDynamic
+    private static Property<Map<String, ?>> createProperty(ObjectFactory objectFactory1) {
+        if(LegacyLevel.PRE_5_1) {
+            objectFactory1.property(Map<String, ?>)
+        } else {
+            Property<Map<String, ?>> prop = objectFactory1.mapProperty(String,Object)
+            if(!LegacyLevel.PRE_6_5) {
+                prop.disallowUnsafeRead()
+            }
+            prop
+        }
     }
 
     private final Property<File> sourceDir
@@ -568,6 +585,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     private final Property<File> logDir
     private final Property<File> reportsDir
     private final ProjectOperations projectOperations
+    private final ObjectFactory objectFactory
     private final Variables vars
     private final Map<String, Provider<Map<String, ?>>> outputVariablesProviderMap
     private final PatternSet patternSet = new PatternSet()
