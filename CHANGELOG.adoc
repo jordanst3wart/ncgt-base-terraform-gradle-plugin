@@ -10,6 +10,7 @@
 * {issue}11[#11] - `tfStatePull` task implemented
 * {issue}44[#44] - Support AWS credentials on Terraform source sets.
 * {issue}45[#45] - Support Gitlab credentials on Terraform source sets.
+* {issue}54[#54] - Customise values that can be written to S3 backend partial configuration file.
 * {issue}55[#55] - Support a text template for S3 backend.
 
 === Bugs
@@ -23,6 +24,7 @@
 === Breaking changes
 
 * `AbstractRemoteStateConfigGenerator.getTemplateResourcePath` is no longer supported as per {issue}55[#55].
+* As part of {issue}54[#54], the `RemoteStateS3Provider` interface introduces a new required method called `getAttributesMap`, which could break plugins that are built on top of this suite of plugins.
 
 === Other
 

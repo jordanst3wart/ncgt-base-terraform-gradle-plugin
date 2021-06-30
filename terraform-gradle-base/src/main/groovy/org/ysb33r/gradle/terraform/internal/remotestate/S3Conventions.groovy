@@ -56,7 +56,9 @@ class S3Conventions {
         )
 
         defaultRemoteStateName(name).execute(configTask)
-        terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(taskName(name, TERRAFORM_INIT)))
+        terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(
+            taskName(name, TERRAFORM_INIT, null))
+        )
         addVariables(
             tdds,
             configTask.remoteStateName,

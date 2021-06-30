@@ -17,29 +17,50 @@ package org.ysb33r.gradle.terraform.remotestate;
 
 import org.gradle.api.provider.Provider;
 
+import java.util.Map;
+
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.stringizeOrNull;
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.*;
+
 /**
  * Providers of the metaadata describing a remote state S3 configuration.
  *
  * @since 0.17.0
  */
 public interface RemoteStateS3Provider {
-    /** The default AWS region where remote state will be stored.
+    /**
+     * The default AWS region where remote state will be stored.
      *
      * @return Region
      */
-    Provider<String> getRegion();
+    default Provider<String> getRegion() {
+        return getAttributesMap().map(stringMap -> stringizeOrNull(stringMap.get(TOKEN_REGION)));
+    }
 
-    /** The default AWS bucket where remote state will be stored.
+    /**
+     * The default AWS bucket where remote state will be stored.
      *
      * @return S3 bucket name
      */
-    Provider<String> getBucket();
+    default Provider<String> getBucket() {
+        return getAttributesMap().map(stringMap -> stringizeOrNull(stringMap.get(TOKEN_BUCKET)));
+    }
 
-    /** If DynamoDB is used for state locking, then this contains the ARN of the table.
+    /**
+     * If DynamoDB is used for state locking, then this contains the ARN of the table.
      *
-     * @return DynamoDB table ARN
-     * 
+     * @return DynamoDB table ARN.
      * @since 0.17.0
      */
-    Provider<String> getDynamoDbLockTableArn();
+    default Provider<String> getDynamoDbLockTableArn() {
+        return getAttributesMap().map(stringMap -> stringizeOrNull(stringMap.get(TOKEN_DYNAMODB_TABLE_ARN)));
+    }
+
+    /**
+     * Returns a provider to a map of all S3 backend attributes that could possible be configured.
+     *
+     * @return Map provider
+     * @since 1.0
+     */
+    Provider<Map<String, ?>> getAttributesMap();
 }

@@ -99,7 +99,14 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.outputVariablesProviderFunction = new BiFunction<String, String, Provider<Map<String, ?>>>() {
             @Override
             Provider<Map<String, ?>> apply(String sourceSetName, String workspaceName) {
-                createOutputVariablesProvider(terraformrc, projectOperations, objectFactory, tasks, sourceSetName, workspaceName)
+                createOutputVariablesProvider(
+                    terraformrc,
+                    projectOperations,
+                    objectFactory,
+                    tasks,
+                    sourceSetName,
+                    workspaceName
+                )
             }
         }
 
@@ -541,6 +548,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         }
     }
 
+    @SuppressWarnings('ParameterCount')
     private static Provider<Map<String, ?>> createOutputVariablesProvider(
         TerraformRCExtension terraformrc,
         ProjectOperations projectOperations,

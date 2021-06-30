@@ -18,10 +18,8 @@ package org.ysb33r.gradle.terraform.remotestate
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.StringUtils
 
 import java.util.concurrent.Callable
 
@@ -32,7 +30,7 @@ import java.util.concurrent.Callable
  * @since 0.8.0
  */
 @CompileStatic
-class RemoteStateS3 implements RemoteStateS3Provider {
+class RemoteStateS3 extends RemoteStateS3Spec implements RemoteStateS3Provider {
     public static final String NAME = 's3'
 
     /** Utility method to find this extension on a project.
@@ -65,78 +63,45 @@ class RemoteStateS3 implements RemoteStateS3Provider {
      *   The object reference is not cached, so it is configuration-cache safe.
      */
     RemoteStateS3(Project project) {
-        this.projectOperations = ProjectOperations.find(project)
-        this.region = project.objects.property(String)
-        this.bucket = project.objects.property(String)
-        this.dynamoDbLockTableArn = project.objects.property(String)
+        super(ProjectOperations.find(project))
+
+        this.attributesProvider = project.provider(new Callable<Map<String, ?>>() {
+            @Override
+            Map<String, ?> call() throws Exception {
+                if (following) {
+                    Map<String, ?> combined = [:]
+                    combined.putAll(following.attributesMap.get())
+                    combined.putAll(tokenProvider.get())
+                    combined
+                } else {
+                    tokenProvider.get()
+                }
+            }
+        })
     }
 
-    /** Set the default AWS region where the remote state will be stored.
+    /**
+     * Returns a provider to a map of all S3 backend attributes that could possible be configured.
      *
-     * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
+     * @return Map provider
+     *
+     * @since 1.0
      */
-    void setRegion(Object p) {
-        this.region.set(projectOperations.provider({
-            StringUtils.stringize(p)
-        } as Callable<String>))
-    }
-
-    /** The default AWS region where remote state will be stored.
-     *
-     */
-    Provider<String> getRegion() {
-        this.region
-    }
-
-    /** Set the default AWS bucket where the remote state will be stored.
-     *
-     * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
-     */
-    void setBucket(Object p) {
-        this.bucket.set(projectOperations.provider({
-            StringUtils.stringize(p)
-        } as Callable<String>))
-    }
-
-    /** The default AWS bucket where remote state will be stored.
-     *
-     */
-    Provider<String> getBucket() {
-        this.bucket
-    }
-
-    /** Set the ARN to the DynamobDb table used for locking.
-     *
-     * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
-     *
-     * @since 0.17.0
-     */
-    void setDynamoDbLockTableArn(Object p) {
-        this.dynamoDbLockTableArn.set(projectOperations.provider({
-            StringUtils.stringize(p)
-        } as Callable<String>))
-    }
-
-    /** If DynamoDB is used for state locking, then this contains the ARN of the table.
-     *
-     * @since 0.17.0
-     */
-    Provider<String> getDynamoDbLockTableArn() {
-        this.dynamoDbLockTableArn
+    @Override
+    Provider<Map<String, ?>> getAttributesMap() {
+        this.attributesProvider
     }
 
     /** Make settings follow that of another {@code RemoteStateS3} provider.
      *
-     * @param s3 Providers
+     * Following a provider will apply those items first and then customise with any local settings.
+     *
+     * @param s3 Another S3 state provider.
      */
     void follow(RemoteStateS3Provider s3) {
-        this.region.set(s3.region)
-        this.dynamoDbLockTableArn.set(s3.dynamoDbLockTableArn)
-        this.bucket.set(s3.bucket)
+        this.following = s3
     }
 
-    private final ProjectOperations projectOperations
-    private final Property<String> region
-    private final Property<String> bucket
-    private final Property<String> dynamoDbLockTableArn
+    private RemoteStateS3Provider following
+    private final Provider<Map<String, ?>> attributesProvider
 }

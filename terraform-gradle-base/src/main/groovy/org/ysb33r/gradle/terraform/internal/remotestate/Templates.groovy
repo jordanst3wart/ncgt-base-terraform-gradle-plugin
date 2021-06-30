@@ -18,13 +18,12 @@ package org.ysb33r.gradle.terraform.internal.remotestate
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.Action
-import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v5.FileUtils
 import org.ysb33r.grolifant.api.v4.MapUtils
+import org.ysb33r.grolifant.api.v5.FileUtils
 
 @CompileStatic
 class Templates {
@@ -53,8 +52,8 @@ class Templates {
         Map<String, Object> tokens
     ) {
 
-        if(!templateFile.present && !textTemplate.present) {
-            throw new TerraformConfigurationException("Either a text template or a file template has to be provided")
+        if (!templateFile.present && !textTemplate.present) {
+            throw new TerraformConfigurationException('Either a text template or a file template has to be provided')
         }
 
         File template = templateFile.present ? templateFile.get() :

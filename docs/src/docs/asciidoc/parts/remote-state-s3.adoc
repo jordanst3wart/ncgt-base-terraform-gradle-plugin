@@ -22,7 +22,7 @@ region = "@@aws_region@@"
 
 The name of the file in S3 is determined from the project name be default. For each additional sourceset, the name of the sourceset is appended. This makes up the remote state name. This prefix can be modified via the `terraform.remote.prefix` property.
 
-The AWS specifics of bucket name and region is configured via properties in the `terraform.remote.s3` extension.
+The AWS specifics of bucket name and region can be configured via properties in the `terraform.remote.s3` extension, and further cusotmised via the `remote.s3` extension on each source set.
 
 === Usage
 
@@ -40,33 +40,14 @@ variable "remote_state" { // <2>
     type = map(string)
 }
 ----
-<1> Indicate that you play to store remote state in S3.
+<1> Indicate that you plan to store remote state in S3.
+  You can configure anything as per usual for the https://www.terraform.io/docs/language/settings/backends/s3.html[S3 backend].
 <2> Allow for Gradle to pass the map of remote state variables.
 
-If you are interested in accessing the remote state from another configuration you probably are going to need something like this as well
-
-.remote-state.tf
-[source,terraform]
-----
-data "terraform_remote_state" "aws_tf_remote_state" {
-  backend = "s3"
-  config = {
-    bucket = var.remote_state["aws_bucket"] // <1>
-    key    = "${var.remote_state["name"]}.tfstate" // <2>
-    region = var.remote_state["aws_region"] // <3>
-    encrypt = true
-    dynamodb_table =  var.remote_state["aws_dynamodb_lock_table_arn"] // <4>
-  }
-}
-----
-<1> The name of the bucket where remote state is stored. You can use the `remote_state` map to simplify things. The bucket should pre-exist.
-<2> Name of the file in S3 where the state is stored. Convention is to add `.tfstate` to the remote state name.
-<3> Region which is used to store the state.
-<4> Your DynamoDB table for storing lock status. The table should pre-exist. You can also use `dynamodb_table = "arn:aws:dynamodb:<REGION>:<ACCOUNT>:table/<TABLENAME>"` and substitute values accordingly.
-
-Now tell Gradle about your S3 setup
+Now tell Gradle about your S3 setup.
 
 [[ConfigureRemoteS3]]
+.build.gradle
 [source,groovy]
 ----
 terraform {
@@ -76,7 +57,7 @@ terraform {
     s3 {
         bucket = 'terraform-managed-remote-state-files' // <2>
         region = 'us-west-1' // <3>
-        dynamoDbLockTableArn = "arn:aws:dynamodb:us-west-1:1234567890AB:table/TerraformLocks" // <4>
+        dynamoDbTable = "TerraformLocks" // <4>
     }
   }
 }
@@ -85,6 +66,49 @@ terraform {
 <2> Set the S3 bucket that will contain your state files.
 <3> Region that you are operating in.
 <4> The DynamoDB table use for terraform locks.
+
+You can also customise on a per-source set basis.
+Such setting will override any values from the global settings.
+You can configure nearly any item that is part of the S3 backend via the `remote.s3` extension.
+See link:{groovydoc}/remotestate/RemoteStateS3Spec.html[`RemoteStateS3Spec`] for details.
+
+.build.gradle
+[source,groovy]
+----
+terraformSourceSets {
+  main {
+    remote {
+      s3 {
+        bucket = 'terraform-managed-remote-state-files' // <1>
+      }
+    }
+  }
+}
+----
+<1> Use a different bucket than what was configured globally
+
+Sometimes you might want to customise two source sets in the same way.
+Instead of duplicating the code, you can simply, let the one source set mirror any changes made to another source set using `follow`.
+
+.build.gradle
+[source,groovy]
+----
+terraformSourceSets {
+  main {
+    remote {
+      s3 {
+        bucket = 'terraform-managed-remote-state-files'
+      }
+    }
+  }
+  staging {
+    remote {
+      s3.follow(terraformSourceSets.main.remote.s3)  // <1>
+    }
+  }
+}
+----
+<1> Any changes made to `main` will be reflected in `staging`.
 
 [[CustomiseS3Template,customise the S3 template]]
 === Customising the configuration template
@@ -96,8 +120,8 @@ If this is not sufficient for your situation you can supply your own.
 createTfS3BackendConfiguration  {
   templateFile = 'src/tf/mytemplate.tf' // <1>
   textTemplate = """ // <2>
-key    = "@@remote_state_name@@.tfstate"
-region = "@@aws_region@@"
+key    = "##remote_state_name$$.tfstate"
+region = "##region$$"
   """
   beginToken = '##' // <3>
   endToken = '$$' // <4>
@@ -116,4 +140,29 @@ Anything convertible to a string can be used.
 <5> Replace all default tokens.
 <6> Add to existing tokens.
 
-Substitutions are performed by https://ant.apache.org/manual/api/org/apache/tools/ant/filters/ReplaceTokens.html[Apache Ant's ReplaceTokens].
+Substitutions will be performed by https://ant.apache.org/manual/api/org/apache/tools/ant/filters/ReplaceTokens.html[Apache Ant's ReplaceTokens].
+
+=== Remote state from other source sets
+
+If you are interested in accessing the remote state from another configuration you probably are going to need something like this as well
+
+.remote-state.tf
+[source,terraform]
+----
+data "terraform_remote_state" "aws_tf_remote_state" {
+  backend = "s3"
+  config = {
+    bucket = var.remote_state["bucket"] // <1>
+    key    = "${var.remote_state["remote_state_name"]}.tfstate" // <2>
+    region = var.remote_state["aws_region"] // <3>
+    encrypt = true
+    dynamodb_table =  var.remote_state["dynamodb_table"] // <4>
+  }
+}
+----
+<1> The name of the bucket where remote state will be stored. You can use the `remote_state` map to simplify things. The bucket should pre-exist.
+<2> Name of the file in S3 where the state will be stored. Convention is to add `.tfstate` to the remote state name.
+<3> Region which is used to store the state.
+<4> Your DynamoDB table for storing lock status. The table should pre-exist.
+
+See https://www.terraform.io/docs/language/state/remote-state-data.html[`terraform_remote_state`] for more details.

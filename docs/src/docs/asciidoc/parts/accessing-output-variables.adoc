@@ -4,10 +4,12 @@ As from v0.9 it is possible to obtain access to output variables. This is an exp
 
 This feature is targeted at two use cases:
 
-* You have more than one Terraform source set and you want to use outpus from one sourceset in another sourceset. Please ensure that you don't create circular dependencies between the two source sets in this case.
+* You have more than one Terraform source set, and you want to use outputs from one source set in another source set. Please ensure that you don't create circular dependencies between the two source sets in this case.
 * You have other build tasks that require values form your infrastructure.
 
-In order to obtain these variables `terraform output` is executed behind the scenes and the JSON output parsed.
+NOTE: Before using this feature, consider using https://www.terraform.io/docs/language/state/remote-state-data.html[`terraform-remote-state`] as a possible alternative to obtain output variables from another source set. If you do not need to reflect output variables back into Gradle itself, then `terraform-remote-state` might be a better solution.
+
+In order to obtain these variables, `terraform output` will be executed behind the scenes, and the JSON output parsed.
 The output variables are effectively a map of the parsed JSON and can be accessed via the following methods on a source set.
 
 * link:{groovydoc}/TerraformSourceDirectorySet.html#getRawOutputVariables[getRawOutputVariables].
@@ -31,4 +33,4 @@ terraformSourceSet {
 }
 ----
 <1> Assume that you have a source set that creates AWS S3 buckets and one of the outputs - `deploymentBucketName` - is the name of a deployment bucket.
-<2> LInk the bukcet naem as an input variable to the `main` source set. This will cause the `tfS3BucketsOutput` task to be executed, before any of the tasks related to the `main` source set is executed.
+<2> Link the bucket name as an input variable to the `main` source set. This will cause the `tfS3BucketsOutput` task to be executed, before any of the tasks related to the `main` source set is executed.

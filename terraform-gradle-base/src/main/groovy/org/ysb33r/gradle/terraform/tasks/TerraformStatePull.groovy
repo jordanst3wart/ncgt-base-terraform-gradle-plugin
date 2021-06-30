@@ -36,10 +36,10 @@ class TerraformStatePull extends AbstractTerraformStateTask {
     @Inject
     TerraformStatePull(String workspaceName) {
         super('pull', workspaceName)
-        stateFileProvider = sourceDir.map( new Transformer<File,File>() {
+        stateFileProvider = sourceDir.map(new Transformer<File, File>() {
             @Override
             File transform(File file) {
-                stateFile ? new File(file,stateFile) : null
+                stateFile ? new File(file, stateFile) : null
             }
         })
         captureStdOutTo(stateOutputFile)
@@ -57,7 +57,7 @@ class TerraformStatePull extends AbstractTerraformStateTask {
 
     @Override
     void exec() {
-        if(!stateOutputFile.present) {
+        if (!stateOutputFile.present) {
             throw new TerraformExecutionException('No destination state file specified. Use --state-file.')
         }
         super.exec()

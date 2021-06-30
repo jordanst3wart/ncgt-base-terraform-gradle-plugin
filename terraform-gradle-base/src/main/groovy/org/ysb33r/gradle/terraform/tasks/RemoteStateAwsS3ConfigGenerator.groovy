@@ -16,11 +16,18 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import org.gradle.api.provider.Property
+import org.gradle.api.Action
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec
+
+import java.util.concurrent.Callable
+
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_BUCKET
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REGION
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REMOTE_STATE_NAME
+import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 @CompileStatic
 class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator {
@@ -31,74 +38,158 @@ class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator
     RemoteStateAwsS3ConfigGenerator() {
         group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
         description = 'Generates configuration for remote state in S3'
-        setTextTemplate("""
-bucket = "@@bucket_name@@"
-key    = "@@remote_state_name@@.tfstate"
-region = "@@aws_region@@"
-        """)
+        textTemplate = """
+bucket = "@@${TOKEN_BUCKET}@@"
+key    = "@@${TOKEN_REMOTE_STATE_NAME}@@.tfstate"
+region = "@@${TOKEN_REGION}@@"
+        """
 
-        this.awsRegion = project.objects.property(String)
-        this.bucketName = project.objects.property(String)
-        this.remoteStateName = project.objects.property(String)
+        this.remoteStateS3Spec = new RemoteStateS3Spec(projectOperations)
+    }
 
-        tokens = [
-            aws_region       : this.awsRegion,
-            remote_state_name: this.remoteStateName,
-            bucket_name      : this.bucketName
-        ] as Map<String, Object>
+    /**
+     * Configures a {@link RemoteStateS3Spec}.
+     *
+     * @param spec Action to configure spec
+     *
+     * @since 1.0
+     */
+    void s3Spec(Action<RemoteStateS3Spec> spec) {
+        spec.execute(this.remoteStateS3Spec)
+    }
+
+    /**
+     * Configures a {@link RemoteStateS3Spec}.
+     *
+     * @param spec Closure to configure spec
+     *
+     * @since 1.0
+     */
+    void s3Spec(@DelegatesTo(RemoteStateS3Spec) Closure spec) {
+        Closure configurator = (Closure) spec.clone()
+        configurator.resolveStrategy = Closure.DELEGATE_FIRST
+        configurator.delegate = this.remoteStateS3Spec
+        configurator()
     }
 
     /**
      *  Sets the S3 bucket used for state storage.
      *
+     *  Sets this as a token called {@code bucket_name}
+     *
      * @param bucketName Bucket name
+     *
+     * @deprecated Configure via {@link #s3Spec} instead.
      */
+    @Deprecated
     void setS3BucketName(Object bucketName) {
-        projectOperations.updateStringProperty(this.bucketName, bucketName)
+        this.remoteStateS3Spec.s3BucketName = bucketName
     }
 
     /** The S3 bucket used for state storage
      *
-     * @return Bucket name
+     * @return Bucket name provider
+     *
+     * @deprecated
      */
-    @Input
+    @Internal
+    @Deprecated
     Provider<String> getS3BucketName() {
-        this.bucketName
+        projectOperations.provider(new Callable<String>() {
+            @Override
+            String call() throws Exception {
+                tokens[TOKEN_BUCKET] ? stringize(tokens[TOKEN_BUCKET]) : null
+            }
+        })
     }
 
     /** Sets a new remote state name
      *
+     * Sets this as a token called {@code remote_state_name}
+     *
      * @param rsn Anything that can be lazy-evaluated to a string.
+     *
+     * @deprecated Configure via {@link #s3Spec} instead.
+     *
      */
+    @Deprecated
     void setRemoteStateName(Object rsn) {
-        projectOperations.updateStringProperty(this.remoteStateName, rsn)
+        this.remoteStateS3Spec.remoteStateName = rsn
     }
 
     /** The name that will be used to identify remote state.
      *
      * @return Remote state name
+     *
+     * @deprecated
      */
-    @Input
+    @Internal
+    @Deprecated
     Provider<String> getRemoteStateName() {
-        this.remoteStateName
+        projectOperations.provider(new Callable<String>() {
+            @Override
+            String call() throws Exception {
+                tokens[TOKEN_REMOTE_STATE_NAME] ? stringize(tokens[TOKEN_REMOTE_STATE_NAME]) : null
+            }
+        })
     }
 
     /**
      * The AWS region used for remote state.
      *
+     * Sets this as a token called {@code aws_region}.
+     *
      * @param region Anything convertible to a string.
+     *
+     * @deprecated Configure via {@link #s3Spec} instead
      */
+    @Deprecated
     void setAwsRegion(Object region) {
-        projectOperations.updateStringProperty(this.awsRegion, region)
+        this.remoteStateS3Spec.awsRegion = region
     }
 
     /** Get AWS region used for remote storage.
      *
-     * @return Region
+     * @return Region*
+     * @deprecated
      */
-    @Input
+    @Internal
+    @Deprecated
     Provider<String> getAwsRegion() {
-        this.awsRegion
+        projectOperations.provider(new Callable<String>() {
+            @Override
+            String call() throws Exception {
+                tokens[TOKEN_REGION] ? stringize(tokens[TOKEN_REGION]) : null
+            }
+        })
+    }
+
+    /** Returns the current set of tokens
+     *
+     * For legacy purposes the following tokens are added as aliases.
+     *
+     * <ul>
+     *     <li>name as alias for remote_state_name.</li>
+     *     <li>aws_bucket as alias for bucket.</li>
+     *     <li>aws_region as alias for region.</li>
+     * </ul>
+     *
+     * @return Tokens used for replacements.
+     */
+    @Override
+    Map<String, Object> getTokens() {
+        Map<String, Object> newTokens = [:]
+        newTokens.putAll(super.tokens)
+        if (newTokens.containsKey(TOKEN_BUCKET)) {
+            newTokens.putIfAbsent('aws_bucket', newTokens[TOKEN_BUCKET])
+        }
+        if (newTokens.containsKey(TOKEN_REGION)) {
+            newTokens.putIfAbsent('aws_region', newTokens[TOKEN_REGION])
+        }
+        if (newTokens.containsKey(TOKEN_REMOTE_STATE_NAME)) {
+            newTokens.putIfAbsent('name', newTokens[TOKEN_REMOTE_STATE_NAME])
+        }
+        newTokens
     }
 
     @Override
@@ -106,7 +197,5 @@ region = "@@aws_region@@"
         CONFIG_FILE_NAME
     }
 
-    private final Property<String> awsRegion
-    private final Property<String> remoteStateName
-    private final Property<String> bucketName
+    private final RemoteStateS3Spec remoteStateS3Spec
 }

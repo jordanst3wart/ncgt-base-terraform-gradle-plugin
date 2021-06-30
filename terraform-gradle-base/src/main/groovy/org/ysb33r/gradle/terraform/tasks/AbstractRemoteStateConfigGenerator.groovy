@@ -28,6 +28,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.internal.remotestate.Templates
 import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.v4.StringUtils
 
 import java.util.concurrent.Callable
 
@@ -73,7 +74,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      */
     void setTemplateFile(Object file) {
         projectOperations.updateFileProperty(this.templateFile, file)
-        this.textTemplate.set((String)null)
+        this.textTemplateProvider.set((String) null)
     }
 
     /**
@@ -84,8 +85,8 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @since 0.11
      */
     void setTextTemplate(Object text) {
-        projectOperations.updateStringProperty(this.textTemplate,text)
-        this.templateFile.set((File)null)
+        projectOperations.updateStringProperty(this.textTemplateProvider, text)
+        this.templateFile.set((File) null)
     }
 
     /** Returns location of template file.
@@ -105,7 +106,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     @Optional
     @Input
     Provider<String> getTextTemplate() {
-        this.textTemplate
+        this.textTemplateProvider
     }
 
     /** Sets new delimiters for tokens.
@@ -163,13 +164,41 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         this.tokens.putAll(moreTokens)
     }
 
+    /**
+     * Set a single token value.
+     *
+     * @param key Token name
+     * @param value Lazy-evaluted value. Anything that can resolve to a string.
+     */
+    void token(String key, Object value) {
+        this.tokens.put(key, projectOperations.provider { -> StringUtils.stringize(value) })
+    }
+
     /** Returns the current set of tokens
      *
      * @return Tokens used for replacements.
      */
     @Input
     Map<String, Object> getTokens() {
-        this.tokens
+        Map<String, Object> compiledTokens = [:]
+        for (Map<String, Object> map : tokenProviders*.get()) {
+            compiledTokens.putAll(map)
+        }
+        compiledTokens.putAll(this.tokens)
+        compiledTokens
+    }
+
+    /**
+     * Adds a provider of tokens.
+     *
+     * These providers are processed before any of the customisations on the class.
+     *
+     * @param tokenProvider Addition provider of tokens
+     *
+     * @since 1.0
+     */
+    void addTokenProvider(Provider<Map<String, Object>> tokenProvider) {
+        this.tokenProviders.add(tokenProvider)
     }
 
     @TaskAction
@@ -178,7 +207,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
             name,
             projectOperations,
             templateFile,
-            textTemplate,
+            textTemplateProvider,
             backendConfigFile,
             start,
             end,
@@ -187,7 +216,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     }
 
     @Internal
-    ProjectOperations getProjectOperations() {
+    protected ProjectOperations getProjectOperations() {
         this.projectOperations
     }
 
@@ -196,7 +225,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         this.outputFile = project.objects.property(File)
         this.templateFile = project.objects.property(File)
         this.projectOperations = ProjectOperations.find(project)
-        this.textTemplate = project.objects.property(String)
+        this.textTemplateProvider = project.objects.property(String)
 
         this.outputFile.set(destDir.map(new Transformer<File, File>() {
             @Override
@@ -219,7 +248,8 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     private String start = '@@'
     private String end = start
     private final Property<File> templateFile
-    private final Property<String> textTemplate
+    private final Property<String> textTemplateProvider
     private final Map<String, Object> tokens = [:] as TreeMap<String, Object>
+    private final List<Provider<Map<String, Object>>> tokenProviders = []
 
 }

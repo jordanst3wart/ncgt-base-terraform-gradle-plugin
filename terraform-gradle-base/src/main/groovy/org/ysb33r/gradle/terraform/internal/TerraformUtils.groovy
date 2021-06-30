@@ -21,6 +21,9 @@ import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.v4.StringUtils
+
+import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 /** General utilities for Terraform.
  *
@@ -132,5 +135,48 @@ class TerraformUtils {
         new File(logDir.get(), "${name}.log").absoluteFile
     }
 
+    /**
+     * Takes a list and creates a HCL-list with appropriate escaping.
+     *
+     * @param items List items
+     * @return Escaped string
+     *
+     * @since 1.0
+     */
+    static String escapedList(Iterable<Object> items) {
+        String joinedList = Transform.toList(StringUtils.stringize(items)) { String it ->
+            "\"${it}\"".toString()
+        }.join(COMMA_SEPARATED)
+        "[${joinedList}]"
+    }
+
+    /**
+     * Takes a map and creates a HCL-map with appropriate escaping.
+     *
+     * @param items Map items
+     * @return Escaped string
+     *
+     * @since 1.0
+     */
+    static String escapedMap(Map<String, ?> items) {
+        String joinedMap = Transform.toList(stringizeValues(items)) { Map.Entry<String, String> entry ->
+            "\"${entry.key}\" : \"${entry.value}\"".toString()
+        }.join(COMMA_SEPARATED)
+        "{${joinedMap}}".toString()
+    }
+
+    /**
+     * Converts item to string if not null
+     *
+     * @param thingy Item that needs to be converted to a string
+     * @return Stringized item or {@code null}.
+     *
+     * @since 1.0
+     */
+    static String stringizeOrNull(Object thingy) {
+        thingy != null ? StringUtils.stringize(thingy) : null
+    }
+
     private static final String FORWARD_SLASH = '/'
+    private static final String COMMA_SEPARATED = ', '
 }

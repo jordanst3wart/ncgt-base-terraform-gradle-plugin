@@ -27,6 +27,8 @@ import javax.inject.Inject
 import java.nio.file.Path
 import java.util.stream.Collectors
 
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 /** A configuration building block for tasks that need to pass variables to
@@ -153,16 +155,10 @@ class Variables implements TerraformTaskConfigExtension,
             Object var = this.varsFilesPair.vars[key]
             switch (var) {
                 case Map:
-                    String joinedMap = stringizeValues((Map) var).collect { String k, String v ->
-                        "\"${k}\" : \"${v}\"".toString()
-                    }.join(', ')
-                    hclMap[key] = "{${joinedMap}}".toString()
+                    hclMap[key] = escapedMap((Map) var)
                     break
                 case List:
-                    String joinedList = StringUtils.stringize((Iterable) var).collect {
-                        "\"${it}\"".toString()
-                    }.join(', ')
-                    hclMap[key] = "[${joinedList}]".toString()
+                    hclMap[key] = escapedList((Iterable) var)
                     break
                 default:
                     hclMap[key] = StringUtils.stringize(var)
