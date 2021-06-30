@@ -35,8 +35,10 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
         this.cacheTask = cacheTask
         this.rootRelativePath = project.relativePath(project.rootDir)
         this.projectOperations = ProjectOperations.find(project)
-        outputs.files(Transform.toList(TEMPLATE_MAPPING.values()) {
-            new File(project.projectDir, it)
+
+        File pDir = project.projectDir
+        outputs.files(Transform.toList(TEMPLATE_MAPPING.values()) { String it ->
+            new File(pDir, it)
         })
         inputs.file(cacheTask.locationPropertiesFile)
         dependsOn(cacheTask)

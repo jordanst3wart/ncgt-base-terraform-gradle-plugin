@@ -26,14 +26,13 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
-import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.TERRAFORM_INIT
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
-import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
 
 /** Conventions for when {@link org.ysb33r.gradle.terraform.plugins.TerraformRemoteStateAwsS3Plugin} is applied.
  *
@@ -43,6 +42,13 @@ import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtens
  */
 @CompileStatic
 class S3Conventions {
+
+    /**
+     *
+     * @param project Project the task will be attached to.
+     * @param tdds Associated source set
+     * @param remoteS3 S3 remote state provider for the specific source set.
+     */
     static void taskCreator(
         Project project,
         TerraformSourceDirectorySet tdds,
@@ -55,7 +61,7 @@ class S3Conventions {
             RemoteStateAwsS3ConfigGenerator
         )
 
-        defaultRemoteStateName(name).execute(configTask)
+        defaultRemoteStateName(name, remoteS3).execute(configTask)
         terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(
             taskName(name, TERRAFORM_INIT, null))
         )
@@ -85,7 +91,7 @@ class S3Conventions {
             configTaskName,
             RemoteStateAwsS3ConfigGenerator
         )
-        configTask.configure(defaultRemoteStateName(name))
+        configTask.configure(defaultRemoteStateName(name, remoteS3))
         project.tasks.named(taskName(name, TERRAFORM_INIT)).configure(new Action<TerraformInit>() {
             @Override
             void execute(TerraformInit init) {
@@ -119,7 +125,8 @@ class S3Conventions {
     }
 
     private static Action<RemoteStateAwsS3ConfigGenerator> defaultRemoteStateName(
-        String sourceSetName
+        String sourceSetName,
+        RemoteStateS3Provider s3OnSourceSet
     ) {
         new Action<RemoteStateAwsS3ConfigGenerator>() {
             @Override
@@ -129,16 +136,10 @@ class S3Conventions {
                     'tfS3BackendConfiguration' :
                     "tf${sourceSetName.capitalize()}S3BackendConfiguration"
 
-                task.remoteStateName = { Project p ->
-                    TerraformRemoteStateExtension remote = findExtension(p, sourceSetName)
-                    sourceSetName == DEFAULT_SOURCESET_NAME ? remote.prefix.get() :
-                        "${remote.prefix.get()}-${sourceSetName}"
-                }.curry(task.project)
-                task.awsRegion = s3.region
-                task.s3BucketName = s3.bucket
-                task.destinationDir = { Project p ->
-                    new File(p.buildDir, "tfRemoteState/${folderName}")
-                }.curry(task.project)
+                task.addTokenProvider(s3OnSourceSet.attributesMap)
+
+                task.destinationDir = ProjectOperations.find(task.project)
+                    .buildDirDescendant("tfRemoteState/${folderName}")
             }
         }
     }

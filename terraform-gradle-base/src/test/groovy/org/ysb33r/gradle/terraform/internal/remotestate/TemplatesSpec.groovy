@@ -17,14 +17,19 @@ package org.ysb33r.gradle.terraform.internal.remotestate
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
+import org.ysb33r.grolifant.api.core.ProjectOperations
 import spock.lang.Specification
 
 class TemplatesSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
+    ProjectOperations projectOperations
 
-    void 'Generate a configuration file from a default template'() {
+    void setup() {
+        projectOperations = ProjectOperations.maybeCreateExtension(project)
+    }
+
+    void 'Generate a configuration file from a text template'() {
         setup:
         def taskName = 'fooTask'
         def outputFile = project.provider { -> new File(project.projectDir, 'output.tf') }
@@ -37,9 +42,11 @@ class TemplatesSpec extends Specification {
         when:
         File target = Templates.generateFromTemplate(
             taskName,
-            project,
-            RemoteStateAwsS3ConfigGenerator.TEMPLATE_RESOURCE_PATH,
+            projectOperations,
             project.objects.property(File),
+            project.provider { ->
+                'bucket = "@@bucket_name@@"'
+            },
             outputFile,
             '@@',
             '@@',

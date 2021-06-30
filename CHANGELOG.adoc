@@ -28,6 +28,7 @@
 
 === Other
 
+* {issue}56[#56] - `TF_APPEND_USER_AGENT` is added to the terraform execution environment.
 * {issue}52[#52] - Added usage example for `getRawOutputVariables`.
 * Default version of terraform is `1.0.0`.
 

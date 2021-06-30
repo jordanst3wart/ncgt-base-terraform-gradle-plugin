@@ -26,6 +26,10 @@ import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
 import spock.lang.Issue
 import spock.lang.Specification
 
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_BUCKET
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_DYNAMODB_TABLE_ARN
+import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REGION
+
 class TerraformSourceSetsSpec extends Specification {
     Project project = ProjectBuilder.builder().build()
 
@@ -116,7 +120,7 @@ class TerraformSourceSetsSpec extends Specification {
         main.workspaceNames.size() == 3
     }
 
-    void 'Can provide a tfvars file' () {
+    void 'Can provide a tfvars file'() {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
 
@@ -183,18 +187,14 @@ class TerraformSourceSetsSpec extends Specification {
         RemoteStateS3Provider getMyProviders() {
             new RemoteStateS3Provider() {
                 @Override
-                Provider<String> getRegion() {
-                    providers.provider { -> 'region' }
-                }
-
-                @Override
-                Provider<String> getBucket() {
-                    providers.provider { -> 'bucket' }
-                }
-
-                @Override
-                Provider<String> getDynamoDbLockTableArn() {
-                    providers.provider { -> 'table' }
+                Provider<Map<String, ?>> getAttributesMap() {
+                    providers.provider { ->
+                        [
+                            (TOKEN_REGION)            : 'region',
+                            (TOKEN_BUCKET)            : 'bucket',
+                            (TOKEN_DYNAMODB_TABLE_ARN): 'table'
+                        ]
+                    }
                 }
             }
         }

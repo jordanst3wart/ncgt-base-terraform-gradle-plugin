@@ -27,6 +27,7 @@ import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.grolifant.api.core.LegacyLevel
 
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
 
 @CompileStatic
@@ -41,10 +42,13 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
         )
 
         project.extensions.getByType(TerraformSourceSets).all({ TerraformSourceDirectorySet tsds ->
-            def trse = (ExtensionAware) ((ExtensionAware) tsds).extensions.getByType(TerraformRemoteStateExtension)
-            def remote = trse.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project)
+            def trse = ((ExtensionAware) tsds).extensions.getByType(TerraformRemoteStateExtension)
+            def trseExtenions = (ExtensionAware) trse
+            def remote = trseExtenions.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project)
 
             remote.follow(globalS3Configuration)
+            remote.remoteStateName = tsds.name == DEFAULT_SOURCESET_NAME ? trse.prefix :
+                trse.prefix.map { String prefix -> "${prefix}-${tsds.name}" }
 
             if (LegacyLevel.PRE_4_10) {
                 S3Conventions.taskCreator(project, tsds, remote)

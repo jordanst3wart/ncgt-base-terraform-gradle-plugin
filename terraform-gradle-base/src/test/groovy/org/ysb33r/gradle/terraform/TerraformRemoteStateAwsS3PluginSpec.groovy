@@ -152,7 +152,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         RemoteStateAwsS3ConfigGenerator task = project.tasks.createTfS3BackendConfiguration
 
         then: 'there are some default tokens set'
-        task.tokens.keySet().containsAll(['aws_region', 'remote_state_name', 'bucket_name'])
+        task.tokens.keySet().containsAll(['remote_state_name'])
 
         when: 'this tokens are replaced and added to'
         task.tokens = [foo: 1]

@@ -150,8 +150,8 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @param newTokens New replacement set
      */
     void setTokens(Map<String, Object> newTokens) {
-        this.tokens.clear()
-        this.tokens.putAll(newTokens)
+        this.localTokens.clear()
+        this.localTokens.putAll(newTokens)
     }
 
     /** Adds more tokens.
@@ -161,7 +161,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @param moreTokens Additional tokens for replacement.
      */
     void tokens(Map<String, Object> moreTokens) {
-        this.tokens.putAll(moreTokens)
+        this.localTokens.putAll(moreTokens)
     }
 
     /**
@@ -171,7 +171,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
      * @param value Lazy-evaluted value. Anything that can resolve to a string.
      */
     void token(String key, Object value) {
-        this.tokens.put(key, projectOperations.provider { -> StringUtils.stringize(value) })
+        this.localTokens.put(key, projectOperations.provider { -> StringUtils.stringize(value) })
     }
 
     /** Returns the current set of tokens
@@ -184,7 +184,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
         for (Map<String, Object> map : tokenProviders*.get()) {
             compiledTokens.putAll(map)
         }
-        compiledTokens.putAll(this.tokens)
+        compiledTokens.putAll(this.localTokens)
         compiledTokens
     }
 
@@ -249,7 +249,7 @@ abstract class AbstractRemoteStateConfigGenerator extends DefaultTask {
     private String end = start
     private final Property<File> templateFile
     private final Property<String> textTemplateProvider
-    private final Map<String, Object> tokens = [:] as TreeMap<String, Object>
+    private final Map<String, Object> localTokens = [:] as TreeMap<String, Object>
     private final List<Provider<Map<String, Object>>> tokenProviders = []
 
 }
