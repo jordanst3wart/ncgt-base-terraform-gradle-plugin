@@ -62,7 +62,10 @@ class TerraformRemoteStateExtension {
     TerraformRemoteStateExtension(Project project) {
         this.projectOperations = ProjectOperations.find(project)
         this.prefix = project.objects.property(String)
-        setPrefix(project.name)
+        setPrefix(project == project.rootProject ?
+            project.name :
+            "${project.name}${project.path}".replaceAll(':', '-')
+        )
     }
 
     /** Assign the prefix.
