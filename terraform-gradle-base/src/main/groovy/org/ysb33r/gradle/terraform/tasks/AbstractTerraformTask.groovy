@@ -200,6 +200,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     protected TerraformExecSpec buildExecSpec() {
         TerraformExecSpec spec = super.buildExecSpec()
         addSessionCredentialsIfAvailable(spec)
+        addSessionCredentialsIfAvailable(spec)
         spec
     }
 
@@ -511,6 +512,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
             standardOutput(strm)
         }
         execSpec.environment(environment)
+        addSessionCredentialsIfAvailable(execSpec)
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
             void execute(ExecSpec spec) {

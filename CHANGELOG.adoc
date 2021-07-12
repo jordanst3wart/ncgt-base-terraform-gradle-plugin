@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.11.0 / v0.11.1
+== v0.11.0 / v0.11.1 / v0.11.2
 
 // tag::changelog[]
 === Features
@@ -21,6 +21,7 @@
 * {issue}49[#49] - Truncate log file before task calls Terraform.
 * {issue}53[#53] - NPE when running task `tfStatePull`.
 * {issue}58[#58] - Default remote prefix needs to take project path into account.
+* {issue}59[#59] - Session credentials are not passed to workspace commands.
 
 === Breaking changes
 
