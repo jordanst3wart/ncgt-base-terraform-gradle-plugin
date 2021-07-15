@@ -19,6 +19,7 @@
 * {issue}47[#47] - `tfApply` should pass the `--target/--replace` parameters to `tfPlan`.
 * {issue}48[#48] - AWS credentials should not be cached between builds.
 * {issue}49[#49] - Truncate log file before task calls Terraform.
+$ {issue}51[#51] - Terraform is attempting to create log content in systemroot
 * {issue}53[#53] - NPE when running task `tfStatePull`.
 * {issue}58[#58] - Default remote prefix needs to take project path into account.
 * {issue}59[#59] - Session credentials are not passed to workspace commands.

@@ -106,8 +106,8 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
                 execSpec.copyToExecSpec(spec)
             }
         }
-
         logger.info "Using Terraform environment: ${terraformEnvironment}"
+        logger.debug "Terraform executable will be launched with environment: ${execSpec.environment}"
         if (this.stdoutCapture) {
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
