@@ -31,7 +31,7 @@ class TerraformGitlabPlugin implements Plugin<Project> {
         project.pluginManager.apply(TerraformPlugin)
 
         TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
-        terraformSourceSets.all(new Action<TerraformSourceDirectorySet>() {
+        terraformSourceSets.configureEach(new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {
                 GitlabExtension gitlabExtension = ((ExtensionAware) tsds).extensions.create(

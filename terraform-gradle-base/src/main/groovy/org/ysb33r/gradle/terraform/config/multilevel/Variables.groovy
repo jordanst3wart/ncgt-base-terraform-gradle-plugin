@@ -16,6 +16,7 @@
 package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
@@ -52,7 +53,7 @@ class Variables implements TerraformTaskConfigExtension,
         this.rootDirResolver = rootFileResolver
     }
 
-    /** Constructs instance from defintiion of files and variables
+    /** Constructs instance from definition of files and variables
      *
      * @param vfp Definition of files and variables
      * @param rootFileResolver Root file resolver for file that are referenced.
@@ -85,13 +86,26 @@ class Variables implements TerraformTaskConfigExtension,
      *
      * @param name Name of variable.
      * @param val1 First
-     * @param vals Lazy-evaluated forms of variable.
+     * @param map Lazy-evaluated form of map.
      *  Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues(Map)}
      * is accepted.
      */
     @Override
     void map(Map<String, ?> map, final String name) {
         varsFilesPair.vars.put(name, map)
+    }
+
+    /**
+     * Adds a map provider as a variable.
+     *
+     * <p> This will replace any previous map by the same name.
+     *
+     * @param name Name of map
+     * @param mapProvider Provider to map
+     */
+    @Override
+    void map(String name, Provider<Map<String, ?>> mapProvider) {
+        varsFilesPair.vars.put(name, mapProvider)
     }
 
     /** Adds a list as a variable.
@@ -141,29 +155,19 @@ class Variables implements TerraformTaskConfigExtension,
         varsFilesPair.clear()
     }
 
-    /** Evaluate all variables and convert them to Terraform-compliant strings, ready to be passed to command-line.
+    /** Evaluate all provided and loca; variables and convert them to Terraform-compliant strings, ready to be
+     * passed to command-line.
+     *
+     * Provided variables will be evaluated first, so that any local definitions can override them.
      *
      * <p> Calling this will resolve all lazy-evaluated entries.
      *
      * @return Map where each key is the name of a variable. Each value is correctly formatted according to
      *   the kind of variable.
      */
-    @SuppressWarnings('DuplicateStringLiteral')
     Map<String, String> getEscapedVars() {
-        Map<String, String> hclMap = [:]
-        for (String key in this.varsFilesPair.vars.keySet()) {
-            Object var = this.varsFilesPair.vars[key]
-            switch (var) {
-                case Map:
-                    hclMap[key] = escapedMap((Map) var)
-                    break
-                case List:
-                    hclMap[key] = escapedList((Iterable) var)
-                    break
-                default:
-                    hclMap[key] = StringUtils.stringize(var)
-            }
-        }
+        Map<String, String> hclMap = escapeProvidedVars()
+        hclMap.putAll(escapeLocalVars())
         hclMap
     }
 
@@ -223,8 +227,51 @@ class Variables implements TerraformTaskConfigExtension,
         this.varsFilesPair
     }
 
+    /**
+     * Adds additional actions which can add variables. These will be called first when evaluating a final escaped
+     * variable map.
+     *
+     * @param additionalVariables Action that can be called to provide additional variables.
+     *
+     * @since 0.12
+     */
+    @Override
+    void provider(Action<VariablesSpec> additionalVariables) {
+        this.additionalVariables.add(additionalVariables)
+    }
+
+    private Map<String, String> escapeProvidedVars() {
+        def vars = new Variables(new VarsFilesPair(), rootDirResolver)
+        for (Action<VariablesSpec> additional : this.additionalVariables) {
+            additional.execute(vars)
+        }
+        vars.escapeLocalVars()
+    }
+
+    private Map<String, String> escapeLocalVars() {
+        Map<String, String> hclMap = [:]
+        for (String key in this.varsFilesPair.vars.keySet()) {
+            hclMap[key] = escapeObject(this.varsFilesPair.vars[key])
+        }
+        hclMap
+    }
+
+    private String escapeObject(Object variable) {
+        switch (variable) {
+            case Provider:
+                return escapeObject(((Provider) variable).get())
+            case Map:
+                return escapedMap((Map) variable)
+            case List:
+                return escapedList((Iterable) variable)
+            default:
+                return StringUtils.stringize(variable)
+        }
+    }
+
     private final VarsFilesPair varsFilesPair = new VarsFilesPair()
     private final Provider<File> rootDirResolver
+    private final List<Action<VariablesSpec>> additionalVariables = []
 
     @Inject
     Project project

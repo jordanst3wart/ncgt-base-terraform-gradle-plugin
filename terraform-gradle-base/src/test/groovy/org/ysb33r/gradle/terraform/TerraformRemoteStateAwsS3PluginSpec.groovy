@@ -18,30 +18,47 @@ package org.ysb33r.gradle.terraform
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
+import org.ysb33r.gradle.terraform.remotestate.LocalBackendSpec
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
-import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
+import org.ysb33r.gradle.terraform.tasks.RemoteStateConfigGenerator
 import spock.lang.Specification
 
-import static org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator.CONFIG_FILE_NAME
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.backendTaskName
+import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
     public static final String PLUGIN_ID = 'org.ysb33r.terraform.remotestate.s3'
+    public static final String SOURCE_SET_NAME = 'main'
 
     Project project = ProjectBuilder.builder().build()
     TerraformRemoteStateExtension remote
-    RemoteStateS3 s3
+    RemoteStateS3Spec s3
+    LocalBackendSpec local
+    TerraformRemoteStateExtension sourceSetRemote
+    RemoteStateS3Spec sourceSetS3
+    LocalBackendSpec sourceSetLocal
+    RemoteStateConfigGenerator generatorTask
 
     void setup() {
         project.apply plugin: PLUGIN_ID
         remote = TerraformRemoteStateExtension.findExtension(project)
-        s3 = RemoteStateS3.findExtension(project)
+        s3 = RemoteStateS3Spec.findExtension(project)
+        sourceSetRemote = TerraformRemoteStateExtension.findExtension(project, SOURCE_SET_NAME)
+        sourceSetS3 = RemoteStateS3Spec.findExtension(project, SOURCE_SET_NAME)
+        local = LocalBackendSpec.findExtension(project, LocalBackendSpec)
+        sourceSetLocal = LocalBackendSpec.findExtension(project, SOURCE_SET_NAME, LocalBackendSpec)
+        generatorTask = project.tasks.getByName(backendTaskName(SOURCE_SET_NAME))
     }
+
 
     void 'Plugin is applied'() {
         expect: 'Default tasks are created'
-        project.tasks.getByName('createTfS3BackendConfiguration')
+        project.tasks.getByName('createTfBackendConfiguration')
+        project.extensions.getByName('terraform')
+        project.terraform.extensions.getByName('remote')
+        project.terraform.remote.extensions.getByName('s3')
 
         and: 'Remote state name prefix is the project name by default'
         remote.prefix.get() == project.name
@@ -55,7 +72,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
         then:
         noExceptionThrown()
-        project.tasks.getByName('createTfS3BackendConfiguration')
+        project.tasks.getByName('createTfBackendConfiguration')
     }
 
     void 'Tasks are created for additional source sets'() {
@@ -69,38 +86,35 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         project.tasks.getByName('createTfAdditionalS3BackendConfiguration')
     }
 
-    void 'Configuring terraform.remote extension sets property on task'() {
-        setup:
-        def newPrefix = 'foo'
-
-        when: 'An additional source set is added'
-        project.terraformSourceSets {
-            additional {
-            }
-        }
-
-        and: 'remote is configured for remote state prefix'
-        remote.prefix = newPrefix
-
-        then: 'the tasks will pick up appropriate remote state names'
-        project.tasks.createTfS3BackendConfiguration.remoteStateName.get() == newPrefix
-        project.tasks.createTfAdditionalS3BackendConfiguration.remoteStateName.get() == "${newPrefix}-additional"
-    }
-
     void 'Configuring terraform.remote.s3 sets properties on task'() {
         setup:
         def region = 'blah-blah'
         def bucket = 'car'
+        def table = '123'
         TerraformSourceSets tss = project.terraformSourceSets
 
-        when: 's3 is configured for region and bucket'
+        when: 's3 is globally configured for region and bucket'
+        sourceSetRemote.follow(remote)
         s3.region = region
         s3.bucket = bucket
-        s3.dynamoDbLockTableArn = '123'
+
+        and: 's3 is configured on the source set for dynamodb table'
+        tss.getByName('main').remote.s3.dynamoDbTable = table
+
+        and: 'remote_state variable is requested'
+        tss.getByName('main').remote.remoteStateVar = true
+
+        and: 'obtaining tokens from various sources'
+        def taskTokens = stringizeValues(project.tasks.createTfBackendConfiguration.tokens)
+        def globalSpecTokens = stringizeValues(s3.tokens)
+        def tssSpecTokens = stringizeValues(tss.getByName('main').remote.s3.tokens)
 
         then: 'the task will pick up appropriate aws configuration'
-        project.tasks.createTfS3BackendConfiguration.s3BucketName.get() == bucket
-        project.tasks.createTfS3BackendConfiguration.awsRegion.get() == region
+        taskTokens['bucket'] == bucket
+        taskTokens['region'] == region
+        taskTokens['dynamodb_table'] == table
+        taskTokens.keySet().containsAll(globalSpecTokens.keySet())
+        taskTokens.keySet().containsAll(tssSpecTokens.keySet())
 
         when: 'the variables are analysed'
         Map<String, String> vars = ((Variables) tss.getByName('main').variables).escapedVars
@@ -116,47 +130,46 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
             }
         }
 
-        File main = outputFile(project.tasks.createTfS3BackendConfiguration)
-        File additional = outputFile(project.tasks.createTfAdditionalS3BackendConfiguration)
+        File main = outputFile(project.tasks.createTfBackendConfiguration)
+        File additional = outputFile(project.tasks.createTfAdditionalBackendConfiguration)
 
         expect:
-        main.name == CONFIG_FILE_NAME
-        main.parentFile.name == 'tfS3BackendConfiguration'
-        additional.parentFile.name == 'tfAdditionalS3BackendConfiguration'
+        main.name == 'terraform-backend-config.tf'
+        main.parentFile.name == 'tfBackendConfiguration'
+        additional.parentFile.name == 'tfAdditionalBackendConfiguration'
         main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
-        project.tasks.createTfS3BackendConfiguration.destinationDir.get() == main.parentFile
+        project.tasks.createTfBackendConfiguration.destinationDir.get() == main.parentFile
     }
 
     void 'Can customise the template'() {
         when: 'the plugin is applied'
-        RemoteStateAwsS3ConfigGenerator task = project.tasks.createTfS3BackendConfiguration
         String defaultDelimiter = '@@'
 
         then: 'the token delimiters are "@@"'
-        task.beginToken == defaultDelimiter
-        task.endToken == defaultDelimiter
-        !task.templateFile.present
+        generatorTask.beginToken == defaultDelimiter
+        generatorTask.endToken == defaultDelimiter
+        !generatorTask.templateFile.present
 
         when: 'the template file and tokens are changed'
-        task.delimiterTokenPair('##', '$$')
-        task.templateFile = 'src/foo.tmpl'
+        s3.delimiterTokenPair('##', '$$')
+        generatorTask.templateFile = 'src/foo.tmpl'
 
         then: 'the new values are expected to be set'
-        task.beginToken == '##'
-        task.endToken == '$$'
-        task.templateFile.get().name == 'foo.tmpl'
+        generatorTask.beginToken == '##'
+        generatorTask.endToken == '$$'
+        generatorTask.templateFile.get().name == 'foo.tmpl'
     }
 
     void 'Tokens for the template can be configured'() {
         when: 'the plugin is applied'
-        RemoteStateAwsS3ConfigGenerator task = project.tasks.createTfS3BackendConfiguration
+        RemoteStateConfigGenerator task = project.tasks.createTfBackendConfiguration
 
         then: 'there are some default tokens set'
-        task.tokens.keySet().containsAll(['remote_state_name'])
+        task.tokens.keySet().containsAll(['key'])
 
         when: 'this tokens are replaced and added to'
-        task.tokens = [foo: 1]
-        task.tokens bar: 2
+        s3.tokens = [foo: 1]
+        s3.tokens bar: 2
 
         then: 'then the new set should be available'
         task.tokens.keySet().containsAll(['foo', 'bar'])
@@ -164,15 +177,62 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
     void 'terraformInit has configuration file correctly setup'() {
         expect:
-        project.tasks.tfInit.backendConfigFile.get() == outputFile(project.tasks.createTfS3BackendConfiguration)
+        project.tasks.tfInit.backendConfigFile.get() == outputFile(project.tasks.createTfBackendConfiguration)
     }
 
     void 'Extensions are added to terraform source directory sets'() {
         expect:
-        project.terraformSourceSets.getByName('main').remote.s3 instanceof RemoteStateS3
+        project.terraformSourceSets.getByName('main').remote.s3 instanceof RemoteStateS3Spec
     }
 
-    private File outputFile(RemoteStateAwsS3ConfigGenerator task) {
+    void 'By default S3 backend on source set follows S3 backend on global'() {
+        when:
+        s3.assumeRoleDurationSeconds = 12345
+
+        then:
+        allTokens['assume_role_duration_seconds'] == '12345'
+    }
+
+    void 'If no templates were set on source set S3 backend then global templates are used unless nofollow is set'() {
+        expect:
+        s3.textTemplate.present
+        !sourceSetS3.textTemplate.present
+        sourceSetRemote.textTemplate.get() == s3.textTemplate.get()
+    }
+
+    void 'Setting a template on source set will ignore further global template changes'() {
+        when:
+        sourceSetS3.textTemplate = 'abc'
+        s3.textTemplate = 'def'
+
+        then:
+        s3.textTemplate.get() != sourceSetS3.textTemplate.get()
+    }
+
+    void 'Changing backend on the source set to local uses the global settings for local unless nofollow is set'() {
+        when:
+        sourceSetRemote.backend = LocalBackendSpec
+        local.path = 'foobar'
+
+        then:
+        allTokens['path'] == project.file('foobar').absolutePath
+    }
+
+    void 'Global S3 backend can be unfollowed'() {
+        when:
+        sourceSetRemote.noFollow()
+        s3.assumeRoleDurationSeconds = 12345
+
+        then:
+        s3.tokens.containsKey('assume_role_duration_seconds')
+        !sourceSetS3.tokens.containsKey('assume_role_duration_seconds')
+    }
+
+    private File outputFile(RemoteStateConfigGenerator task) {
         task.backendConfigFile.get()
+    }
+
+    private Map<String, String> getAllTokens() {
+        stringizeValues(sourceSetRemote.tokenProvider.get())
     }
 }

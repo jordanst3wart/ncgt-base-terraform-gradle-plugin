@@ -22,7 +22,8 @@ import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecification {
-    String taskName = 'createTfS3BackendConfiguration'
+    public static final String PROJECT_NAME = 'test-project'
+    String taskName = 'createTfBackendConfiguration'
     File testkitDir
     File srcDir
     File outputFile
@@ -32,8 +33,9 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
         testkitDir = testProjectDir.newFolder()
         srcDir = new File(projectDir, 'src/tf/main')
         srcDir.mkdirs()
-        outputFile = new File(projectDir, 'build/tfRemoteState/tfS3BackendConfiguration/terraform-s3-backend-config.tf')
+        outputFile = new File(projectDir, 'build/tfRemoteState/tfBackendConfiguration/terraform-backend-config.tf')
 
+        new File(projectDir,'settings.gradle').text = "rootProject.name = '${PROJECT_NAME}'"
         buildFile.text = '''
         plugins {
             id 'org.ysb33r.terraform.remotestate.s3'
@@ -56,12 +58,12 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
             projectDir,
             [
                 taskName,
-                '-s',
+                '-i', '-s',
             ]
         ).withTestKitDir(testkitDir)
     }
 
-    void 'Create S3 configuration file'() {
+    void 'Create S3 configuration file from default template'() {
         when:
         BuildResult result = gradleRunner.build()
 
@@ -79,4 +81,63 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
         }
     }
 
+    void 'Create S3 configuration file from all tokens'() {
+        setup:
+        buildFile << '''
+        terraform {
+            remote {
+                s3 {
+                    allTokenTemplate()
+                }
+            }
+        }
+        
+        terraformSourceSets {
+          main {
+            remote {
+              s3 {
+                workspaceKeyPrefix = 'ws'
+              }
+            }
+          }
+        }
+        '''
+        when:
+        BuildResult result = gradleRunner.build()
+
+        then:
+        result.task(":${taskName}").outcome == SUCCESS
+
+        when:
+        def lines = outputFile.readLines()
+
+        then:
+        verifyAll {
+            lines.contains('bucket               = "bucket"')
+            lines.contains('key                  = "foo.tfstate"')
+            lines.contains('region               = "xx-north-0"')
+            lines.contains('workspace_key_prefix = "ws"')
+        }
+    }
+
+
+    @Deprecated
+    void 'Create S3 configuration file via legacy task'() {
+        setup:
+        String legacyTaskName = 'createTfS3BackendConfiguration'
+
+        when:
+        BuildResult result = getGradleRunner(
+            IS_GROOVY_DSL,
+            projectDir,
+            [
+                legacyTaskName,
+                '-i',
+            ]
+        ).withTestKitDir(testkitDir).build()
+
+        then:
+        result.task(":${taskName}").outcome == SUCCESS
+        result.task(":${legacyTaskName}").outcome == SUCCESS
+    }
 }

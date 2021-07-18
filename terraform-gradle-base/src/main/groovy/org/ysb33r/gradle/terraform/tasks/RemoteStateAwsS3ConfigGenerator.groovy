@@ -17,34 +17,43 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
-import org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin
+import org.gradle.api.tasks.TaskProvider
+import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
+import org.ysb33r.gradle.terraform.errors.TerraformUnknownBackendException
+import org.ysb33r.gradle.terraform.remotestate.BackendSpec
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import java.util.concurrent.Callable
+import javax.inject.Inject
 
 import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_BUCKET
 import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REGION
 import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REMOTE_STATE_NAME
 import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
+/**
+ * Legacy way of generating S3 backend config files.
+ *
+ * @deprecated {@link RemoteStateConfigGenerator} has replaced this.
+ */
 @CompileStatic
-class RemoteStateAwsS3ConfigGenerator extends AbstractRemoteStateConfigGenerator {
-
-    public static final String CONFIG_FILE_NAME = 'terraform-s3-backend-config.tf'
+@Deprecated
+class RemoteStateAwsS3ConfigGenerator extends DefaultTask {
 
     @SuppressWarnings('UnnecessaryCast')
-    RemoteStateAwsS3ConfigGenerator() {
-        group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
-        description = 'Generates configuration for remote state in S3'
-        textTemplate = """
-bucket = "@@${TOKEN_BUCKET}@@"
-key    = "@@${TOKEN_REMOTE_STATE_NAME}@@.tfstate"
-region = "@@${TOKEN_REGION}@@"
-        """
-
-        this.remoteStateS3Spec = new RemoteStateS3Spec(projectOperations)
+    @Inject
+    RemoteStateAwsS3ConfigGenerator(TaskProvider<RemoteStateConfigGenerator> linkedTask) {
+        dependsOn(linkedTask)
+        def pt = ProjectOperations.find(project).providerTools
+        this.backend = pt.flatMap(linkedTask) { it.backendProvider }
+        this.sourceSetName = name.replaceFirst(~/^create/, '')
+            .replaceFirst(~/s3BackendConfiguration$/, '')
+            .uncapitalize()
+        this.backendConfigFile = pt.flatMap(linkedTask) { it.backendConfigFile }
+        this.destinationDir = pt.flatMap(linkedTask) { it.destinationDir }
     }
 
     /**
@@ -52,10 +61,11 @@ region = "@@${TOKEN_REGION}@@"
      *
      * @param spec Action to configure spec
      *
-     * @since 1.0
      */
+    @Deprecated
     void s3Spec(Action<RemoteStateS3Spec> spec) {
-        spec.execute(this.remoteStateS3Spec)
+        warnOnUsage('configure')
+        linkedSpec.configure(spec)
     }
 
     /**
@@ -63,13 +73,12 @@ region = "@@${TOKEN_REGION}@@"
      *
      * @param spec Closure to configure spec
      *
-     * @since 1.0
      */
+    @Deprecated
+    @SuppressWarnings('DuplicateStringLiteral')
     void s3Spec(@DelegatesTo(RemoteStateS3Spec) Closure spec) {
-        Closure configurator = (Closure) spec.clone()
-        configurator.resolveStrategy = Closure.DELEGATE_FIRST
-        configurator.delegate = this.remoteStateS3Spec
-        configurator()
+        warnOnUsage('configure')
+        linkedSpec.configure(spec)
     }
 
     /**
@@ -83,7 +92,8 @@ region = "@@${TOKEN_REGION}@@"
      */
     @Deprecated
     void setS3BucketName(Object bucketName) {
-        this.remoteStateS3Spec.s3BucketName = bucketName
+        warnOnUsage('setS3BucketName')
+        linkedSpec.s3BucketName = bucketName
     }
 
     /** The S3 bucket used for state storage
@@ -95,12 +105,10 @@ region = "@@${TOKEN_REGION}@@"
     @Internal
     @Deprecated
     Provider<String> getS3BucketName() {
-        projectOperations.provider(new Callable<String>() {
-            @Override
-            String call() throws Exception {
-                tokens[TOKEN_BUCKET] ? stringize(tokens[TOKEN_BUCKET]) : null
-            }
-        })
+        warnOnUsage('getS3BucketName')
+        linkedSpecProvider.map {
+            it.tokens[TOKEN_BUCKET] ? stringize(it.tokens[TOKEN_BUCKET]) : null
+        }
     }
 
     /** Sets a new remote state name
@@ -109,12 +117,11 @@ region = "@@${TOKEN_REGION}@@"
      *
      * @param rsn Anything that can be lazy-evaluated to a string.
      *
-     * @deprecated Configure via {@link #s3Spec} instead.
-     *
      */
     @Deprecated
     void setRemoteStateName(Object rsn) {
-        this.remoteStateS3Spec.remoteStateName = rsn
+        warnOnUsage('setRemoteStateName')
+        linkedSpec.remoteStateName = rsn
     }
 
     /** The name that will be used to identify remote state.
@@ -126,12 +133,10 @@ region = "@@${TOKEN_REGION}@@"
     @Internal
     @Deprecated
     Provider<String> getRemoteStateName() {
-        projectOperations.provider(new Callable<String>() {
-            @Override
-            String call() throws Exception {
-                tokens[TOKEN_REMOTE_STATE_NAME] ? stringize(tokens[TOKEN_REMOTE_STATE_NAME]) : null
-            }
-        })
+        warnOnUsage('getRemoteStateName')
+        linkedSpecProvider.map {
+            it.tokens[TOKEN_REMOTE_STATE_NAME] ? stringize(it.tokens[TOKEN_REMOTE_STATE_NAME]) : null
+        }
     }
 
     /**
@@ -145,23 +150,21 @@ region = "@@${TOKEN_REGION}@@"
      */
     @Deprecated
     void setAwsRegion(Object region) {
-        this.remoteStateS3Spec.awsRegion = region
+        warnOnUsage('setAwsRegion')
+        linkedSpec.awsRegion = region
     }
 
     /** Get AWS region used for remote storage.
      *
-     * @return Region*
-     * @deprecated
+     * @return Region* @deprecated
      */
     @Internal
     @Deprecated
     Provider<String> getAwsRegion() {
-        projectOperations.provider(new Callable<String>() {
-            @Override
-            String call() throws Exception {
-                tokens[TOKEN_REGION] ? stringize(tokens[TOKEN_REGION]) : null
-            }
-        })
+        warnOnUsage('getAwsRegion')
+        linkedSpecProvider.map {
+            it.tokens[TOKEN_REGION] ? stringize(it.tokens[TOKEN_REGION]) : null
+        }
     }
 
     /** Returns the current set of tokens
@@ -176,26 +179,127 @@ region = "@@${TOKEN_REGION}@@"
      *
      * @return Tokens used for replacements.
      */
-    @Override
+    @Deprecated
+    @Internal
     Map<String, Object> getTokens() {
-        Map<String, Object> newTokens = [:]
-        newTokens.putAll(super.tokens)
-        if (newTokens.containsKey(TOKEN_BUCKET)) {
-            newTokens.putIfAbsent('aws_bucket', newTokens[TOKEN_BUCKET])
-        }
-        if (newTokens.containsKey(TOKEN_REGION)) {
-            newTokens.putIfAbsent('aws_region', newTokens[TOKEN_REGION])
-        }
-        if (newTokens.containsKey(TOKEN_REMOTE_STATE_NAME)) {
-            newTokens.putIfAbsent('name', newTokens[TOKEN_REMOTE_STATE_NAME])
-        }
-        newTokens
+        warnOnUsage('getTokens')
+        backend.get().tokens
     }
 
-    @Override
-    protected String getConfigFileName() {
-        CONFIG_FILE_NAME
+    @SuppressWarnings('UnusedMethodParameter')
+    void setDestinationDir(Object dir) {
+        notSupported('setDestinationDir')
     }
 
-    private final RemoteStateS3Spec remoteStateS3Spec
+    @Internal
+    Provider<File> getDestinationDir() {
+        warnOnUsage('getDestinationDir')
+        this.backendConfigFile
+    }
+
+    @Internal
+    Provider<File> getBackendConfigFile() {
+        warnOnUsage('getBackendConfigFile')
+        this.backendConfigFile
+    }
+
+    void setTemplateFile(Object file) {
+        warnOnUsage('setTemplateFile')
+        linkedSpec.templateFile = file
+    }
+
+    void setTextTemplate(Object text) {
+        warnOnUsage('setTextTemplate')
+        linkedSpec.textTemplate = text
+    }
+
+    @Internal
+    Provider<File> getTemplateFile() {
+        warnOnUsage('getTemplateFile')
+        linkedSpecProvider.map {
+            it.templateFile.get()
+        }
+    }
+
+    @Internal
+    Provider<String> getTextTemplate() {
+        warnOnUsage('getTextTemplate')
+        linkedSpecProvider.map {
+            it.textTemplate.get().template(it)
+        }
+    }
+
+    void delimiterTokenPair(String begin, String end) {
+        warnOnUsage('delimiterTokenPair')
+        linkedSpec.delimiterTokenPair(begin, end)
+    }
+
+    @Internal
+    String getBeginToken() {
+        warnOnUsage('getBeginToken')
+        linkedSpec.beginToken
+    }
+
+    @Internal
+    String getEndToken() {
+        warnOnUsage('getEndToken')
+        linkedSpec.endToken
+    }
+
+    void setTokens(Map<String, Object> newTokens) {
+        warnOnUsage('setTokens')
+        linkedSpec.tokens = newTokens
+    }
+
+    void tokens(Map<String, Object> moreTokens) {
+        warnOnUsage('tokens')
+        linkedSpec.tokens(moreTokens)
+    }
+
+    void token(String key, Object value) {
+        warnOnUsage('token')
+        linkedSpec.token(key, value)
+    }
+
+    @SuppressWarnings('UnusedMethodParameter')
+    void addTokenProvider(Provider<Map<String, Object>> tokenProvider) {
+        notSupported('addTokenProvider')
+    }
+
+    private void notSupported(String method) {
+        throw new TerraformConfigurationException("${name} is a legacy task and '${method}' is not supported")
+    }
+
+    private void warnOnUsage(String method) {
+        logger.warn "Task '${name}' is deprecated. Use method ${method} ${REMOTE_S3} '${sourceSetName}'."
+    }
+
+    private RemoteStateS3Spec getLinkedSpec() {
+        BackendSpec backendSpec = backend.get()
+        if (backendSpec instanceof RemoteStateS3Spec) {
+            (RemoteStateS3Spec) backendSpec
+        } else {
+            notS3()
+        }
+    }
+
+    private Provider<RemoteStateS3Spec> getLinkedSpecProvider() {
+        backend.map { BackendSpec it ->
+            if (it instanceof RemoteStateS3Spec) {
+                (RemoteStateS3Spec) it
+            } else {
+                notS3()
+            }
+        }
+    }
+
+    private RemoteStateS3Spec notS3() {
+        throw new TerraformUnknownBackendException('Cannot execute operation as the backend is not S3')
+    }
+
+    private final String sourceSetName
+    private final Provider<BackendSpec> backend
+    private final Provider<File> backendConfigFile
+    private final Provider<File> destinationDir
+    private final static String REMOTE_S3 = 'from remote.s3 or remote.of("s3") on Terraform source set'
 }

@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
@@ -40,12 +39,9 @@ class TerraformCheckPlugin implements Plugin<Project> {
         project.pluginManager.apply(TerraformPlugin)
 
         def check = project.tasks.named(CHECK_TASK_NAME)
-        project.tasks.all { Task t ->
-            if (t instanceof TerraformFmtCheck || t instanceof TerraformCustomFmtCheck) {
-                check.configure {
-                    it.dependsOn(t)
-                }
-            }
+        check.configure {
+            it.dependsOn(project.tasks.withType(TerraformFmtCheck))
+            it.dependsOn(project.tasks.withType(TerraformCustomFmtCheck))
         }
     }
 }

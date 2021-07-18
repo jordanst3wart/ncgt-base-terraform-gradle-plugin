@@ -2,6 +2,29 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
+== v0.12.0
+
+=== Features
+
+* {issue}60[#60] - Customise backend by source set.
+
+=== Deprecations
+
+* `RemoteStateAwsS3ConfigGenerator` has been deprecated in favour of RemoteStateConfigGenerator. Instances of task itself will be empty with a direct dependency on an instance of `RemoteStateConfigGenerator`. Trying to configure the task will display a warning.
+* `RemoteStateS3Provider` has been deprecated.
+
+=== Breaking changes
+
+* `TerraformRemoteStateBasePlugin` has been removed and it's functionality absorbed into `TerraformBasePlugin`.
+* `AbstractRemoteStateConfigGenerator` has been removed and replaced with `RemoteStateConfigGenerator`.
+* When applying the S3 backend, the `remote_state` variable is no longer added by default. In order to do this, set `remote.remoteStateVar = true` on the source set or globally on `terraform.remote.remoteStateVar`.
+* `tfstate` is not automatically appended to the key name in `S3` remote state. The default test template has changed to reflect this.
+* The default key for `s3` remote state is set to the full project path including the root project name, plus the source set name. This might be different from what your current build is using. If you suddently find that `tfPlan` type tasks are all not finding the resources, then this is probably the culprit. You can choose to manually rename the state object in S3, or you can explicitly set `remote.s3.remoteStateName` to be the one that you have been using.
+
+=== Other
+
+* Default version of Terraform is 1.0.2.
+
 == v0.11.0 / v0.11.1 / v0.11.2
 
 // tag::changelog[]

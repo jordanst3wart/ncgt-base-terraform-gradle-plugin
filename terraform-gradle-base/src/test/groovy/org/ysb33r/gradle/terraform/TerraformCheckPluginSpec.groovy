@@ -41,9 +41,11 @@ class TerraformCheckPluginSpec extends Specification {
         def tfFmtCheckProvider = project.tasks.named('tfFmtCheck')
         def tfFmtCheck = project.tasks.getByName('tfFmtCheck')
 
+        def dependsOn = check.dependsOn.flatten()
+
         then:
-        check.dependsOn.contains(tfFmtCheck.name) ||
-            check.dependsOn.contains(tfFmtCheck) ||
-            check.dependsOn.contains(tfFmtCheckProvider)
+        dependsOn.contains(tfFmtCheck.name) ||
+            dependsOn.contains(tfFmtCheck) ||
+            dependsOn.contains(tfFmtCheckProvider)
     }
 }

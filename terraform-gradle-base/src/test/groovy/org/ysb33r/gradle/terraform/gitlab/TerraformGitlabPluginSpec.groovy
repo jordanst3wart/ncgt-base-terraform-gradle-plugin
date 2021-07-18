@@ -26,7 +26,7 @@ class TerraformGitlabPluginSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    void 'Add gitlab extention to source set'() {
+    void 'Add gitlab extension to source set'() {
         setup:
         def gitlabToken = 'abcdefghijkl'
         def gitlabTokenProvider = project.provider { -> gitlabToken }

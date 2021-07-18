@@ -23,6 +23,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
+import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -76,7 +77,7 @@ class TerraformSourceSetsSpec extends Specification {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
         project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
-        project.extensions.create('testExt', TestExtension)
+        project.extensions.create('testExt', TestExtension, project.providers, project)
 
         when:
         configureFourSourceSets()
@@ -89,7 +90,7 @@ class TerraformSourceSetsSpec extends Specification {
         setup:
         project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
         project.apply plugin: 'org.ysb33r.terraform'
-        project.extensions.create('testExt', TestExtension)
+        project.extensions.create('testExt', TestExtension, project.providers, project)
 
         when:
         configureFourSourceSets()
@@ -179,9 +180,11 @@ class TerraformSourceSetsSpec extends Specification {
 
     static class TestExtension {
         final ProviderFactory providers
+        final Project project1
 
-        TestExtension(ProviderFactory p) {
+        TestExtension(ProviderFactory p,Project p1) {
             this.providers = p
+            this.project1 = p1
         }
 
         RemoteStateS3Provider getMyProviders() {
@@ -195,6 +198,15 @@ class TerraformSourceSetsSpec extends Specification {
                             (TOKEN_DYNAMODB_TABLE_ARN): 'table'
                         ]
                     }
+                }
+
+                @Override
+                void setAssociatedRemoteStateExtension(TerraformRemoteStateExtension trse) {
+                }
+
+                @Override
+                TerraformRemoteStateExtension getAssociatedRemoteStateExtension() {
+                    project1.terraform.remote
                 }
             }
         }

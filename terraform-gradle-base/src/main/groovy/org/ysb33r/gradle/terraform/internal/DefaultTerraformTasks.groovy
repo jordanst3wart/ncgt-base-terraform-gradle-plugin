@@ -45,10 +45,10 @@ import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 @CompileStatic
 @SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
-    INIT(0, 'init', TerraformInit, 'Initialises Terraform', true),
-    IMPORT(1, 'import', TerraformImport, 'Imports a resource'),
-    SHOW(2, 'showState', TerraformShowState, 'Generates a report on the current state'),
-    OUTPUT(2, 'output', TerraformOutput, 'Generates a file of output variables'),
+    INIT(1, 'init', TerraformInit, 'Initialises Terraform', true),
+    IMPORT(2, 'import', TerraformImport, 'Imports a resource'),
+    SHOW(3, 'showState', TerraformShowState, 'Generates a report on the current state'),
+    OUTPUT(4, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
     APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', false, TerraformPlanProvider),
     DESTROY_PLAN(14, 'destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),

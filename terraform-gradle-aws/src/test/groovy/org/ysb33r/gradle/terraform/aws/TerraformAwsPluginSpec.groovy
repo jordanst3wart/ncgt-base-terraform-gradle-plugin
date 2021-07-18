@@ -26,7 +26,7 @@ class TerraformAwsPluginSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    void 'Add aws extention to source set and use fixed credentials'() {
+    void 'Add aws extension to source set and use fixed credentials'() {
         setup:
         def awsKey = 'abcdefghijkl'
         def awsSecret = 'mnopqrstu'

@@ -18,32 +18,34 @@ package org.ysb33r.gradle.terraform.remotestate
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Provider
-import org.ysb33r.grolifant.api.core.ProjectOperations
-
-import java.util.concurrent.Callable
 
 /** An extension that is added to {@link TerraformRemoteStateExtension}.
  *
  * @author Schalk W. Cronjé
  *
+ * @deprecated Use RemoteStateS3Spec instead.
+ *
  * @since 0.8.0
  */
 @CompileStatic
-class RemoteStateS3 extends RemoteStateS3Spec implements RemoteStateS3Provider {
-    public static final String NAME = 's3'
+@Deprecated
+class RemoteStateS3 {
 
     /** Utility method to find this extension on a project.
+     *
+     * This will return the project's {@link RemoteStateS3Spec} instead.
      *
      * @param project Project context
      * @return Extension after it has been attached.
      */
-    static RemoteStateS3 findExtension(Project project) {
-        ((ExtensionAware) TerraformRemoteStateExtension.findExtension(project)).extensions.getByType(RemoteStateS3)
+    static RemoteStateS3Spec findExtension(Project project) {
+        ((ExtensionAware) TerraformRemoteStateExtension.findExtension(project)).extensions.getByType(RemoteStateS3Spec)
     }
 
     /**
      * Utility to find this extension on a terraform source set.
+     *
+     * This will return the source set's {@link RemoteStateS3Spec} instead
      *
      * @param project Project context
      * @param sourceSetName Name of source set.
@@ -51,57 +53,8 @@ class RemoteStateS3 extends RemoteStateS3Spec implements RemoteStateS3Provider {
      *
      * @since 0.10.0
      */
-    static RemoteStateS3 findExtension(Project project, String sourceSetName) {
+    static RemoteStateS3Spec findExtension(Project project, String sourceSetName) {
         def remote = TerraformRemoteStateExtension.findExtension(project, sourceSetName)
-        ((ExtensionAware) remote).extensions.getByType(RemoteStateS3)
+        ((ExtensionAware) remote).extensions.getByType(RemoteStateS3Spec)
     }
-
-    /**
-     * Constructs a description of Terraform remote state stored in S3.
-     *
-     * @param project Project this is associated with.
-     *   The object reference is not cached, so it is configuration-cache safe.
-     */
-    RemoteStateS3(Project project) {
-        super(ProjectOperations.find(project))
-
-        this.attributesProvider = project.provider(new Callable<Map<String, ?>>() {
-            @Override
-            Map<String, ?> call() throws Exception {
-                if (following) {
-                    Map<String, ?> combined = [:]
-                    combined.putAll(following.attributesMap.get())
-                    combined.putAll(tokenProvider.get())
-                    combined
-                } else {
-                    tokenProvider.get()
-                }
-            }
-        })
-    }
-
-    /**
-     * Returns a provider to a map of all S3 backend attributes that could possible be configured.
-     *
-     * @return Map provider
-     *
-     * @since 1.0
-     */
-    @Override
-    Provider<Map<String, ?>> getAttributesMap() {
-        this.attributesProvider
-    }
-
-    /** Make settings follow that of another {@code RemoteStateS3} provider.
-     *
-     * Following a provider will apply those items first and then customise with any local settings.
-     *
-     * @param s3 Another S3 state provider.
-     */
-    void follow(RemoteStateS3Provider s3) {
-        this.following = s3
-    }
-
-    private RemoteStateS3Provider following
-    private final Provider<Map<String, ?>> attributesProvider
 }

@@ -23,10 +23,11 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.stringizeOrNul
 import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.*;
 
 /**
- * Providers of the metaadata describing a remote state S3 configuration.
+ * Providers of the metadata describing a remote state S3 configuration.
  *
- * @since 0.17.0
+ * @deprecated
  */
+@Deprecated
 public interface RemoteStateS3Provider {
     /**
      * The default AWS region where remote state will be stored.
@@ -50,8 +51,8 @@ public interface RemoteStateS3Provider {
      * If DynamoDB is used for state locking, then this contains the ARN of the table.
      *
      * @return DynamoDB table ARN.
-     * @since 0.17.0
      */
+    @Deprecated
     default Provider<String> getDynamoDbLockTableArn() {
         return getAttributesMap().map(stringMap -> stringizeOrNull(stringMap.get(TOKEN_DYNAMODB_TABLE_ARN)));
     }
@@ -60,7 +61,15 @@ public interface RemoteStateS3Provider {
      * Returns a provider to a map of all S3 backend attributes that could possible be configured.
      *
      * @return Map provider
-     * @since 1.0
+     *
+     * @deprecated
      */
+    @Deprecated
     Provider<Map<String, ?>> getAttributesMap();
+
+    @Deprecated
+    void setAssociatedRemoteStateExtension(TerraformRemoteStateExtension trse);
+
+    @Deprecated
+    TerraformRemoteStateExtension getAssociatedRemoteStateExtension();
 }

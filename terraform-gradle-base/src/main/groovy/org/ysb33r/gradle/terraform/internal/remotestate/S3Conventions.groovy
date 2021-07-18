@@ -15,22 +15,12 @@
  */
 package org.ysb33r.gradle.terraform.internal.remotestate
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.TypeChecked
-import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
-import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
-import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
 import org.ysb33r.gradle.terraform.tasks.RemoteStateAwsS3ConfigGenerator
-import org.ysb33r.gradle.terraform.tasks.TerraformInit
-import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.TERRAFORM_INIT
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
@@ -38,135 +28,31 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
  *
  * @author Schalk W. Cronjé
  *
+ * @deprecated
+ *
  * @since 0.8.0
  */
 @CompileStatic
+@Deprecated
 class S3Conventions {
-
-    /**
-     *
-     * @param project Project the task will be attached to.
-     * @param tdds Associated source set
-     * @param remoteS3 S3 remote state provider for the specific source set.
-     */
-    static void taskCreator(
+    static void legacyTaskCreator(
         Project project,
-        TerraformSourceDirectorySet tdds,
-        RemoteStateS3Provider remoteS3
-    ) {
-        String name = tdds.name
-        String configTaskName = newTaskName(name)
-        RemoteStateAwsS3ConfigGenerator configTask = project.tasks.create(
-            configTaskName,
-            RemoteStateAwsS3ConfigGenerator
-        )
-
-        defaultRemoteStateName(name, remoteS3).execute(configTask)
-        terraformInit(configTask).execute((TerraformInit) project.tasks.getByName(
-            taskName(name, TERRAFORM_INIT, null))
-        )
-        addVariables(
-            tdds,
-            configTask.remoteStateName,
-            configTask.awsRegion,
-            configTask.s3BucketName,
-            remoteS3.dynamoDbLockTableArn
-        )
-    }
-
-    @CompileDynamic
-    @TypeChecked
-    static void taskLazyCreator(
-        Project project,
-        TerraformSourceDirectorySet tsds,
-        RemoteStateS3Provider remoteS3
+        TerraformSourceDirectorySet tsds
     ) {
         String name = tsds.name
-        if (!project.tasks.findByName(taskName(name, TERRAFORM_INIT))) {
+        if (!project.tasks.findByName(taskName(name, TERRAFORM_INIT, null))) {
             TerraformConvention.createTasksByConvention(project, tsds)
         }
 
-        String configTaskName = newTaskName(name)
-        TaskProvider<RemoteStateAwsS3ConfigGenerator> configTask = project.tasks.register(
-            configTaskName,
-            RemoteStateAwsS3ConfigGenerator
+        project.tasks.register(
+            newTaskName(name),
+            RemoteStateAwsS3ConfigGenerator,
+            project.tasks.named(TerraformConvention.backendTaskName(name))
         )
-        configTask.configure(defaultRemoteStateName(name, remoteS3))
-        project.tasks.named(taskName(name, TERRAFORM_INIT)).configure(new Action<TerraformInit>() {
-            @Override
-            void execute(TerraformInit init) {
-                terraformInit(configTask.get()).execute(init)
-            }
-        })
-        lazyAddVariablesToSourceSet(configTask, remoteS3).execute(tsds)
     }
 
-    @SuppressWarnings('ClosureAsLastMethodParameter')
-    private static Action<TerraformSourceDirectorySet> lazyAddVariablesToSourceSet(
-        Provider<RemoteStateAwsS3ConfigGenerator> configTask,
-        RemoteStateS3Provider remoteState
-    ) {
-        new Action<TerraformSourceDirectorySet>() {
-            @Override
-            void execute(TerraformSourceDirectorySet tsds) {
-                addVariables(
-                    tsds,
-                    { -> configTask.get().remoteStateName },
-                    { -> configTask.get().awsRegion },
-                    { -> configTask.get().s3BucketName },
-                    remoteState.dynamoDbLockTableArn
-                )
-            }
-        }
-    }
-
+    @Deprecated
     private static String newTaskName(String sourceSetName) {
         "create${taskName(sourceSetName, 's3BackendConfiguration', null).capitalize()}"
-    }
-
-    private static Action<RemoteStateAwsS3ConfigGenerator> defaultRemoteStateName(
-        String sourceSetName,
-        RemoteStateS3Provider s3OnSourceSet
-    ) {
-        new Action<RemoteStateAwsS3ConfigGenerator>() {
-            @Override
-            void execute(RemoteStateAwsS3ConfigGenerator task) {
-                RemoteStateS3 s3 = RemoteStateS3.findExtension(task.project, sourceSetName)
-                String folderName = sourceSetName == DEFAULT_SOURCESET_NAME ?
-                    'tfS3BackendConfiguration' :
-                    "tf${sourceSetName.capitalize()}S3BackendConfiguration"
-
-                task.addTokenProvider(s3OnSourceSet.attributesMap)
-
-                task.destinationDir = ProjectOperations.find(task.project)
-                    .buildDirDescendant("tfRemoteState/${folderName}")
-            }
-        }
-    }
-
-    private static Action<TerraformInit> terraformInit(RemoteStateAwsS3ConfigGenerator configTask) {
-        new Action<TerraformInit>() {
-            @Override
-            void execute(TerraformInit terraformInit) {
-                terraformInit.dependsOn(configTask)
-                terraformInit.backendConfigFile = configTask.backendConfigFile
-            }
-        }
-    }
-
-    static private void addVariables(
-        TerraformSourceDirectorySet tdds,
-        Object name,
-        Object region,
-        Object bucket,
-        Provider<String> lockTable
-    ) {
-        tdds.variables.map(
-            'remote_state',
-            name: name,
-            aws_region: region,
-            aws_bucket: bucket,
-            aws_dynamodb_lock_table_arn: { -> lockTable.getOrElse('') }
-        )
     }
 }

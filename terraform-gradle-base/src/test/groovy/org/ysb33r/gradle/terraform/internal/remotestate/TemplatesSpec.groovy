@@ -16,7 +16,10 @@
 package org.ysb33r.gradle.terraform.internal.remotestate
 
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.testfixtures.ProjectBuilder
+import org.ysb33r.gradle.terraform.remotestate.BackendAttributesSpec
+import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import spock.lang.Specification
 
@@ -33,28 +36,66 @@ class TemplatesSpec extends Specification {
         setup:
         def taskName = 'fooTask'
         def outputFile = project.provider { -> new File(project.projectDir, 'output.tf') }
-        def tokens = [
-            aws_region       : 'REGION',
-            remote_state_name: 'REMOTESTATE',
-            bucket_name      : 'BUCKET'
-        ]
+        def attributes = new FakeAttributes()
 
         when:
         File target = Templates.generateFromTemplate(
             taskName,
             projectOperations,
+            attributes,
             project.objects.property(File),
-            project.provider { ->
+            project.provider { -> new TextTemplates.ReplaceTokens({ ->
                 'bucket = "@@bucket_name@@"'
-            },
+            })},
             outputFile,
             '@@',
             '@@',
-            tokens
+            attributes.tokens
         )
 
         then:
         target.exists()
-        target.text.contains("bucket = \"${tokens.bucket_name}\"")
+        target.text.contains("bucket = \"${attributes.tokens.bucket_name}\"")
+    }
+
+    static class FakeAttributes implements BackendAttributesSpec {
+        @Override
+        String getDefaultTextTemplate() {
+            return null
+        }
+
+        @Override
+        Provider<File> getTemplateFile() {
+            return null
+        }
+
+        @Override
+        Provider<BackendTextTemplate> getTextTemplate() {
+            return null
+        }
+
+        @Override
+        Provider<Map<String, ?>> getTokenProvider() {
+            return null
+        }
+
+        @Override
+        Provider<String> getBeginTokenProvider() {
+            return null
+        }
+
+        @Override
+        Provider<String> getEndTokenProvider() {
+            return null
+        }
+
+        @Override
+        Map<String, Object> getTokens() {
+            [
+                aws_region       : 'REGION',
+                remote_state_name: 'REMOTESTATE',
+                bucket_name      : 'BUCKET'
+            ]
+        }
     }
 }

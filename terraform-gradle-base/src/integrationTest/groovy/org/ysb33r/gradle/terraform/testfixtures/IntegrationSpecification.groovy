@@ -49,7 +49,7 @@ class IntegrationSpecification extends DownloadTestSpecification  {
         File projectDir,
         List<String> taskNames
     ) {
-        List<String> eventualTaskNames = []
+        List<String> eventualTaskNames = ['-s']
         eventualTaskNames.addAll(taskNames)
 
         GradleRunner runner = GradleRunner.create()

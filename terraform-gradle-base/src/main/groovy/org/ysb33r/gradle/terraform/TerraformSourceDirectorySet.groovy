@@ -152,7 +152,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         this.workspaces = createWorkspaceContainer(tempProjectReference, objects)
         def xref = this
-        this.workspaces.all(new Action<Workspace>() {
+        this.workspaces.configureEach(new Action<Workspace>() {
             @Override
             void execute(Workspace ws) {
                 createWorkspaceTasksByConvention(tempProjectReference, xref, ws.name)

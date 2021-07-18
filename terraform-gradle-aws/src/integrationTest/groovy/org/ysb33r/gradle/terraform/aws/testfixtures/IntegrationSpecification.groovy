@@ -47,7 +47,7 @@ class IntegrationSpecification extends Specification {
         File projectDir,
         List<String> taskNames
     ) {
-        List<String> eventualTaskNames = []
+        List<String> eventualTaskNames = ['-s']
         eventualTaskNames.addAll(taskNames)
         eventualTaskNames.add("-Dorg.ysb33r.gradle.terraform.uri=${TERRAFORM_CACHE_DIR.toURI()}".toString())
 

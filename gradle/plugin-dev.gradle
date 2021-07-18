@@ -30,6 +30,8 @@ gradleTest {
     dependsOn jar, ':cacheTerraformBinaries'
     shouldRunAfter 'integrationTest'
     testKitStrategy = directoryPerTest
+
+//    gradleArguments '-d'
 }
 
 license {

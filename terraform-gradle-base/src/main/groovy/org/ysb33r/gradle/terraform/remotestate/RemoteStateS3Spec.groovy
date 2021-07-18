@@ -17,11 +17,12 @@ package org.ysb33r.gradle.terraform.remotestate
 
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
+import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.StringUtils
-
-import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
@@ -31,35 +32,64 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
  *
  * @author Schalk W. Cronjé
  *
- * @since 1.0
+ * @since 0.10
  */
 @CompileStatic
 @SuppressWarnings('MethodCount')
-class RemoteStateS3Spec {
+@Slf4j
+class RemoteStateS3Spec extends AbstractBackendSpec implements RemoteStateS3Provider {
+    public static final String NAME = 's3'
     public static final String TOKEN_BUCKET = 'bucket'
-    public static final String TOKEN_REMOTE_STATE_NAME = 'remote_state_name'
+    public static final String TOKEN_REMOTE_STATE_NAME = 'key'
     public static final String TOKEN_REGION = 'region'
     public static final String TOKEN_ASSUME_ROLE_POLICY = 'assume_role_policy'
+
+    @Deprecated
     public static final String TOKEN_DYNAMODB_TABLE_ARN = 'aws_dynamodb_lock_table_arn'
 
-    RemoteStateS3Spec(ProjectOperations po) {
-        this.projectOperations = po
-        this.tokenProvider = po.provider(new Callable<Map<String, Object>>() {
-            @Override
-            Map<String, ?> call() throws Exception {
-                tokens
-            }
-        })
+    /** Utility method to find this extension on a project.
+     *
+     * @param project Project context
+     * @return Extension after it has been attached.
+     *
+     * @since 0.12
+     */
+    static RemoteStateS3Spec findExtension(Project project) {
+        ((ExtensionAware) TerraformRemoteStateExtension.findExtension(project)).extensions.getByType(RemoteStateS3Spec)
     }
 
     /**
-     * A provider for all the tokens that were set.
+     * Utility to find this extension on a terraform source set.
      *
-     * @return Provider to a map of tokens.
+     * @param project Project context
+     * @param sourceSetName Name of source set.
+     * @return Extension after it has been attached.
+     *
+     * @since 0.12
      */
-    Provider<Map<String, ?>> getTokenProvider() {
-        this.tokenProvider
+    static RemoteStateS3Spec findExtension(Project project, String sourceSetName) {
+        def remote = TerraformRemoteStateExtension.findExtension(project, sourceSetName)
+        ((ExtensionAware) remote).extensions.getByType(RemoteStateS3Spec)
     }
+
+    final String defaultTextTemplate = '''
+bucket = "@@bucket@@"
+key    = "@@key@@"
+region = "@@region@@"
+'''
+
+    RemoteStateS3Spec(ProjectOperations po, ObjectFactory objects) {
+        super(po, objects)
+    }
+
+    /**
+     * Name of backend.
+     *
+     * @return Name of backend.
+     *
+     * @since 0.12
+     */
+    final String name = NAME
 
     /**
      * Sets a token called {@code assume_role_duration_seconds}.
@@ -288,7 +318,7 @@ class RemoteStateS3Spec {
      *
      */
     void setDynamoDbTable(Object value) {
-        token('dynamodb_table_arn', value)
+        token('dynamodb_table', value)
     }
 
     /**
@@ -296,8 +326,9 @@ class RemoteStateS3Spec {
      *
      * @param value Full ARN to DynamoDB lock tabke.
      *
-     *
+     * @deprecated Use {@link #setDynamoDbTable} instead.
      */
+    @Deprecated
     void setDynamoDbLockTableArn(Object value) {
         token(TOKEN_DYNAMODB_TABLE_ARN, value)
     }
@@ -306,7 +337,6 @@ class RemoteStateS3Spec {
      * Sets a token called {@code access_key}.
      *
      * @param value AWS access key
-     *
      *
      */
     void setAccessKey(Object value) {
@@ -436,12 +466,26 @@ class RemoteStateS3Spec {
 
     /** Sets a new remote state name
      *
-     * Sets this as a token called {@code remote_state_name}
+     * Sets this as a token called {@code key}
      *
      * @param rsn Anything that can be lazy-evaluated to a string.
      */
     void setRemoteStateName(Object rsn) {
         token(TOKEN_REMOTE_STATE_NAME, rsn)
+    }
+
+    /** Sets a new remote state name
+     *
+     * Sets this as a token called {@code key}
+     *
+     * Alternative to {@link #setRemoteStateName}.
+     *
+     * @param rsn Anything that can be lazy-evaluated to a string.
+     *
+     * @since 0.12
+     */
+    void setKey(Object rsn) {
+        remoteStateName = rsn
     }
 
     /**
@@ -464,20 +508,46 @@ class RemoteStateS3Spec {
         awsRegion = region
     }
 
-    /**
-     * Reset all tokens
+    /** Make settings follow that of another {@code RemoteStateS3} provider.
      *
-     * @since 1.0
+     * Following a provider will apply those items first and then customise with any local settings.
+     *
+     * @param s3 Another S3 state provider.
+     * @deprecated Do not use this at all. Use {@link TerraformRemoteStateExtension#follow} instead.
      */
-    void clear() {
-        this.tokens.clear()
+    @Deprecated
+    @SuppressWarnings('LineLength')
+    void follow(RemoteStateS3Provider s3) {
+        log.warn("${this.class.canonicalName}.follow is deprecated. Use 'follow' on the ${TerraformRemoteStateExtension.NAME} extension instead")
+        this.trse.follow(s3.associatedRemoteStateExtension)
     }
 
-    private void token(String key, Object value) {
-        this.tokens.put(key, projectOperations.provider { -> StringUtils.stringize(value) })
+    /**
+     * Returns a provider to a map of all S3 backend attributes that could possible be configured.
+     *
+     * @return Map provider
+     *
+     * @deprecated
+     */
+    @Deprecated
+    @Override
+    Provider<Map<String, ?>> getAttributesMap() {
+        log.warn("${this.class.canonicalName}.getAttributesMap is deprecated. Use getTokenProvider instead")
+        tokenProvider
     }
 
-    private final ProjectOperations projectOperations
-    private final Map<String, Object> tokens = [:] as TreeMap<String, Object>
-    private final Provider<Map<String, ?>> tokenProvider
+    @Deprecated
+    @Override
+    void setAssociatedRemoteStateExtension(TerraformRemoteStateExtension trse) {
+        this.trse = trse
+    }
+
+    @Override
+    @Deprecated
+    TerraformRemoteStateExtension getAssociatedRemoteStateExtension() {
+        this.trse
+    }
+
+    @Deprecated
+    private TerraformRemoteStateExtension trse
 }

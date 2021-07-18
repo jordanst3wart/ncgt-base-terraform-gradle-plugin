@@ -11,6 +11,7 @@ variables {
     list 'fooList', 'foo', 'bar' // <3>
     list 'fooList', [ 'foo', 'bar'] // <4>
     file 'filename.tf' // <5>
+    provider { VariablesSpec v -> v.var('foo2','bar2')} // <6>
 }
 ----
 <1> Adds one variable called `foo` or value `bar`. The provided value can be anything that can be lazy-evaluated to a string.
@@ -18,7 +19,7 @@ variables {
 <3> Adds a list called `fooList` with values `foo` and `bar`. THe list entries can be anything that will lazy-evaluate to a string.
 <4> Alternative list format
 <5> Adds a file containing a list of terraform variables. The name can be anything that will lazy evaluate to a string and may be a relative path. The file will be resolved relative to the source set directory.
-
+<6> Adds an additional action that will be called on a `VariablesSpec` instance to provide more variables. These actions will be evaluated before any of the above methods are evaluated.
 
 There a are a number of ways to define these depending on the context.
 

@@ -20,6 +20,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.testfixtures.DownloadTestSpecification
 import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
 import spock.lang.IgnoreIf
+import spock.lang.Unroll
 import spock.util.environment.RestoreSystemProperties
 
 import java.nio.file.FileVisitResult
@@ -30,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributes
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.FAILED
+import static org.gradle.testkit.runner.TaskOutcome.SKIPPED
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
@@ -84,10 +86,6 @@ class TerraformCleanupWorkspacesSpec extends IntegrationSpecification {
     }
 
     void 'Run terraform apply on different workspaces'() {
-//        setup:
-//        File planFile = new File(buildDir, 'tf/main/main.tf.plan')
-//        File textFile = new File(buildDir, "reports/tf/main/main.tf.plan.${json ? 'json' : 'txt'}")
-
         when: 'running with default workspace'
         BuildResult defaultResult = getGradleRunner(['tfApply']).build()
 
@@ -145,9 +143,71 @@ class TerraformCleanupWorkspacesSpec extends IntegrationSpecification {
         BuildResult result = getGradleRunner(['tfApply', 'tfApplyAlpha', 'tfApplyBeta']).build()
 
         then:
+        result.task(':createTfBackendConfiguration').outcome == SKIPPED
         result.task(':tfApply').outcome == SUCCESS
         result.task(':tfApplyAlpha').outcome == SUCCESS
         result.task(':tfApplyBeta').outcome == SUCCESS
+    }
+
+    @Unroll
+    void 'Run apply for multiple workspaces with backend configured #type'() {
+        setup:
+        buildFile << configuration
+
+        when:
+        BuildResult resultInit = getGradleRunner(['tfInit']).build()
+
+        then:
+        resultInit.task(':createTfBackendConfiguration').outcome == SUCCESS
+        resultInit.output.contains('-backend-config')
+
+        when:
+        BuildResult resultApply= getGradleRunner(['tfApply', 'tfApplyAlpha', 'tfApplyBeta']).build()
+
+        then:
+        resultApply.task(':tfApply').outcome == SUCCESS
+        resultApply.task(':tfApplyAlpha').outcome == SUCCESS
+        resultApply.task(':tfApplyBeta').outcome == SUCCESS
+
+        where:
+        type << [ 'on source set', 'globally', 'to use tokens']
+        configuration << [
+            '''
+                terraformSourceSets {
+                    main {
+                        remote {
+                             backend 'local'
+                             local {
+                                textTemplate = 'path=@@path@@'
+                                path 'build/tfstate/project.tfstate'
+                            }
+                        }
+                    }
+                }
+            ''',
+            '''
+                terraform {
+                    remote {
+                        backend 'local'
+                        local {
+                            textTemplate = 'path=@@path@@'
+                            path 'build/tfstate/project.tfstate'
+                        }
+                    }
+                }
+            ''',
+            '''
+                terraform {
+                    remote {
+                        backend 'local'
+                        local {
+                            allTokenTemplate()
+                            path 'build/tfstate/project.tfstate'
+                        }
+                    }
+                }
+            '''
+        ]
     }
 
     GradleRunner getGradleRunner(List<String> tasks) {

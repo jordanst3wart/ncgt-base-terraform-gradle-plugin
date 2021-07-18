@@ -20,43 +20,66 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.internal.remotestate.S3Conventions
-import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3
+import org.ysb33r.gradle.terraform.internal.remotestate.TextTemplates
+import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec
+import org.ysb33r.gradle.terraform.remotestate.TerraformBackendExtension
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
-import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
-import static org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension.findExtension
 
+/**
+ * Adds {@link RemoteStateS3Spec} backends to the global {@link TerraformBackendExtension} and to each of the same
+ * extensions on each {@link TerraformSourceDirectorySet}.
+ *
+ * Sets a remote state name ({@code key} in terraform speak) on each source set's extension.
+ *
+ * Tells the global {@link TerraformBackendExtension} to use {@link RemoteStateS3Spec} as its backend provider.
+ */
 @CompileStatic
 class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
+
     @Override
     void apply(Project project) {
-        project.apply plugin: TerraformRemoteStateBasePlugin
-        RemoteStateS3 globalS3Configuration = ((ExtensionAware) findExtension(project)).extensions.create(
-            RemoteStateS3.NAME,
-            RemoteStateS3,
-            project
-        )
+        project.pluginManager.apply(TerraformPlugin)
 
-        project.extensions.getByType(TerraformSourceSets).all({ TerraformSourceDirectorySet tsds ->
-            def trse = ((ExtensionAware) tsds).extensions.getByType(TerraformRemoteStateExtension)
-            def trseExtenions = (ExtensionAware) trse
-            def remote = trseExtenions.extensions.create(RemoteStateS3.NAME, RemoteStateS3, project)
+        def globalRemote = TerraformRemoteStateExtension.findExtension(project)
+        TerraformBackendExtension.find(project).addBackend(RemoteStateS3Spec.NAME, RemoteStateS3Spec)
+        globalRemote.backend = RemoteStateS3Spec
+        ((ExtensionAware)globalRemote).extensions.getByType(RemoteStateS3Spec).textTemplate =
+            TextTemplates.LegacyS3ReplaceTokens.INSTANCE
 
-            remote.follow(globalS3Configuration)
-            remote.remoteStateName = tsds.name == DEFAULT_SOURCESET_NAME ? trse.prefix :
-                trse.prefix.map { String prefix -> "${prefix}-${tsds.name}" }
-
-            if (LegacyLevel.PRE_4_10) {
-                S3Conventions.taskCreator(project, tsds, remote)
-            } else {
-                S3Conventions.taskLazyCreator(project, tsds, remote)
+        project.extensions.getByType(TerraformSourceSets).configureEach({ TerraformSourceDirectorySet tsds ->
+            TerraformRemoteStateExtension trse = ((ExtensionAware) tsds).extensions
+                .getByType(TerraformRemoteStateExtension)
+            trse.follow(globalRemote)
+            RemoteStateS3Spec s3 = ((ExtensionAware) trse).extensions.getByType(RemoteStateS3Spec)
+            s3.remoteStateName = trse.prefix.map {
+                String baseName = tsds.name == DEFAULT_SOURCESET_NAME ? it : "${it}-${tsds.name}"
+                "${baseName}.tfstate".toString()
             }
         } as Action<TerraformSourceDirectorySet>)
 
-        project.apply plugin: TerraformPlugin
+        handleDeprecatedBehaviour(project)
+    }
+
+    private void handleDeprecatedBehaviour(Project project) {
+        TerraformRemoteStateExtension trseGlobal = ((ExtensionAware) project.extensions.getByType(TerraformExtension))
+            .extensions
+            .getByType(TerraformRemoteStateExtension)
+        RemoteStateS3Spec s3global = ((ExtensionAware) trseGlobal).extensions.getByType(RemoteStateS3Spec)
+        s3global.associatedRemoteStateExtension = trseGlobal
+
+        project.extensions.getByType(TerraformSourceSets).configureEach({ TerraformSourceDirectorySet tsds ->
+            S3Conventions.legacyTaskCreator(project, tsds)
+
+            TerraformRemoteStateExtension trse = ((ExtensionAware) tsds).extensions
+                .getByType(TerraformRemoteStateExtension)
+            RemoteStateS3Spec s3 = ((ExtensionAware) trse).extensions.getByType(RemoteStateS3Spec)
+            s3.associatedRemoteStateExtension = trse
+        } as Action<TerraformSourceDirectorySet>)
     }
 }

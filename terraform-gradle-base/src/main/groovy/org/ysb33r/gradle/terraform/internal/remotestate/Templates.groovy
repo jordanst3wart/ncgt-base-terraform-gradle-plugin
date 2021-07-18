@@ -21,6 +21,8 @@ import org.gradle.api.Action
 import org.gradle.api.file.CopySpec
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
+import org.ysb33r.gradle.terraform.remotestate.BackendAttributesSpec
+import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.MapUtils
 import org.ysb33r.grolifant.api.v5.FileUtils
@@ -44,8 +46,9 @@ class Templates {
     static File generateFromTemplate(
         String taskName,
         ProjectOperations projectOperations,
+        BackendAttributesSpec backendAttributes,
         Provider<File> templateFile,
-        Provider<String> textTemplate,
+        Provider<BackendTextTemplate> textTemplate,
         Provider<File> outputFile,
         String beginToken,
         String endToken,
@@ -57,7 +60,7 @@ class Templates {
         }
 
         File template = templateFile.present ? templateFile.get() :
-            useStringTemplate(projectOperations, taskName, textTemplate.get())
+            useStringTemplate(projectOperations, taskName, textTemplate.get(), backendAttributes)
 
         File backendConfigFile = outputFile.get()
         def configGenerator = new Action<CopySpec>() {
@@ -82,13 +85,14 @@ class Templates {
     private static File useStringTemplate(
         ProjectOperations projectOperations,
         String filenamePrefix,
-        String textTemplate
+        BackendTextTemplate textTemplate,
+        BackendAttributesSpec attributes
     ) {
         File target = projectOperations
             .buildDirDescendant("tmp/${FileUtils.toSafeFileName(filenamePrefix)}.template.tf")
             .get()
         target.parentFile.mkdirs()
-        target.text = textTemplate
+        target.text = textTemplate.template(attributes)
         target
     }
 }

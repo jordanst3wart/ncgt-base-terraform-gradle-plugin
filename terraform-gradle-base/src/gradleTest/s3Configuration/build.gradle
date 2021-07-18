@@ -15,10 +15,10 @@ terraform {
 }
 
 task runGradleTest {
-    dependsOn createTfS3BackendConfiguration
+    dependsOn createTfBackendConfiguration
 
     doLast {
-        def configFile = file('build/tfRemoteState/tfS3BackendConfiguration/terraform-s3-backend-config.tf')
+        def configFile = file('build/tfRemoteState/tfBackendConfiguration/terraform-backend-config.tf')
         assert configFile.exists()
 
         def lines = configFile.readLines()
