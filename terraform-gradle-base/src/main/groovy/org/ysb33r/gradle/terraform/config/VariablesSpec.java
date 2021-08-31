@@ -44,7 +44,7 @@ public interface VariablesSpec {
      *
      * @param name Name of variable.
      * @param map  Lazy-evaluated forms of variable.
-     *             Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues(Map < String, Object >)}
+     *             Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues}
      *             is accepted.
      */
     void map(Map<String, ?> map, final String name);
@@ -67,7 +67,7 @@ public interface VariablesSpec {
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     *             {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
+     *             {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize} is accepted.
      */
     void list(final String name, Object val1, Object... vals);
 
@@ -78,7 +78,7 @@ public interface VariablesSpec {
      *
      * @param name Name of variable.
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     *             {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
+     *             {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize} is accepted.
      */
     void list(final String name, Iterable<?> vals);
 
@@ -86,7 +86,7 @@ public interface VariablesSpec {
      * Adds a name of a file containing {@code terraform} variables.
      *
      * @param fileName Files that can be converted via
-     *                 {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Object o)} and resolved relative to
+     *                 {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize} and resolved relative to
      *                 the appropriate {@link TerraformSourceDirectorySet}.
      */
     void file(final Object fileName);

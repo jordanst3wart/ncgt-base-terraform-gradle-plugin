@@ -23,8 +23,6 @@ import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.StringUtils
 
-import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
-
 /** General utilities for Terraform.
  *
  * @since 0.2
@@ -156,8 +154,8 @@ class TerraformUtils {
      * @since 1.0
      */
     static String escapedList(Iterable<Object> items) {
-        String joinedList = Transform.toList(StringUtils.stringize(items)) { String it ->
-            "\"${it}\"".toString()
+        String joinedList = Transform.toList(items as Collection) { Object it ->
+            escapeOneItem(it)
         }.join(COMMA_SEPARATED)
         "[${joinedList}]"
     }
@@ -171,10 +169,45 @@ class TerraformUtils {
      * @since 1.0
      */
     static String escapedMap(Map<String, ?> items) {
-        String joinedMap = Transform.toList(stringizeValues(items)) { Map.Entry<String, String> entry ->
-            "\"${entry.key}\" : \"${entry.value}\"".toString()
+        String joinedMap = Transform.toList(items) { Map.Entry<String, ?> entry ->
+            "\"${entry.key}\" = ${escapeOneItem(entry.value)}".toString()
         }.join(COMMA_SEPARATED)
         "{${joinedMap}}".toString()
+    }
+
+    /**
+     * Escaped a single item.
+     *
+     * @param item Item to escape
+     * @param innerLevel Whether the escaped item is actually nested.
+     * @return Escaped item
+     *
+     * @since 0.12
+     */
+    static String escapeOneItem(Object item, boolean innerLevel = true) {
+        switch (item) {
+            case Map:
+                return escapedMap((Map) item)
+            case Iterable:
+                return escapedList((Iterable) item)
+            case Number:
+            case Boolean:
+                return StringUtils.stringize(item)
+            default:
+                return innerLevel ?
+                    "\"${escapeQuotesInString(StringUtils.stringize(item))}\"".toString() :
+                    escapeQuotesInString(StringUtils.stringize(item))
+        }
+    }
+
+    /**
+     * Escapes any Terraform string quotes.
+     *
+     * @param item String to escape
+     * @return Escape string.
+     */
+    static String escapeQuotesInString(String item) {
+        item.replaceAll(~/"/, '\\\\"')
     }
 
     /**

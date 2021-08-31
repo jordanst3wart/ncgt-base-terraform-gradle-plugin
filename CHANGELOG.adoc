@@ -8,6 +8,10 @@
 
 * {issue}60[#60] - Customise backend by source set.
 
+=== Bug fixes
+
+* {issue}62[#62] - Escaped collections within collections of Terraform variables.
+
 === Deprecations
 
 * `RemoteStateAwsS3ConfigGenerator` has been deprecated in favour of RemoteStateConfigGenerator. Instances of task itself will be empty with a direct dependency on an instance of `RemoteStateConfigGenerator`. Trying to configure the task will display a warning.

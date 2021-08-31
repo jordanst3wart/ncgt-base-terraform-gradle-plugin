@@ -28,6 +28,7 @@ import javax.inject.Inject
 import java.nio.file.Path
 import java.util.stream.Collectors
 
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
@@ -155,7 +156,7 @@ class Variables implements TerraformTaskConfigExtension,
         varsFilesPair.clear()
     }
 
-    /** Evaluate all provided and loca; variables and convert them to Terraform-compliant strings, ready to be
+    /** Evaluate all provided and local variables and convert them to Terraform-compliant strings, ready to be
      * passed to command-line.
      *
      * Provided variables will be evaluated first, so that any local definitions can override them.
@@ -265,7 +266,7 @@ class Variables implements TerraformTaskConfigExtension,
             case List:
                 return escapedList((Iterable) variable)
             default:
-                return StringUtils.stringize(variable)
+                return escapeOneItem(variable, false)
         }
     }
 
