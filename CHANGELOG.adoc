@@ -3,7 +3,7 @@
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
 == v0.12.0
-
+// tag::changelog[]
 === Features
 
 * {issue}60[#60] - Customise backend by source set.
@@ -29,9 +29,9 @@
 
 * Default version of Terraform is 1.0.2.
 
+// end::changelog[]
 == v0.11.0 / v0.11.1 / v0.11.2
 
-// tag::changelog[]
 === Features
 
 * {issue}11[#11] - `tfStatePull` task implemented
@@ -62,7 +62,6 @@ $ {issue}51[#51] - Terraform is attempting to create log content in systemroot
 * {issue}52[#52] - Added usage example for `getRawOutputVariables`.
 * Default version of terraform is `1.0.0`.
 
-// end::changelog[]
 
 == v0.10.0
 

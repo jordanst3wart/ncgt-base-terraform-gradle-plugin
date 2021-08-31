@@ -26,15 +26,14 @@ tasks.register('groovydoc', Groovydoc) {
     docTitle = "Jobble Gradle Plugin Suite Combined API ${project.version}"
     includePrivate = false
     groovyClasspath = configurations.groovyDoc
-    classpath= configurations.groovyDoc
+    classpath = configurations.groovyDoc
 //    mustRunAfter gitPublishReset
 
     // A really dirty hack
-    ['terraform-gradle-base','terraform-gradle-aws'].each { String other ->
+    ['terraform-gradle-base', 'terraform-gradle-aws'].each { String other ->
         source rootProject.file("${other}/src/main/groovy")
     }
 }
-
 
 
 task landingPage(type: org.asciidoctor.gradle.jvm.AsciidoctorTask)
@@ -119,7 +118,10 @@ asciidoctor {
         'minimum-gradle-version': gradleTestMinVersion,
         includetopdir: project(':terraform-gradle-base').projectDir.absolutePath,
         'gradle-javadoc': "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
-        'gradle-dsl': "https://docs.gradle.org/${gradle.gradleVersion}/dsl"
+        'gradle-dsl': "https://docs.gradle.org/${gradle.gradleVersion}/dsl",
+        issue: 'https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/',
+        mr: 'https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/'
+
 }
 
 task installDocs(type: Copy) {
