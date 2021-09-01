@@ -16,20 +16,111 @@
 package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
+import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.grolifant.api.v4.StringUtils
+
+import java.nio.file.Path
+import java.util.stream.Collectors
+
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
 
 /** Keeps a collection of variables and variable files.
- *
  *
  * @since 0.2
  */
 @CompileStatic
 class VarsFilesPair {
+    /**
+     * Terraform variables.
+     *
+     * Key is the name of the variable.
+     *
+     * Value can be a map, collection, boolean, number or anything convertible to a string.
+     */
     final Map<String, Object> vars = [:]
+
+    /**
+     * List of filenames or relative paths to a terraform source set.
+     */
     final List<Object> files = []
+
+    /**
+     * Additional variables from other sources.
+     *
+     * @since 0.12
+     */
+    final List<Action<VariablesSpec>> additionalVariables = []
 
     void clear() {
         this.vars.clear()
         this.files.clear()
+        this.additionalVariables.clear()
+    }
+
+    /**
+     * Copy these settings to another instance.
+     *
+     * @param target Target instance
+     *
+     * @since 0.12
+     */
+    void copyTo(VarsFilesPair target) {
+        target.files.addAll(this.files)
+        target.vars.putAll(this.vars)
+        target.additionalVariables.addAll(this.additionalVariables)
+    }
+
+    /**
+     * Returns the command-line representation.
+     *
+     * @param root Root path for resolving file paths.
+     *
+     * @return A list of terraform command-line arguments related to variables and file-based variables.
+     *
+     * @since 0.12
+     */
+    List<String> commandLineArgs(Path root) {
+        final List<String> varList = escapedVars.collectMany { String k, String v ->
+            ['-var', "$k=$v".toString()]
+        } as List<String>
+        varList.addAll(fileNames.stream().map { String fileName ->
+            "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
+        }.collect(Collectors.toList()) as List<String>)
+        varList
+    }
+
+    /** Evaluate all provided and local variables and convert them to Terraform-compliant strings, ready to be
+     * passed to command-line.
+     *
+     * Provided variables will be evaluated first, so that any local definitions can override them.
+     *
+     * <p> Calling this will resolve all lazy-evaluated entries.
+     *
+     * @return Map where each key is the name of a variable. Each value is correctly formatted according to
+     *   the kind of variable.
+     *
+     * @since 0.12
+     */
+    Map<String, String> getEscapedVars() {
+        Map<String, String> hclMap = escapeProvidedVars()
+        hclMap.putAll(escapeLocalVars())
+        hclMap
+    }
+
+    /** List of file names containing Terraform variables.
+     *
+     * Filenames can contain relative paths.
+     *
+     * @return List of filenames.
+     *
+     * @since 0.12
+     */
+    Set<String> getFileNames() {
+        StringUtils.stringize(this.files).toSet()
     }
 
     /**
@@ -39,7 +130,79 @@ class VarsFilesPair {
      */
     @Override
     String toString() {
-        "vars=${vars.toString()}, files=${files.toString()}"
+        "vars=${vars.toString()}, files=${files.toString()}, additionalsCount=${additionalVariables.size()}"
+    }
+
+    private Map<String, String> escapeProvidedVars() {
+        def vars = new IntermediateVariableSpec(new VarsFilesPair())
+        for (Action<VariablesSpec> additional : this.additionalVariables) {
+            additional.execute(vars)
+        }
+        vars.vfp.escapeLocalVars()
+    }
+
+    private Map<String, String> escapeLocalVars() {
+        Map<String, String> hclMap = [:]
+        for (String key in this.vars.keySet()) {
+            hclMap[key] = escapeObject(this.vars[key])
+        }
+        hclMap
+    }
+
+    private String escapeObject(Object variable) {
+        switch (variable) {
+            case Provider:
+                return escapeObject(((Provider) variable).get())
+            case Map:
+                return escapedMap((Map) variable)
+            case List:
+                return escapedList((Iterable) variable)
+            default:
+                return escapeOneItem(variable, false)
+        }
+    }
+
+    private static class IntermediateVariableSpec implements VariablesSpec {
+        final VarsFilesPair vfp
+
+        IntermediateVariableSpec(VarsFilesPair vfp) {
+            this.vfp = vfp
+        }
+
+        @Override
+        void var(String name, Object value) {
+            vfp.vars.put(name, value)
+        }
+
+        @Override
+        void map(Map<String, ?> map, String name) {
+            vfp.vars.put(name, map)
+        }
+
+        @Override
+        void map(String name, Provider<Map<String, ?>> mapProvider) {
+            vfp.vars.put(name, mapProvider)
+        }
+
+        @Override
+        void list(String name, Object val1, Object... vals) {
+            vfp.vars.put(name, [val1] + vals.toList())
+        }
+
+        @Override
+        void list(String name, Iterable<?> vals) {
+            vfp.vars.put(name, vals)
+        }
+
+        @Override
+        void file(Object fileName) {
+            vfp.files.add(fileName)
+        }
+
+        @Override
+        void provider(Action<VariablesSpec> additionalVariables) {
+            vfp.additionalVariables.add(additionalVariables)
+        }
     }
 }
 

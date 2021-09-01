@@ -11,6 +11,7 @@
 === Bug fixes
 
 * {issue}62[#62] - Escaped collections within collections of Terraform variables.
+* {issue}63[#63] - Add `remote_state` map variable when `remoteStateVar` is set to `true`.
 
 === Deprecations
 

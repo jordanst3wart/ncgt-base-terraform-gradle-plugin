@@ -234,7 +234,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         execSpec
     }
 
-    /** Add specific command-line options for the command.
      /** Add specific command-line options for the command.
      *
      * @param execSpec

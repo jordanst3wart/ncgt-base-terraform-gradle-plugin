@@ -27,11 +27,8 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 
 import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.FileVisitResult.CONTINUE
 
-class IntegrationSpecification extends DownloadTestSpecification  {
+class IntegrationSpecification extends DownloadTestSpecification {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final boolean IS_KOTLIN_DSL = false
     public static final boolean IS_GROOVY_DSL = true

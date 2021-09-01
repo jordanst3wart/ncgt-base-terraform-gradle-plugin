@@ -172,7 +172,7 @@ class TerraformExtension extends AbstractToolExtension {
 
     /** Returns all terraform variables and descriptions of variables within files within the specific context
      *
-     * If this is a project extension only return the global varibale definitions are returned.
+     * If this is a project extension only the global variable definitions are returned.
      *
      * If this is a task extension and globals are not ignored, then return a combination of the global variables,
      * the source set variables and the local task extension variables.
@@ -189,23 +189,18 @@ class TerraformExtension extends AbstractToolExtension {
     Variables getAllVariables() {
         if (task) {
             AbstractTerraformTask terraformTask = (AbstractTerraformTask) task
-            Variables vars = (Variables) extContainer.getByType(VariablesSpec)
+            Variables variablesOnTask = (Variables) extContainer.getByType(VariablesSpec) // task.terraform.variables
             VarsFilesPair varsFilesPair = new VarsFilesPair()
 
-            if (!secondLevelExtension(vars, IgnoreGlobal).ignore) {
-                VarsFilesPair global = globalExtension.allVariables.allVars
-                varsFilesPair.files.addAll(global.files)
-                varsFilesPair.vars.putAll(global.vars)
+            if (!secondLevelExtension(variablesOnTask, IgnoreGlobal).ignore) {
+                globalExtension.allVariables.allVars.copyTo(varsFilesPair)
             }
 
-            if (!secondLevelExtension(vars, IgnoreSourceSet).ignore) {
-                VarsFilesPair ssvfp = ((Variables) (terraformTask.sourceSet.variables)).allVars
-                varsFilesPair.files.addAll(ssvfp.files)
-                varsFilesPair.vars.putAll(ssvfp.vars)
+            if (!secondLevelExtension(variablesOnTask, IgnoreSourceSet).ignore) {
+                ((Variables) (terraformTask.sourceSet.variables)).allVars.copyTo(varsFilesPair)
             }
 
-            varsFilesPair.files.addAll(vars.allVars.files)
-            varsFilesPair.vars.putAll(vars.allVars.vars)
+            variablesOnTask.allVars.copyTo(varsFilesPair)
 
             new Variables(varsFilesPair, terraformTask.sourceDir)
         } else {

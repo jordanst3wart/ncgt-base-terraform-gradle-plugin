@@ -26,7 +26,6 @@ import org.ysb33r.grolifant.api.v4.StringUtils
 
 import javax.inject.Inject
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
@@ -62,8 +61,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @since 0.2
      */
     Variables(VarsFilesPair vfp, Provider<File> rootFileResolver) {
-        this.varsFilesPair.files.addAll(vfp.files)
-        this.varsFilesPair.vars.putAll(vfp.vars)
+        vfp.copyTo(this.varsFilesPair)
         this.rootDirResolver = rootFileResolver
     }
 
@@ -167,9 +165,10 @@ class Variables implements TerraformTaskConfigExtension,
      *   the kind of variable.
      */
     Map<String, String> getEscapedVars() {
-        Map<String, String> hclMap = escapeProvidedVars()
-        hclMap.putAll(escapeLocalVars())
-        hclMap
+        this.varsFilesPair.escapedVars
+//        Map<String, String> hclMap = escapeProvidedVars()
+//        hclMap.putAll(escapeLocalVars())
+//        hclMap
     }
 
     /** List of file names containing Terraform variables.
@@ -179,7 +178,8 @@ class Variables implements TerraformTaskConfigExtension,
      * @return List of filenames.
      */
     Set<String> getFileNames() {
-        StringUtils.stringize(this.varsFilesPair.files).toSet()
+       this.varsFilesPair.fileNames
+//        StringUtils.stringize(this.varsFilesPair.files).toSet()
     }
 
     @Override
@@ -204,13 +204,14 @@ class Variables implements TerraformTaskConfigExtension,
             )
         }
 
-        final List<String> varList = escapedVars.collectMany { String k, String v ->
-            ['-var', "$k=$v".toString()]
-        } as List<String>
-        varList.addAll(fileNames.stream().map { String fileName ->
-            "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
-        }.collect(Collectors.toList()) as List<String>)
-        varList
+        this.varsFilesPair.commandLineArgs(root)
+//        final List<String> varList = escapedVars.collectMany { String k, String v ->
+//            ['-var', "$k=$v".toString()]
+//        } as List<String>
+//        varList.addAll(fileNames.stream().map { String fileName ->
+//            "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
+//        }.collect(Collectors.toList()) as List<String>)
+//        varList
     }
 
     @Override
@@ -220,7 +221,7 @@ class Variables implements TerraformTaskConfigExtension,
 
     /** Returns a description of the files and variables
      *
-     * @return Files containing variables as well as explicitly declared variabled/
+     * @return Files containing variables as well as explicitly declared variables.
      *
      * @since 0.2
      */
@@ -238,41 +239,41 @@ class Variables implements TerraformTaskConfigExtension,
      */
     @Override
     void provider(Action<VariablesSpec> additionalVariables) {
-        this.additionalVariables.add(additionalVariables)
+        this.varsFilesPair.additionalVariables.add(additionalVariables)
     }
 
-    private Map<String, String> escapeProvidedVars() {
-        def vars = new Variables(new VarsFilesPair(), rootDirResolver)
-        for (Action<VariablesSpec> additional : this.additionalVariables) {
-            additional.execute(vars)
-        }
-        vars.escapeLocalVars()
-    }
-
-    private Map<String, String> escapeLocalVars() {
-        Map<String, String> hclMap = [:]
-        for (String key in this.varsFilesPair.vars.keySet()) {
-            hclMap[key] = escapeObject(this.varsFilesPair.vars[key])
-        }
-        hclMap
-    }
-
-    private String escapeObject(Object variable) {
-        switch (variable) {
-            case Provider:
-                return escapeObject(((Provider) variable).get())
-            case Map:
-                return escapedMap((Map) variable)
-            case List:
-                return escapedList((Iterable) variable)
-            default:
-                return escapeOneItem(variable, false)
-        }
-    }
+//    private Map<String, String> escapeProvidedVars() {
+//        def vars = new Variables(new VarsFilesPair(), rootDirResolver)
+//        for (Action<VariablesSpec> additional : this.varsFilesPair.additionalVariables) {
+//            additional.execute(vars)
+//        }
+//        vars.escapeLocalVars()
+//    }
+//
+//    private Map<String, String> escapeLocalVars() {
+//        Map<String, String> hclMap = [:]
+//        for (String key in this.varsFilesPair.vars.keySet()) {
+//            hclMap[key] = escapeObject(this.varsFilesPair.vars[key])
+//        }
+//        hclMap
+//    }
+//
+//    private String escapeObject(Object variable) {
+//        switch (variable) {
+//            case Provider:
+//                return escapeObject(((Provider) variable).get())
+//            case Map:
+//                return escapedMap((Map) variable)
+//            case List:
+//                return escapedList((Iterable) variable)
+//            default:
+//                return escapeOneItem(variable, false)
+//        }
+//    }
 
     private final VarsFilesPair varsFilesPair = new VarsFilesPair()
     private final Provider<File> rootDirResolver
-    private final List<Action<VariablesSpec>> additionalVariables = []
+//    private final List<Action<VariablesSpec>> additionalVariables = []
 
     @Inject
     Project project

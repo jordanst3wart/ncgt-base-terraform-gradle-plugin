@@ -34,14 +34,16 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
     public static final String FILE_CONTENTS = 'foo!!'
 
     File srcDir
-    File destFile
+    File terraformApplyOutputFile
+    File terraformSourceFile
 
     void setup() {
         srcDir = new File(projectDir, 'src/tf/main')
         srcDir.mkdirs()
-        destFile = createTF()
+        terraformSourceFile = new File(srcDir, 'init.tf')
+        terraformApplyOutputFile = createTF()
 
-        String path = destFile.canonicalPath
+        String path = terraformApplyOutputFile.canonicalPath
 
         buildFile.text = """
         plugins {
@@ -54,10 +56,6 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
                     var 'foofile', '${DownloadTestSpecification.OS.windows ? path.replaceAll(~/\x5C/, '/') : path}'
                 }
             }
-        }
-
-        tfApply {
-            logProgress = true
         }
         """
     }
@@ -111,7 +109,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
         then:
         result.task(':tfApply').outcome == SUCCESS
-        destFile.text == FILE_CONTENTS
+        terraformApplyOutputFile.text == FILE_CONTENTS
     }
 
     void 'Run terraform state pull after apply'() {
@@ -174,7 +172,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
         then:
         result.task(':tfDestroy').outcome == SUCCESS
-        !destFile.exists()
+        !terraformApplyOutputFile.exists()
     }
 
     void 'tfApply should not run again when tfDestroy is called'() {
@@ -182,7 +180,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         getGradleRunner(['tfApply']).build()
 
         and: 'Sources are modified'
-        destFile << '\n\n\n'
+        terraformApplyOutputFile << '\n\n\n'
 
         and: 'tfDestroy is called without tfApply preceding it'
         BuildResult result = getGradleRunner(['tfDestroy', '--approve']).build()
@@ -210,6 +208,32 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         result2.output.contains('-replace=local_file.foo')
     }
 
+    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/63')
+    void 'tfPlan should add remote_state to command-line if remoteStateVarProvider is set'() {
+        setup:
+        terraformSourceFile << '''
+        variable remote_state {
+            type = map(string)
+        }
+        '''
+
+        buildFile << '''
+        terraformSourceSets {
+            main {
+                remote {
+                    remoteStateVar = true
+                }
+            }
+        }
+        '''
+
+        when: 'Infrastructure is applied'
+        BuildResult result1 = getGradleRunner(['tfPlan', '-i']).build()
+
+        then:
+        result1.task(':tfPlan').outcome == SUCCESS
+    }
+
     GradleRunner getGradleRunner(List<String> tasks) {
         getGradleRunner(
             IS_GROOVY_DSL,
@@ -224,7 +248,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
     File createTF() {
         File destFile = new File(testProjectDir.root, 'TF/foo.bar')
-        new File(srcDir, 'init.tf').text = """
+        terraformSourceFile.text = """
         terraform {
               required_providers {
                 local = {
