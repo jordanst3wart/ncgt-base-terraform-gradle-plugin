@@ -476,7 +476,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         for (String ws : workspaceNames) {
             this.workspaces.create(ws)
 
-            outputVariablesProviderFunction.apply(name, ws)
+            this.outputVariablesProviderMap[ws] = outputVariablesProviderFunction.apply(name, ws)
         }
     }
 

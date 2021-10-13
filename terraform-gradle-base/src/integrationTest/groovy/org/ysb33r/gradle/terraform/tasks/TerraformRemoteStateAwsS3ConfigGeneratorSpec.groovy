@@ -35,7 +35,7 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
         srcDir.mkdirs()
         outputFile = new File(projectDir, 'build/tfRemoteState/tfBackendConfiguration/terraform-backend-config.tf')
 
-        new File(projectDir,'settings.gradle').text = "rootProject.name = '${PROJECT_NAME}'"
+        new File(projectDir, 'settings.gradle').text = "rootProject.name = '${PROJECT_NAME}'"
         buildFile.text = '''
         plugins {
             id 'org.ysb33r.terraform.remotestate.s3'
@@ -119,7 +119,6 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
             lines.contains('workspace_key_prefix = "ws"')
         }
     }
-
 
     @Deprecated
     void 'Create S3 configuration file via legacy task'() {

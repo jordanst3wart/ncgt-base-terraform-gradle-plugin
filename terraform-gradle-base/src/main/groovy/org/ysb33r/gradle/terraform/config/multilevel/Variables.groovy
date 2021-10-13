@@ -22,14 +22,10 @@ import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-import org.ysb33r.grolifant.api.v4.StringUtils
 
 import javax.inject.Inject
 import java.nio.file.Path
 
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 /** A configuration building block for tasks that need to pass variables to
@@ -166,9 +162,6 @@ class Variables implements TerraformTaskConfigExtension,
      */
     Map<String, String> getEscapedVars() {
         this.varsFilesPair.escapedVars
-//        Map<String, String> hclMap = escapeProvidedVars()
-//        hclMap.putAll(escapeLocalVars())
-//        hclMap
     }
 
     /** List of file names containing Terraform variables.
@@ -178,8 +171,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @return List of filenames.
      */
     Set<String> getFileNames() {
-       this.varsFilesPair.fileNames
-//        StringUtils.stringize(this.varsFilesPair.files).toSet()
+        this.varsFilesPair.fileNames
     }
 
     @Override
@@ -205,13 +197,6 @@ class Variables implements TerraformTaskConfigExtension,
         }
 
         this.varsFilesPair.commandLineArgs(root)
-//        final List<String> varList = escapedVars.collectMany { String k, String v ->
-//            ['-var', "$k=$v".toString()]
-//        } as List<String>
-//        varList.addAll(fileNames.stream().map { String fileName ->
-//            "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
-//        }.collect(Collectors.toList()) as List<String>)
-//        varList
     }
 
     @Override
@@ -242,38 +227,8 @@ class Variables implements TerraformTaskConfigExtension,
         this.varsFilesPair.additionalVariables.add(additionalVariables)
     }
 
-//    private Map<String, String> escapeProvidedVars() {
-//        def vars = new Variables(new VarsFilesPair(), rootDirResolver)
-//        for (Action<VariablesSpec> additional : this.varsFilesPair.additionalVariables) {
-//            additional.execute(vars)
-//        }
-//        vars.escapeLocalVars()
-//    }
-//
-//    private Map<String, String> escapeLocalVars() {
-//        Map<String, String> hclMap = [:]
-//        for (String key in this.varsFilesPair.vars.keySet()) {
-//            hclMap[key] = escapeObject(this.varsFilesPair.vars[key])
-//        }
-//        hclMap
-//    }
-//
-//    private String escapeObject(Object variable) {
-//        switch (variable) {
-//            case Provider:
-//                return escapeObject(((Provider) variable).get())
-//            case Map:
-//                return escapedMap((Map) variable)
-//            case List:
-//                return escapedList((Iterable) variable)
-//            default:
-//                return escapeOneItem(variable, false)
-//        }
-//    }
-
     private final VarsFilesPair varsFilesPair = new VarsFilesPair()
     private final Provider<File> rootDirResolver
-//    private final List<Action<VariablesSpec>> additionalVariables = []
 
     @Inject
     Project project

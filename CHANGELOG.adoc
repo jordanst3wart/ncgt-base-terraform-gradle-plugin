@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== v0.12.0
+== v0.12.0 - v0.12.2
 // tag::changelog[]
 === Features
 
@@ -12,6 +12,7 @@
 
 * {issue}62[#62] - Escaped collections within collections of Terraform variables.
 * {issue}63[#63] - Add `remote_state` map variable when `remoteStateVar` is set to `true`.
+* {issue}66[#66] - `getRawOutputVariables` does not pick up workspaces.
 
 === Deprecations
 

@@ -114,10 +114,10 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
     void 'Run terraform state pull after apply'() {
         given:
-        File stateFile = new File(srcDir,'foo.tfstate')
+        File stateFile = new File(srcDir, 'foo.tfstate')
 
         when:
-        BuildResult result = getGradleRunner(['tfApply', 'tfStatePull', '--state-file','foo.tfstate']).build()
+        BuildResult result = getGradleRunner(['tfApply', 'tfStatePull', '--state-file', 'foo.tfstate']).build()
 
         then:
         result.task(':tfStatePull').outcome == SUCCESS

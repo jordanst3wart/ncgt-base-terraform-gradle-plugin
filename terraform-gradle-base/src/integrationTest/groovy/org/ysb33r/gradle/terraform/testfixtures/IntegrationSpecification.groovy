@@ -94,7 +94,7 @@ class IntegrationSpecification extends DownloadTestSpecification {
 
                 @Override
                 FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                    println "Failed to visit: ${file}, because ${exc.message}"
+                    println "Failed to visit: ${file}, because ${exc.class.canonicalName}:${exc.message}."
                     CONTINUE
                 }
 

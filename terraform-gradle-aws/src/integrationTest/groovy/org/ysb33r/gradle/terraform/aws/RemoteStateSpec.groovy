@@ -57,6 +57,6 @@ class RemoteStateSpec extends IntegrationSpecification {
         result.task(":${taskName}").outcome == SUCCESS
 
         where:
-        gradleVersion << ['4.10.3' ,'5.6.3']
+        gradleVersion << ['4.10.3', '5.6.3']
     }
 }

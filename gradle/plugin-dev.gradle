@@ -10,6 +10,7 @@ dependencies {
     api "org.ysb33r.gradle:grolifant40:${grolifantVer}"
     api "org.ysb33r.gradle:grolifant50:${grolifantVer}"
     api "org.ysb33r.gradle:grolifant60:${grolifantVer}"
+    api "org.ysb33r.gradle:grolifant70:${grolifantVer}"
 
     testImplementation("org.spockframework:spock-core:${spockMainVer}-groovy-${spockGroovyVer}") {
         exclude module: 'groovy-all'
@@ -17,7 +18,7 @@ dependencies {
 
     testImplementation localGroovy()
     testImplementation gradleTestKit()
-    testImplementation "org.ysb33r.gradle:grolifant60:${grolifantVer}"
+    testImplementation "org.ysb33r.gradle:grolifant70:${grolifantVer}"
 }
 
 gradleTest {
