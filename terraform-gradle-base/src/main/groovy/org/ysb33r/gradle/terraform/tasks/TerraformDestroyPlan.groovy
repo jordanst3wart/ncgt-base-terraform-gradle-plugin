@@ -53,10 +53,16 @@ class TerraformDestroyPlan extends TerraformPlan {
     }
 
     @Override
+    Provider<File> getVariablesFile() {
+        projectOperations.providerTools.map(super.variablesFile) {
+            new File(it.parentFile, "_d_.${workspaceName}.tfVars")
+        }
+    }
+
+    @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.cmdArgs '-destroy'
         execSpec
     }
-
 }

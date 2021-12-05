@@ -407,7 +407,10 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      * @param execSpec ExecSpec to configure
      * @param optionName Name of option
      * @param value Boolean value
+     *
+     * @deprecated
      */
+    @Deprecated
     protected void addBooleanCmdLineOption(TerraformExecSpec execSpec, final String optionName, boolean value) {
         execSpec.cmdArgs "-${optionName}=${value ? 'true' : 'false'}"
     }
@@ -416,7 +419,10 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      *
      * @param execSpec Specification to be configured.
      * @param vars Map of variables to be added.
+     *
+     * @deprecated
      */
+    @Deprecated
     protected void addVariablesToCmdLine(TerraformExecSpec execSpec, final Map<String, String> vars) {
         vars.each { String key, String val ->
             execSpec.cmdArgs '-var', "${key}=${val}"
@@ -427,7 +433,10 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      *
      * @param execSpec Specification to be configured
      * @param collection Collection of files containing variables.
+     *
+     * @deprecated
      */
+    @Deprecated
     protected void addVariableFilesToCmdLine(TerraformExecSpec execSpec, final FileCollection collection) {
         for (File f in collection.files) {
             execSpec.cmdArgs "-var-file=${f.absolutePath}"

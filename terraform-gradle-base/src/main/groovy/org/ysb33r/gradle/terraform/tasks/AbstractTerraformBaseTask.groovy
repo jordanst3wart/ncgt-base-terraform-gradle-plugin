@@ -95,6 +95,20 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         }
     }
 
+    /**
+     * Obtain a list of associated variables, should if be a valid condition for the task.
+     *
+     * In most cases this will be empty.
+     *
+     * @return Associated variables in terraform format.
+     *
+     * @since 0.13
+     */
+    @Internal
+    List<Provider<List<String>>> getTfVarProviders() {
+        this.tfVarProviders
+    }
+
     @Override
     void exec() {
         TerraformExecSpec execSpec = buildExecSpec()
@@ -303,6 +317,10 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
             commandLineProviders.add(project.provider { ->
                 cfgType.accessor.apply(terraformExtension).commandLineArgs
             })
+
+            tfVarProviders.add(project.provider { ->
+                cfgType.accessor.apply(terraformExtension).tfVars
+            })
         }
     }
 
@@ -312,6 +330,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
     private final TerraformRCExtension terraformrc
     private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
+    private final List<Provider<List<String>>> tfVarProviders = []
     private final List<String> defaultCommandParameters = []
     private boolean noProjectEnvironment = false
     private Provider<File> stdoutCapture

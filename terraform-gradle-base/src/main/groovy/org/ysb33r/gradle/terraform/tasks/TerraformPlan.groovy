@@ -86,7 +86,20 @@ class TerraformPlan extends AbstractTerraformTask {
     Provider<File> getInternalTrackerFile() {
         final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         project.provider({ ->
-            new File(reportsDir.get(), "${ws}.tracker")
+            new File(dataDir.get(), "${ws}.tracker")
+        } as Callable<File>)
+    }
+
+    /** This is the location of an variables file used to keep anything provided via the build script.
+     *
+     * @return Location of variables file.
+     *
+     * @since 0.13.0
+     */
+    @Internal
+    Provider<File> getVariablesFile() {
+        project.provider({ ->
+            new File(dataDir.get(), "__.${workspaceName}.tfvars")
         } as Callable<File>)
     }
 
@@ -119,6 +132,7 @@ class TerraformPlan extends AbstractTerraformTask {
 
     @Override
     void exec() {
+        createVarsFile()
         super.exec()
 
         File planOut = planOutputFile.get()
@@ -147,8 +161,15 @@ class TerraformPlan extends AbstractTerraformTask {
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.identity {
             cmdArgs "-out=${planOutputFile.get()}"
+            cmdArgs "-var-file=${variablesFile.get().absolutePath}"
         }
         execSpec
+    }
+
+    private void createVarsFile() {
+        variablesFile.get().withWriter { writer ->
+            tfVarProviders*.get().flatten().each { writer.println(it) }
+        }
     }
 
     private Action<ExecSpec> configureShowCommand(File planFile, OutputStream reportStream) {

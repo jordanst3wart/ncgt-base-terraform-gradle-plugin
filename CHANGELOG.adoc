@@ -6,7 +6,11 @@
 
 === Features
 
-* {issue}67[#67] - Using `--frecpmfogire`, `--force-copy` or `--upgrade` with `tfInit` will casue the task to be out of date. It is no longer necessary to use `--rerun-tasks` as a workaround.
+* {issue}67[#67] - Using `--reconfigure`, `--force-copy` or `--upgrade` with `tfInit` will casue the task to be out of date. It is no longer necessary to use `--rerun-tasks` as a workaround.
+
+=== Other
+
+* {issue}68[#68] - Terraform variables are written to a temporary file rather than passing individual variables on the command-line. This eliminates escaping issues introduced by the execution shell.
 
 == v0.12.0 - v0.12.2
 // tag::changelog[]

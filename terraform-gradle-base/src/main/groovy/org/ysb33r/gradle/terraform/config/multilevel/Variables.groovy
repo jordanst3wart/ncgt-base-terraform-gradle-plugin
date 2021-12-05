@@ -161,7 +161,7 @@ class Variables implements TerraformTaskConfigExtension,
      *   the kind of variable.
      */
     Map<String, String> getEscapedVars() {
-        this.varsFilesPair.escapedVars
+        this.varsFilesPair.getEscapedVars(false)
     }
 
     /** List of file names containing Terraform variables.
@@ -197,6 +197,11 @@ class Variables implements TerraformTaskConfigExtension,
         }
 
         this.varsFilesPair.commandLineArgs(root)
+    }
+
+    @Override
+    List<String> getTfVars() {
+        this.varsFilesPair.varsInTfFormat
     }
 
     @Override

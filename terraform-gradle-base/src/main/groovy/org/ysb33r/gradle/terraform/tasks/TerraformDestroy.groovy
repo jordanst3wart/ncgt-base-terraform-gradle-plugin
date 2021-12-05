@@ -16,7 +16,9 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.options.Option
+import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
@@ -49,11 +51,19 @@ class TerraformDestroy extends AbstractTerraformTask {
             } as Callable<List<String>>)
         )
 
+        tfVarProviders = projectOperations.provider({ ->
+            plan.get().extensions.getByType(TerraformExtension).allVariables.tfVars.flatten()
+        } as Callable<List<String>>)
+
         doLast {
             plan.get().internalTrackerFile.get().delete()
         }
 
         inputs.files(taskProvider('init'))
+
+        variablesFile = projectOperations.providerTools.map(plan) {
+            new File(it.variablesFile.get().parentFile, "_d_.${workspaceName}.tfVars")
+        }
     }
 
     /** Set auto-approve mode.
@@ -73,4 +83,36 @@ class TerraformDestroy extends AbstractTerraformTask {
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).targets = resourceNames
     }
+
+    @Override
+    void exec() {
+        createVarsFile()
+        super.exec()
+    }
+
+    /** Add specific command-line options for the command.
+     * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
+     * to {@code terraform init}.
+     *
+     * @param execSpec
+     * @return execSpec
+     */
+    @Override
+    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec.identity {
+            cmdArgs "-var-file=${variablesFile.get().absolutePath}"
+        }
+        execSpec
+    }
+
+    private void createVarsFile() {
+        def lines = tfVarProviders.get()
+        variablesFile.get().withWriter { writer ->
+            lines.each { writer.println(it) }
+        }
+    }
+
+    private final Provider<List<String>> tfVarProviders
+    private final Provider<File> variablesFile
 }

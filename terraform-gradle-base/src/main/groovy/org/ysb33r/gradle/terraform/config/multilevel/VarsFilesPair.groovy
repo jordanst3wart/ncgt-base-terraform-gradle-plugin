@@ -78,19 +78,32 @@ class VarsFilesPair {
      * Returns the command-line representation.
      *
      * @param root Root path for resolving file paths.
-     *
      * @return A list of terraform command-line arguments related to variables and file-based variables.
      *
      * @since 0.12
      */
     List<String> commandLineArgs(Path root) {
-        final List<String> varList = escapedVars.collectMany { String k, String v ->
-            ['-var', "$k=$v".toString()]
-        } as List<String>
+//        final List<String> varList = escapedVars.collectMany { String k, String v ->
+//            ['-var', "$k=$v".toString()]
+//        } as List<String>
+        final List<String> varList = []
         varList.addAll(fileNames.stream().map { String fileName ->
             "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
         }.collect(Collectors.toList()) as List<String>)
         varList
+    }
+
+    /**
+     * Gets all variables in a Terraform file format.
+     *
+     * @return List of pairings.
+     *
+     * @since 0.13
+     */
+    List<String> getVarsInTfFormat() {
+        getEscapedVars(true).collect { String k, String v ->
+            "$k = $v".toString()
+        }
     }
 
     /** Evaluate all provided and local variables and convert them to Terraform-compliant strings, ready to be
@@ -100,14 +113,15 @@ class VarsFilesPair {
      *
      * <p> Calling this will resolve all lazy-evaluated entries.
      *
+     * @param escapeInnerLevel Whether to escape inner level string. Default is {@code false}
      * @return Map where each key is the name of a variable. Each value is correctly formatted according to
      *   the kind of variable.
      *
      * @since 0.12
      */
-    Map<String, String> getEscapedVars() {
-        Map<String, String> hclMap = escapeProvidedVars()
-        hclMap.putAll(escapeLocalVars())
+    Map<String, String> getEscapedVars(boolean escapeInnerLevel = false) {
+        Map<String, String> hclMap = escapeProvidedVars(escapeInnerLevel)
+        hclMap.putAll(escapeLocalVars(escapeInnerLevel))
         hclMap
     }
 
@@ -133,32 +147,32 @@ class VarsFilesPair {
         "vars=${vars.toString()}, files=${files.toString()}, additionalsCount=${additionalVariables.size()}"
     }
 
-    private Map<String, String> escapeProvidedVars() {
+    private Map<String, String> escapeProvidedVars(boolean escapeInnerLevel) {
         def vars = new IntermediateVariableSpec(new VarsFilesPair())
         for (Action<VariablesSpec> additional : this.additionalVariables) {
             additional.execute(vars)
         }
-        vars.vfp.escapeLocalVars()
+        vars.vfp.escapeLocalVars(escapeInnerLevel)
     }
 
-    private Map<String, String> escapeLocalVars() {
+    private Map<String, String> escapeLocalVars(boolean escapeInnerLevel) {
         Map<String, String> hclMap = [:]
         for (String key in this.vars.keySet()) {
-            hclMap[key] = escapeObject(this.vars[key])
+            hclMap[key] = escapeObject(this.vars[key], escapeInnerLevel)
         }
         hclMap
     }
 
-    private String escapeObject(Object variable) {
+    private String escapeObject(Object variable, boolean escapeInnerLevel) {
         switch (variable) {
             case Provider:
-                return escapeObject(((Provider) variable).get())
+                return escapeObject(((Provider) variable).get(), escapeInnerLevel)
             case Map:
                 return escapedMap((Map) variable)
             case List:
                 return escapedList((Iterable) variable)
             default:
-                return escapeOneItem(variable, false)
+                return escapeOneItem(variable, escapeInnerLevel)
         }
     }
 
