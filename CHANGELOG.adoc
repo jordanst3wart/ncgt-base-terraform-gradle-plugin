@@ -15,6 +15,7 @@
 === Other
 
 * {issue}68[#68] - Terraform variables are written to a temporary file rather than passing individual variables on the command-line. This eliminates escaping issues introduced by the execution shell.
+* Terraform default version is 1.0.11.
 
 == v0.12.0 - v0.12.2
 // tag::changelog[]
