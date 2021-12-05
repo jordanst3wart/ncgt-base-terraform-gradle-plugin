@@ -115,6 +115,10 @@ class TerraformInit extends AbstractTerraformTask {
         this.terraformStateFile = dataDir.map { new File(it, 'terraform.tfstate') }
         this.terraformInitStateFile = dataDir.map { new File(it, '.init.txt') }
         this.useBackendConfig = project.provider { -> true }
+
+        outputs.upToDateWhen {
+            !(forceCopy || upgrade || reconfigure)
+        }
     }
 
     /** Configuration for Terraform backend.
@@ -139,76 +143,64 @@ class TerraformInit extends AbstractTerraformTask {
      */
     void setBackendConfigFile(Object location) {
         projectOperations.updateFileProperty(this.backendConfig, projectOperations.provider { ->
-//            try {
-            projectOperations.fileOrNull(location)
-//            } catch (IllegalStateException e) {
-//                e
-//            } catch (RuntimeException e) {
-//                if(e.cause instanceof IllegalStateException) {
-//                    null
-//                } else {
-//                    throw e
-//                }
-//            }
-        }
-
-        )
+            projectOperations.fsOperations.fileOrNull(location)
+        })
     }
 
-/**
- * Whether a backend config file should be used.
- *
- * @param useBackend Provider of a decision.
- *
- * @since 0.12
- */
+    /**
+     * Whether a backend config file should be used.
+     *
+     * @param useBackend Provider of a decision.
+     *
+     * @since 0.12
+     */
     void setUseBackendFile(Provider<Boolean> useBackend) {
         this.useBackendConfig = useBackend
     }
 
-/** Backend configuration files.
- *
- * This can be set in addition or as alternative to using a configuration file for the backend.
- *
- * @return Map of configuration values. Never {@code null}.
- *
- * @since 0.4.0
- */
+    /** Backend configuration files.
+     *
+     * This can be set in addition or as alternative to using a configuration file for the backend.
+     *
+     * @return Map of configuration values. Never {@code null}.
+     *
+     * @since 0.4.0
+     */
     @Input
     Map<String, String> getBackendConfigValues() {
         MapUtils.stringizeValues(this.backendConfigValues)
     }
 
-/** Replaces any existing backend configuration values with a new set.
- *
- * It does not affect anything specified via a configuration file.
- *
- * @param backendValues Map of replacement key-value pairs.
- *
- * @since 0.4.0
- */
+    /** Replaces any existing backend configuration values with a new set.
+     *
+     * It does not affect anything specified via a configuration file.
+     *
+     * @param backendValues Map of replacement key-value pairs.
+     *
+     * @since 0.4.0
+     */
     void setBackendConfigValues(Map<String, Object> backendValues) {
         this.backendConfigValues.clear()
         this.backendConfigValues.putAll(backendValues)
     }
 
-/** Adds additional backend configuration values
- *
- * @param backendValues Map of key-value pairs.
- *
- * @since 0.4.0
- */
+    /** Adds additional backend configuration values
+     *
+     * @param backendValues Map of key-value pairs.
+     *
+     * @since 0.4.0
+     */
     void backendConfigValues(Map<String, Object> backendValues) {
         this.backendConfigValues.putAll(backendValues)
     }
 
-/** Adds a single backend value.
- *
- * @param key Name of backend configuration
- * @param value Value of backend configuration.
- *
- * @since 0.4.0
- */
+    /** Adds a single backend value.
+     *
+     * @param key Name of backend configuration
+     * @param value Value of backend configuration.
+     *
+     * @since 0.4.0
+     */
     void backendConfigValue(String key, Object value) {
         this.backendConfigValues.put(key, value)
     }
@@ -220,21 +212,21 @@ class TerraformInit extends AbstractTerraformTask {
         terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
-/** Whether plugins should be verified.
- *
- * @deprecated Only used for Terraform 0.12 or older
- */
+    /** Whether plugins should be verified.
+     *
+     * @deprecated Only used for Terraform 0.12 or older
+     */
     @Internal
     @Deprecated
     boolean verifyPlugins = false
 
-/** Add specific command-line options for the command.
- * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
- * to {@code terraform init}.
- *
- * @param execSpec
- * @return execSpec
- */
+    /** Add specific command-line options for the command.
+     * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
+     * to {@code terraform init}.
+     *
+     * @param execSpec
+     * @return execSpec
+     */
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)

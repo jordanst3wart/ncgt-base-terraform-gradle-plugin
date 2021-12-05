@@ -87,8 +87,8 @@ class TerraformOutputSpec extends IntegrationSpecification {
 
         then:
         result.task(":${taskName}").outcome == SUCCESS
-        result.task(":tfPlan") == null
-        result.task(":tfApply") == null
+        result.task(':tfPlan') == null
+        result.task(':tfApply') == null
     }
 
     void 'Access outputs as provider'() {
@@ -126,6 +126,7 @@ class TerraformOutputSpec extends IntegrationSpecification {
     }
 
     @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/66')
+    @SuppressWarnings('LineLength')
     void 'Access outputs from another workspace'() {
         setup:
         def workspace = 'yellowBricks'
@@ -170,7 +171,6 @@ class TerraformOutputSpec extends IntegrationSpecification {
 
         then:
         result.task(':testOutput').outcome == SUCCESS
-
     }
 
     void createTfSpec() {

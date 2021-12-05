@@ -162,7 +162,7 @@ class TerraformCleanupWorkspacesSpec extends IntegrationSpecification {
         resultInit.output.contains('-backend-config')
 
         when:
-        BuildResult resultApply= getGradleRunner(['tfApply', 'tfApplyAlpha', 'tfApplyBeta']).build()
+        BuildResult resultApply = getGradleRunner(['tfApply', 'tfApplyAlpha', 'tfApplyBeta']).build()
 
         then:
         resultApply.task(':tfApply').outcome == SUCCESS
@@ -170,7 +170,7 @@ class TerraformCleanupWorkspacesSpec extends IntegrationSpecification {
         resultApply.task(':tfApplyBeta').outcome == SUCCESS
 
         where:
-        type << [ 'on source set', 'globally', 'to use tokens']
+        type << ['on source set', 'globally', 'to use tokens']
         configuration << [
             '''
                 terraformSourceSets {

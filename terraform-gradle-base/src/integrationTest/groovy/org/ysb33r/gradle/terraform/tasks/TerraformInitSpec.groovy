@@ -25,6 +25,7 @@ import spock.util.environment.RestoreSystemProperties
 
 import static org.gradle.testkit.runner.TaskOutcome.NO_SOURCE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
 @RestoreSystemProperties
@@ -51,7 +52,7 @@ class TerraformInitSpec extends IntegrationSpecification {
             projectDir,
             [
                 taskName,
-                '-s',
+                '-s'
             ]
         ).withTestKitDir(testkitDir)
     }
@@ -114,6 +115,73 @@ provider "aws" {
         result.task(":${taskName}").outcome == SUCCESS
         pluginDir.exists()
         pluginDir.listFiles().find { it.name.startsWith('terraform-') }
+    }
+
+    void '--reconfigure will cause out of date condition'() {
+        setup:
+        new File(srcDir, 'init.tf').text = """
+        terraform {
+          required_providers {
+            aws = {
+              source = "hashicorp/aws"
+            }
+          }
+          required_version = ">= 0.13"
+        }
+
+        provider "aws" {
+          region  = "us-east-1"
+        }
+        """
+
+        when: 'tfInit is run the first time'
+        BuildResult result1 = gradleRunner.build()
+
+        then: 'the task is executed'
+        result1.task(":${taskName}").outcome == SUCCESS
+
+        when: 'tfInit is run the second time'
+        BuildResult result2 = gradleRunner.build()
+
+        then: 'the task is not executed'
+        result2.task(":${taskName}").outcome == UP_TO_DATE
+
+        when: 'tfInit is run with --reconfigure'
+        BuildResult result3 = nextRunner('--reconfigure').build()
+
+        then: 'the task is executed'
+        result3.task(":${taskName}").outcome == SUCCESS
+
+        when: 'tfInit is run with --force-copy'
+        BuildResult result4 = nextRunner('--force-copy').build()
+
+        then: 'the task is executed'
+        result4.task(":${taskName}").outcome == SUCCESS
+
+        when: 'tfInit is run with --upgrade'
+        BuildResult result5 = nextRunner('--upgrade').build()
+
+        then: 'the task is executed'
+        result5.task(":${taskName}").outcome == SUCCESS
+
+        when: 'tfInit is then run again without parameters'
+        BuildResult result6 = nextRunner().build()
+
+        then: 'the task is not executed'
+        result6.task(":${taskName}").outcome == UP_TO_DATE
+    }
+
+    GradleRunner nextRunner(String... args) {
+        List<String> args1 = [
+            taskName,
+            '-s', '-i'
+        ]
+        args1.addAll(args)
+        getGradleRunner(
+            IS_GROOVY_DSL,
+            projectDir,
+            args1
+        ).withTestKitDir(testkitDir)
     }
 
 }
