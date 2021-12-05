@@ -91,9 +91,24 @@ class TerraformApply extends AbstractTerraformTask {
         planProvider.get().extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
+    /**
+     * Output progress in json as per https://www.terraform.io/docs/internals/machine-readable-ui.html
+     *
+     * @param state Set to {@code true} to output in JSON.
+     */
+    @Option(option = 'json', description = 'Output progress in JSON')
+    void setJson(boolean state) {
+        this.json = state
+    }
+
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
+
+        if (json) {
+            execSpec.cmdArgs(JSON_FORMAT)
+        }
+
         execSpec.cmdArgs(planFile.map(new Transformer<String, File>() {
             @Override
             String transform(File plan) {
@@ -110,4 +125,5 @@ class TerraformApply extends AbstractTerraformTask {
     private final Provider<File> planFile
     private final Provider<File> tracker
     private final TerraformPlanProvider planProvider
+    private boolean json = false
 }

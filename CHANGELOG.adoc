@@ -6,7 +6,8 @@
 
 === Features
 
-* {issue}67[#67] - Using `--reconfigure`, `--force-copy` or `--upgrade` with `tfInit` will casue the task to be out of date. It is no longer necessary to use `--rerun-tasks` as a workaround.
+* {issue}67[#67] - Using `--reconfigure`, `--force-copy` or `--upgrade` with `TerraformInit` will cause the task to be out of date. It is no longer necessary to use `--rerun-tasks` as a workaround.
+* {issue}69[#69] - `TerraformApply` & `TerraformPlan` can output progress in JSON on Teraform 0.15.3+ using `--json` on the command-line or by setting `json` property on the task.
 
 === Bugs
 

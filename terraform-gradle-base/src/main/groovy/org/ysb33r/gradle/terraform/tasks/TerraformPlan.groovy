@@ -159,6 +159,9 @@ class TerraformPlan extends AbstractTerraformTask {
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
+        if (jsonReport) {
+            execSpec.cmdArgs(JSON_FORMAT)
+        }
         execSpec.identity {
             cmdArgs "-out=${planOutputFile.get()}"
             cmdArgs "-var-file=${variablesFile.get().absolutePath}"

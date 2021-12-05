@@ -204,9 +204,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         spec
     }
 
-/** Command-line parameter for no colour.
- *
- */
+    /** Command-line parameter for no colour.
+     *
+     */
     protected static final String NO_COLOR = '-no-color'
 
     /** Command-line parameter for JSON output.
