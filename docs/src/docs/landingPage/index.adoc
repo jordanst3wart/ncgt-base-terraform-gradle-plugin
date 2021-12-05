@@ -9,7 +9,7 @@ As of version {revnumber} of this plugin, the minimum supported Gradle version i
 .GradleTest version configuration
 [source,groovy]
 ----
-include::{includetopdir}/../gradle/plugin-dev.gradle[tags=gradleTestVersions,indent=0]
+include::{includetopdir}/gradle/plugin-dev.gradle[tags=gradleTestVersions,indent=0]
 ----
 
 .Support this project

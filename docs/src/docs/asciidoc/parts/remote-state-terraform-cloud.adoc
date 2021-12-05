@@ -1,0 +1,148 @@
+[[RemoteStateTerraformCloud]]
+== Remote state in Terraform Cloud
+
+Storing https://www.terraform.io/docs/language/settings/backends/remote.html[remote state in Terraform Cloud], also known as the `remote` backend, is a common approach. Therefore the `org.ysb33r.terraform.remotestate.terraformcloud` plugin adds some conventions to make life easier.
+
+
+=== Usage
+
+Add the `remote` backend to your Terraform files.
+
+.remote-state.tf
+[source,terraform]
+----
+terraform {
+  backend "remote" { // <1>
+  }
+}
+
+variable "remote_state" { // <2>
+    type = map(string)
+}
+----
+<1> Indicate that you plan to store remote state in S3.
+  You can configure anything as per usual for the https://www.terraform.io/docs/language/settings/backends/s3.html[S3 backend].
+<2> Allow for Gradle to pass the map of remote state variables.
+
+Now tell Gradle about your S3 setup.
+
+[[ConfigureRemoteS3]]
+.build.gradle
+[source,groovy]
+----
+include::{inttestdir}/tasks/TerraformRemoteStateTerraformCloudConfigGeneratorSpec.groovy[tags=remote_state,indent=0]
+
+include::{inttestdir}/tasks/TerraformRemoteStateTerraformCloudConfigGeneratorSpec.groovy[tags=remote_state2,indent=0]
+
+}
+----
+<1> Confiugration can be globally set in the `terraform` extension.
+<2> In order not to cause confusion with an extension already called `retmoe, `the `remote` backend is referred to as `terraformCloud` in the DSL.
+<3> Override the host name.
+<4> Specify an authentication token.
+This does not need to be hard-coded, but can be provided via a provider.
+<5> Set the configuration to use only one specifc workspace.
+This replaces any previous usage of `workspacePrefix`.
+<6> It is also possible to configure on a per-source set basis.
+<7> Use workspaces that begin with the specific prefix.
+Replaces a previous `workspacePrefix`.
+
+You can also customise on a per-source set basis.
+Such setting will override any values from the global settings.
+You can configure nearly any item that is part of the S3 backend via the `remote.s3` extension.
+See link:{groovydoc}/remotestate/RemoteStateS3Spec.html[`RemoteStateS3Spec`] for details.
+
+.build.gradle
+[source,groovy]
+----
+terraformSourceSets {
+  main {
+    remote {
+      s3 {
+        bucket = 'terraform-managed-remote-state-files' // <1>
+      }
+    }
+  }
+}
+----
+<1> Use a different bucket than what was configured globally
+
+Sometimes you might want to customise two source sets in the same way.
+Instead of duplicating the code, you can simply, let the one source set mirror any changes made to another source set using `follow`.
+
+.build.gradle
+[source,groovy]
+----
+terraformSourceSets {
+  main {
+    remote {
+      s3 {
+        bucket = 'terraform-managed-remote-state-files'
+      }
+    }
+  }
+  staging {
+    remote {
+      s3.follow(terraformSourceSets.main.remote.s3)  // <1>
+    }
+  }
+}
+----
+<1> Any changes made to `main` will be reflected in `staging`.
+
+[[CustomiseS3Template,customise the S3 template]]
+=== Customising the configuration template
+
+If this is not sufficient for your situation you can supply your own.
+
+[source,groovy]
+----
+createTfS3BackendConfiguration  {
+  templateFile = 'src/tf/mytemplate.tf' // <1>
+  textTemplate = """ // <2>
+key    = "##remote_state_name$$.tfstate"
+region = "##region$$"
+  """
+  beginToken = '##' // <3>
+  endToken = '$$' // <4>
+  tokens = [   // <5>
+    myBucket : 'abc'
+  ]
+  tokens foo : 'bar' // <6>
+}
+----
+<1> Provide an alternative template file.
+Anything convertible to a file can be used.
+<2> Instead of a file, supply an alternative text template.
+Anything convertible to a string can be used.
+<3> Start delimiter.
+<4> End delimiter.
+<5> Replace all default tokens.
+<6> Add to existing tokens.
+
+Substitutions will be performed by https://ant.apache.org/manual/api/org/apache/tools/ant/filters/ReplaceTokens.html[Apache Ant's ReplaceTokens].
+
+=== Remote state from other source sets
+
+If you are interested in accessing the remote state from another configuration you probably are going to need something like this as well
+
+.remote-state.tf
+[source,terraform]
+----
+data "terraform_remote_state" "aws_tf_remote_state" {
+  backend = "s3"
+  config = {
+    bucket = var.remote_state["bucket"] // <1>
+    key    = "${var.remote_state["remote_state_name"]}.tfstate" // <2>
+    region = var.remote_state["aws_region"] // <3>
+    encrypt = true
+    dynamodb_table =  var.remote_state["dynamodb_table"] // <4>
+  }
+}
+----
+<1> The name of the bucket where remote state will be stored. You can use the `remote_state` map to simplify things. The bucket should pre-exist.
+<2> Name of the file in S3 where the state will be stored. Convention is to add `.tfstate` to the remote state name.
+<3> Region which is used to store the state.
+<4> Your DynamoDB table for storing lock status. The table should pre-exist.
+
+See https://www.terraform.io/docs/language/state/remote-state-data.html[`terraform_remote_state`] for more details.

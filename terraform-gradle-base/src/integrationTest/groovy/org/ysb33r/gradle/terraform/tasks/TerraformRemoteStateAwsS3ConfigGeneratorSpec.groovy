@@ -16,26 +16,12 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
-import org.ysb33r.gradle.terraform.testfixtures.IntegrationSpecification
+import org.ysb33r.gradle.terraform.testfixtures.ConfigGeneratorSpecification
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecification {
-    public static final String PROJECT_NAME = 'test-project'
-    String taskName = 'createTfBackendConfiguration'
-    File testkitDir
-    File srcDir
-    File outputFile
-    GradleRunner gradleRunner
-
+class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends ConfigGeneratorSpecification {
     void setup() {
-        testkitDir = testProjectDir.newFolder()
-        srcDir = new File(projectDir, 'src/tf/main')
-        srcDir.mkdirs()
-        outputFile = new File(projectDir, 'build/tfRemoteState/tfBackendConfiguration/terraform-backend-config.tf')
-
-        new File(projectDir, 'settings.gradle').text = "rootProject.name = '${PROJECT_NAME}'"
         buildFile.text = '''
         plugins {
             id 'org.ysb33r.terraform.remotestate.s3'
@@ -52,15 +38,6 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends IntegrationSpecificat
             }
         }
         '''
-
-        gradleRunner = getGradleRunner(
-            IS_GROOVY_DSL,
-            projectDir,
-            [
-                taskName,
-                '-i', '-s',
-            ]
-        ).withTestKitDir(testkitDir)
     }
 
     void 'Create S3 configuration file from default template'() {

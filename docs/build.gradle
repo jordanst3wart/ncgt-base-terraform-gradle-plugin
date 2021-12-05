@@ -97,7 +97,7 @@ landingPage {
 
     attributes gendocdir: file("${generateDocVersionsTable.targetDir}").absolutePath,
         revnumber: "${version}",
-        includetopdir: projectDir.absolutePath,
+        includetopdir: rootDir.absolutePath,
         'minimum-gradle-version': gradleTestMinVersion
 }
 
@@ -116,7 +116,7 @@ asciidoctor {
 
     attributes revnumber: version,
         'minimum-gradle-version': gradleTestMinVersion,
-        includetopdir: project(':terraform-gradle-base').projectDir.absolutePath,
+        includetopdir: rootDir.absolutePath,
         'gradle-javadoc': "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
         'gradle-dsl': "https://docs.gradle.org/${gradle.gradleVersion}/dsl",
         issue: 'https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/',

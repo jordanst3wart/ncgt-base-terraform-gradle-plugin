@@ -286,7 +286,6 @@ abstract class AbstractBackendSpec implements BackendSpec {
         })
 
         this.actualTextTemplate = objects.property(BackendTextTemplate)
-//        this.actualTextTemplate.set(new TextTemplates.ReplaceTokens({ -> defaultTextTemplate }))
 
         this.tokenProvider = po.provider(new Callable<Map<String, Object>>() {
             @Override
@@ -311,7 +310,7 @@ abstract class AbstractBackendSpec implements BackendSpec {
      * @param p Object to be evaluated as a file path.
      */
     protected void tokenPath(String key, Object p) {
-        token(key, projectOperations.provider { -> projectOperations.file(p).absolutePath })
+        token(key, projectOperations.provider { -> projectOperations.fsOperations.file(p).absolutePath })
     }
 
     private Object actualTemplateFile

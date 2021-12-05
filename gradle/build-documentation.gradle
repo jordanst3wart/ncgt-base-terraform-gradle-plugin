@@ -67,7 +67,7 @@ landingPage {
 
     attributes gendocdir: file("${generateDocVersionsTable.targetDir}").absolutePath,
         revnumber: "${version}",
-        includetopdir: projectDir.absolutePath,
+        includetopdir: rootDir.absolutePath,
         'minimum-gradle-version': gradleTest.minVersion
 
 }
@@ -90,7 +90,7 @@ asciidoctor {
 
     attributes revnumber: version,
         'minimum-gradle-version': gradleTest.minVersion,
-        includetopdir: projectDir.absolutePath,
+        includetopdir: rootDir.absolutePath,
         'gradle-javadoc': "https://docs.gradle.org/${gradle.gradleVersion}/javadoc",
         'gradle-dsl': "https://docs.gradle.org/${gradle.gradleVersion}/dsl"
 }

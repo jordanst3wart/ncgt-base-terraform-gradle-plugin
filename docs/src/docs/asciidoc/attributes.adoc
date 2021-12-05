@@ -1,9 +1,9 @@
 :icons: font
-:resourcesdir: {includetopdir}/src/main/resources
+:resourcesdir: {includetopdir}/terraform-gradle-base/src/main/resources
 :source-highlighter: coderay
-:sourcedir: {includetopdir}/src/main/groovy/org/ysb33r/gradle/terraform
-:testdir: {includetopdir}/src/test/groovy/org/ysb33r/gradle/terraform
-:inttestdir: {includetopdir}/src/integrationTest/groovy/org/ysb33r/gradle/terraform
-:gradletestdir: {includetopdir}/src/gradleTest
+:sourcedir: {includetopdir}/terraform-gradle-base/src/main/groovy/org/ysb33r/gradle/terraform
+:testdir: {includetopdir}/terraform-gradle-base/src/test/groovy/org/ysb33r/gradle/terraform
+:inttestdir: {includetopdir}/terraform-gradle-base/src/integrationTest/groovy/org/ysb33r/gradle/terraform
+:gradletestdir: {includetopdir}/terraform-gradle-base/src/gradleTest
 :groovydoc: ../api/org/ysb33r/gradle/terraform
 :terraform: Terraform
