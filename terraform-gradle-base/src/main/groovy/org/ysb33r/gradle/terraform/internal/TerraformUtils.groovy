@@ -146,16 +146,33 @@ class TerraformUtils {
     }
 
     /**
+     * Escape HCL variables in a form suitable for using in a variables or backend configuration file.
+     *
+     * @param vars Variables map to escape
+     * @param escapeInnerLevel Whether inner level string variables should be escaped.
+     * @return Escaped map.
+     *
+     * @sinec 0.13
+     */
+    static Map<String, String> escapeHclVars(Map<String, Object> vars, boolean escapeInnerLevel) {
+        Map<String, String> hclMap = [:]
+        for (String key in vars.keySet()) {
+            hclMap[key] = escapeOneItem(vars[key], escapeInnerLevel)
+        }
+        hclMap
+    }
+
+    /**
      * Takes a list and creates a HCL-list with appropriate escaping.
      *
      * @param items List items
      * @return Escaped string
      *
-     * @since 1.0
+     * @since 0.12
      */
-    static String escapedList(Iterable<Object> items) {
+    static String escapedList(Iterable<Object> items, boolean escapeInnerLevel) {
         String joinedList = Transform.toList(items as Collection) { Object it ->
-            escapeOneItem(it)
+            escapeOneItem(it, escapeInnerLevel)
         }.join(COMMA_SEPARATED)
         "[${joinedList}]"
     }
@@ -166,11 +183,11 @@ class TerraformUtils {
      * @param items Map items
      * @return Escaped string
      *
-     * @since 1.0
+     * @since 0.12
      */
-    static String escapedMap(Map<String, ?> items) {
+    static String escapedMap(Map<String, ?> items, boolean escapeInnerLevel) {
         String joinedMap = Transform.toList(items) { Map.Entry<String, ?> entry ->
-            "\"${entry.key}\" = ${escapeOneItem(entry.value)}".toString()
+            "\"${entry.key}\" = ${escapeOneItem(entry.value, escapeInnerLevel)}".toString()
         }.join(COMMA_SEPARATED)
         "{${joinedMap}}".toString()
     }
@@ -184,12 +201,14 @@ class TerraformUtils {
      *
      * @since 0.12
      */
-    static String escapeOneItem(Object item, boolean innerLevel = true) {
+    static String escapeOneItem(Object item, boolean innerLevel) {
         switch (item) {
+            case Provider:
+                return escapeOneItem(((Provider) item).get(), innerLevel)
             case Map:
-                return escapedMap((Map) item)
+                return escapedMap((Map) item, innerLevel)
             case Iterable:
-                return escapedList((Iterable) item)
+                return escapedList((Iterable) item, innerLevel)
             case Number:
             case Boolean:
                 return StringUtils.stringize(item)

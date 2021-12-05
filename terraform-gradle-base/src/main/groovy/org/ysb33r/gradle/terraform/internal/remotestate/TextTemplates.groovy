@@ -16,9 +16,9 @@
 package org.ysb33r.gradle.terraform.internal.remotestate
 
 import groovy.transform.CompileStatic
+import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.remotestate.BackendAttributesSpec
 import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
-import org.ysb33r.grolifant.api.v4.MapUtils
 import org.ysb33r.grolifant.api.v4.StringUtils
 
 /**
@@ -76,11 +76,11 @@ region = "@@region@@"
          */
         @Override
         String template(BackendAttributesSpec backendAttributes) {
-            def entries = MapUtils.stringizeValues(backendAttributes.tokens).entrySet()
+            def entries = TerraformUtils.escapeHclVars(backendAttributes.tokens, true).entrySet()
             Integer maxLength = entries*.key*.toString()*.size().max()
             StringWriter writer = new StringWriter()
             for (Map.Entry<String, String> entry : entries) {
-                writer.println("${entry.key.padRight(maxLength)} = \"${entry.value}\"")
+                writer.println("${entry.key.padRight(maxLength)} = ${entry.value}")
             }
             writer.toString()
         }

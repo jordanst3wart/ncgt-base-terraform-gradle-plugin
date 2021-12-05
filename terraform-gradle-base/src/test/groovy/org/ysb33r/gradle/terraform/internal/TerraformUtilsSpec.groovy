@@ -46,19 +46,19 @@ class TerraformUtilsSpec extends Specification {
 
     void 'Can escape map'() {
         expect:
-        escapedMap([a: 123, b: '123']) == '{"a" = 123, "b" = "123"}'
+        escapedMap([a: 123, b: '123'], false) == '{"a" = 123, "b" = "123"}'
     }
 
     void 'Can escape list'() {
         expect:
-        escapedList([123, '123', true]) == '[123, "123", true]'
+        escapedList([123, '123', true], true) == '[123, "123", true]'
     }
 
     void 'Can escape collections inside collections'() {
         expect:
-        escapedMap([a: [123, "456"], b: [aa: '!@#', bb: '%^&', cc: [true, 890]]]) ==
+        escapedMap([a: [123, "456"], b: [aa: '!@#', bb: '%^&', cc: [true, 890]]], true) ==
             '{"a" = [123, "456"], "b" = {"aa" = "!@#", "bb" = "%^&", "cc" = [true, 890]}}'
-        escapedList([123, [a: 'aa'], [true, 'TRUE']]) == '[123, {"a" = "aa"}, [true, "TRUE"]]'
+        escapedList([123, [a: 'aa'], [true, 'TRUE']], false) == '[123, {"a" = "aa"}, [true, "TRUE"]]'
     }
 
 }

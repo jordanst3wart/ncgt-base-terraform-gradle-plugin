@@ -135,7 +135,7 @@ region = "@@region@@"
      */
     void setAssumeRolePolicyARNs(Iterable<Object> items) {
         token('assume_role_policy_arns', projectOperations.provider { ->
-            escapedList(items)
+            escapedList(items, true)
         })
     }
 
@@ -159,7 +159,7 @@ region = "@@region@@"
      */
     void setAssumeRoleTags(Map<String, Object> items) {
         token('assume_role_tags', projectOperations.provider { ->
-            escapedMap(items)
+            escapedMap(items, true)
         })
     }
 
@@ -172,7 +172,7 @@ region = "@@region@@"
      */
     void setAssumeRoleTransitiveTagKeys(Iterable<Object> items) {
         token('assume_role_transitive_tag_keys', projectOperations.provider { ->
-            escapedList(items)
+            escapedList(items, true)
         })
     }
 

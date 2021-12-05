@@ -168,9 +168,9 @@ class VarsFilesPair {
             case Provider:
                 return escapeObject(((Provider) variable).get(), escapeInnerLevel)
             case Map:
-                return escapedMap((Map) variable)
+                return escapedMap((Map) variable, escapeInnerLevel)
             case List:
-                return escapedList((Iterable) variable)
+                return escapedList((Iterable) variable, escapeInnerLevel)
             default:
                 return escapeOneItem(variable, escapeInnerLevel)
         }
