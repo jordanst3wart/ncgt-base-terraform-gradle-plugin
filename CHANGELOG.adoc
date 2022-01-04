@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 0.13.0
+== 0.13.0 - 0.13.1
 // tag::changelog[
 === Features
 
@@ -13,7 +13,7 @@
 === Bugs
 
 * {issue}65[#65] - Objects in backend configuration is now correctly escaped.
-
+* {issue}71[#71] - `tfImport` tasks misses variables file`
 === Other
 
 * {issue}68[#68] - Terraform variables are written to a temporary file rather than passing individual variables on the command-line. This eliminates escaping issues introduced by the execution shell.

@@ -16,13 +16,16 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.StateOptionsConcurrency
 
 import javax.inject.Inject
+import java.util.concurrent.Callable
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 
@@ -89,11 +92,37 @@ class TerraformImport extends AbstractTerraformTask {
         this.path = id
     }
 
+    /** This is the location of an variables file used to keep anything provided via the build script.
+     *
+     * @return Location of variables file.
+     *
+     * @since 0.13.1
+     */
+    @Internal
+    Provider<File> getVariablesFile() {
+        project.provider({ ->
+            new File(dataDir.get(), "__.${workspaceName}.tfvars")
+        } as Callable<File>)
+    }
+
+    @Override
+    void exec() {
+        createVarsFile()
+        super.exec()
+    }
+
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec.cmdArgs("-var-file=${variablesFile.get().absolutePath}")
         execSpec.cmdArgs(resourcePath, resourceIdentifier)
         execSpec
+    }
+
+    private void createVarsFile() {
+        variablesFile.get().withWriter { writer ->
+            tfVarProviders*.get().flatten().each { writer.println(it) }
+        }
     }
 
     @Deprecated
