@@ -63,7 +63,7 @@ class TerraformUtils {
      * @return String version adapted on a per-platform basis
      */
     static String terraformPath(ProjectOperations projectOperations, Object file) {
-        String path = projectOperations.file(file).absolutePath
+        String path = projectOperations.fsOperations.file(file).absolutePath
         OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, FORWARD_SLASH) : path
     }
 

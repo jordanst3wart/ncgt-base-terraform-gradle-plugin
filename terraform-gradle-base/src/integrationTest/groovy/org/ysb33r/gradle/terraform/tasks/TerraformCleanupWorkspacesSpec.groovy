@@ -129,7 +129,8 @@ class TerraformCleanupWorkspacesSpec extends IntegrationSpecification {
 
         then: 'fails due to dangling workspaces'
         cleaningResult.task(':tfCleanupWorkspaces').outcome == FAILED
-        cleaningResult.output.contains('Workspace "alpha" is not empty.')
+        cleaningResult.output.contains('Workspace is not empty')
+        cleaningResult.output.contains('Workspace "alpha" is currently tracking')
 
         when: 'cleaning up old workspaces with force'
         BuildResult cleaningResult2 = getGradleRunner(['tfCleanupWorkspaces', '--force']).build()

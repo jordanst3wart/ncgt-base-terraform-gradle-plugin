@@ -16,25 +16,8 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.tasks.TerraformApply
-import org.ysb33r.gradle.terraform.tasks.TerraformCleanupWorkspaces
-import org.ysb33r.gradle.terraform.tasks.TerraformDestroy
-import org.ysb33r.gradle.terraform.tasks.TerraformDestroyPlan
-import org.ysb33r.gradle.terraform.tasks.TerraformFmtApply
-import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
-import org.ysb33r.gradle.terraform.tasks.TerraformImport
-import org.ysb33r.gradle.terraform.tasks.TerraformInit
-import org.ysb33r.gradle.terraform.tasks.TerraformOutput
-import org.ysb33r.gradle.terraform.tasks.TerraformPlan
-import org.ysb33r.gradle.terraform.tasks.TerraformPlanProvider
-import org.ysb33r.gradle.terraform.tasks.TerraformShowState
-import org.ysb33r.gradle.terraform.tasks.TerraformStateMv
-import org.ysb33r.gradle.terraform.tasks.TerraformStatePull
-import org.ysb33r.gradle.terraform.tasks.TerraformStatePush
-import org.ysb33r.gradle.terraform.tasks.TerraformStateRm
-import org.ysb33r.gradle.terraform.tasks.TerraformUntaint
-import org.ysb33r.gradle.terraform.tasks.TerraformUpgrade
-import org.ysb33r.gradle.terraform.tasks.TerraformValidate
+@java.lang.SuppressWarnings('NoWildcardImports')
+import org.ysb33r.gradle.terraform.tasks.*
 
 /** Maps terraform tasks to conventions.
  *
@@ -62,7 +45,10 @@ enum DefaultTerraformTasks {
     UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version', true),
     FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted', true),
     FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set', true),
-    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true)
+    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true),
+    PROVIDER(70, 'providersShow', TerraformProvidersShow, 'Show provider information', true),
+    PROVIDER_LOCK(71, 'providersLock', TerraformProvidersLock, 'Lock provider package versions', true),
+    PROVIDER_SCHEMA(72, 'providersSchema', TerraformProvidersSchema, 'Write detailed provider schemas to a file', true)
 
     static List<DefaultTerraformTasks> ordered() {
         DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List

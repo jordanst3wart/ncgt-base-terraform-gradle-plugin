@@ -22,6 +22,7 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
 import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
 
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.ARM64
 import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
 import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
@@ -61,7 +62,8 @@ class Downloader extends AbstractDistributionInstaller {
      * @return {@b true} for supported platforms,
      */
     static boolean isDownloadSupported() {
-        (OS.windows || OS.linux || OS.macOsX || OS.freeBSD) && (OS.arch == X86 || OS.arch == X86_64)
+        (OS.windows || OS.linux || OS.macOsX || OS.freeBSD) &&
+            (OS.arch == X86 || OS.arch == X86_64  || OS.arch == ARM64)
     }
 
     /** Provides an appropriate URI to download a specific version of Terraform.

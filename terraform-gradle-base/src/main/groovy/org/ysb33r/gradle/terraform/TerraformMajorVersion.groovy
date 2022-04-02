@@ -16,6 +16,7 @@
 package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
+import org.ysb33r.grolifant.api.core.Version
 
 /**
  * Major version groupings for Terraform
@@ -31,17 +32,33 @@ enum TerraformMajorVersion {
     VERSION_13,
     VERSION_14,
     VERSION_15,
+    VERSION_100,
+    VERSION_110,
+    VERSION_120,
+    VERSION_130,
+    VERSION_140,
     UNKNOWN
 
-    static TerraformMajorVersion fromMinor(int ver) {
-        if (ver < 12) {
-            VERSION_11_OR_OLDER
-        } else {
+    static TerraformMajorVersion version(String version) {
+        Version ver = Version.of(version)
+        if (ver.major == 0) {
+            if (ver.minor < 12) {
+                VERSION_11_OR_OLDER
+            } else {
+                try {
+                    valueOf("VERSION_${ver.minor}")
+                } catch (IllegalArgumentException e) {
+                    UNKNOWN
+                }
+            }
+        } else if (ver.major == 1) {
             try {
-                valueOf("VERSION_${ver}")
+                valueOf("VERSION_1${ver.minor}0")
             } catch (IllegalArgumentException e) {
                 UNKNOWN
             }
+        } else {
+            UNKNOWN
         }
     }
 }

@@ -20,6 +20,7 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.config.VariablesSpec
@@ -86,7 +87,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '1.0.11'
+    public static final String TERRAFORM_DEFAULT = '1.1.7'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -104,6 +105,8 @@ class TerraformExtension extends AbstractToolExtension {
         this.warnOnNewVersion = false
         this.env = [:]
         this.credentialsCache = new CredentialsCache(projectOperations)
+        this.fsMirror = project.objects.property(File)
+        this.netMirror = project.objects.property(String)
         addVariablesExtension()
     }
 
@@ -116,7 +119,16 @@ class TerraformExtension extends AbstractToolExtension {
     TerraformExtension(AbstractTerraformBaseTask task, List<TerraformExtensionConfigTypes> configExtensions) {
         super(task, NAME)
         executableDetails = [:]
-
+        this.fsMirror = task.project.objects.property(File)
+        this.netMirror = task.project.objects.property(String)
+        projectOperations.updateFileProperty(
+            this.fsMirror,
+            ((TerraformExtension) projectExtension).localMirrorDirectory
+        )
+        projectOperations.updateStringProperty(
+            this.netMirror,
+            ((TerraformExtension) projectExtension).netMirror
+        )
         if (task instanceof AbstractTerraformTask) {
             configExtensions.each { TerraformExtensionConfigTypes config ->
                 switch (config.type) {
@@ -130,6 +142,16 @@ class TerraformExtension extends AbstractToolExtension {
                 }
             }
         }
+    }
+
+    /** Standard set of platforms.
+     *
+     * @return The set of provider platforms supported at the time the plugin was released.
+     *
+     * @since 0.14.0
+     */
+    Set<String> getAllPlatforms() {
+        PLATFORMS.asImmutable()
     }
 
     @Override
@@ -245,9 +267,101 @@ class TerraformExtension extends AbstractToolExtension {
         }
     }
 
+    /**
+     * Add one or more platforms to support for providers.
+     *
+     * Use {@link #getAllPlatforms} to add all platforms supported bu this plugin.
+     *
+     * @param reqPlatforms Platforms to add.
+     *
+     * @since 0.14.0
+     */
+    void platforms(Iterable<String> reqPlatforms) {
+        this.requiredPlatforms.addAll(reqPlatforms)
+    }
+
+    /**
+     * Add one or more platforms to support for providers.
+     *
+     * Use {@link #getAllPlatforms} to add all platforms supported bu this plugin.
+     *
+     * @param reqPlatforms Platforms to add.
+     *
+     * @since 0.14.0
+     */
+    void platforms(String... reqPlatforms) {
+        this.requiredPlatforms.addAll(reqPlatforms as List)
+    }
+
+    /**
+     * Provide the list of platforms that need to be supported.
+     *
+     * If empty, only the current platform will be supported.
+     *
+     * @return List of supported platforms.
+     *
+     * @since 0.14.0
+     */
+    Set<String> getPlatforms() {
+        if (task) {
+            if (this.requiredPlatforms.empty) {
+                ((TerraformExtension) projectExtension).platforms
+            } else {
+                this.requiredPlatforms
+            }
+        } else {
+            this.requiredPlatforms
+        }
+    }
+
+    /**
+     * Set an alternative local directory to look for provider packages rather than in upstream registries.
+     *
+     * @param path Local path.
+     *
+     * @since 0.14.0
+     */
+    void setLocalMirrorDirectory(Object path) {
+        projectOperations.updateFileProperty(this.fsMirror, path)
+    }
+
+    /**
+     * An alternative local directory to look for provider packages rather than in upstream registries.
+     *
+     * @return Provider to a location. Can be empty.
+     *
+     * @since 0.14.0
+     */
+    Provider<File> getLocalMirrorDirectory() {
+        this.fsMirror
+    }
+
+    /**
+     * Set an alternative network mirror service for provide packages.
+     *
+     * @param uri Mirror location.
+     *
+     * @since 0.14.0
+     */
+    void setNetMirror(Object uri) {
+        projectOperations.updateStringProperty(this.netMirror, uri)
+    }
+
+    /**
+     * An alternative network mirror service for provider packages.
+     *
+     * @return Provider to a URL. Can be empty.
+     *
+     * @since 0.14.0
+     */
+    Provider<String> getNetMirror() {
+        this.netMirror
+    }
+
     /** Adds AWS environmental variables to Terraform runtime environment.
      *
-     * @since 0.6.0*
+     * @since 0.6.0
+     *
      * @deprecated Use the {@code org.ysb33r.terraform.aws} plugin instead and fine control AWS authentication in the
      *   source sets.
      */
@@ -294,7 +408,7 @@ class TerraformExtension extends AbstractToolExtension {
             ver = strm.toString().readLines()[0].replaceFirst('Terraform v', '')
         }
 
-        TerraformMajorVersion.fromMinor(Version.of(ver).minor)
+        TerraformMajorVersion.version(ver)
     }
 
     /**
@@ -393,10 +507,19 @@ class TerraformExtension extends AbstractToolExtension {
     private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
     private static final String VERSION_KEY = 'version'
     private static final String VERSION_CMD_ARGS = VERSION_KEY
+    private static final Set<String> PLATFORMS = [
+        'darwin_amd64', 'darwin_arm64',
+        'windows_amd64', 'windows_386',
+        'linux_386', 'linux_amd64', 'linux_arm', 'linux_arm64',
+        'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
+    ].toSet()
 
     private Boolean warnOnNewVersion
+    private final Property<File> fsMirror
+    private final Property<String> netMirror
     private final Map<String, Object> env
     private final Map<String, Object> executableDetails
     private final CredentialsCache credentialsCache
+    private final Set<String> requiredPlatforms = []
 }
 
