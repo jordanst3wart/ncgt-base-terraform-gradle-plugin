@@ -9,3 +9,4 @@ TMP/
 *.iws
 .project
 .asciidoctorconfig
+.generated-src/

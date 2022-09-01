@@ -87,7 +87,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '1.1.7'
+    public static final String TERRAFORM_DEFAULT = '1.2.8'
 
     /** Constructs a new extension which is attached to the provided project.
      *

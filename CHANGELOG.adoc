@@ -2,7 +2,8 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 0.14.0
+== 0.14.0 - 0.14.1
+
 // tag::changelog[]
 === Features
 
@@ -10,7 +11,7 @@
 
 === Other
 
-* Terraform default version is 1.1.7.
+* Terraform default version is 1.2.8.
 
 // end::changelog[]
 
