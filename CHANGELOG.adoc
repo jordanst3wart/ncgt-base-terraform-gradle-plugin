@@ -9,6 +9,10 @@
 
 * {issue}78[#78] - Support AWS profiles, configuration & credentials files as DSL configurables.
 
+=== Bugs
+
+* {issue}77[#77] - Exclude .terraform.tfstate.local* to prevent endless loops in continuous mode.
+
 // end::changelog[]
 
 == 0.14.0 - 0.14.1
