@@ -251,7 +251,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         }
 
         this.sourceFiles = project.fileTree(sourceDirProvider)
-        this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate')
+        this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate', '.terraform.tfstate.lock*')
         this.workspaceName = workspaceName
         this.projectName = project.name
     }

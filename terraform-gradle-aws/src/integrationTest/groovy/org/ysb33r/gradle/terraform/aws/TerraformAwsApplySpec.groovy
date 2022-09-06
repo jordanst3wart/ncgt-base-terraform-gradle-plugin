@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform.aws
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.ysb33r.gradle.terraform.aws.testfixtures.IntegrationSpecification
+import org.ysb33r.grolifant.api.core.OperatingSystem
 import spock.lang.IgnoreIf
 import spock.util.environment.RestoreSystemProperties
 
@@ -29,6 +30,7 @@ import java.nio.file.attribute.BasicFileAttributes
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
 @IgnoreIf({ IntegrationSpecification.SKIP_TESTS })
 @RestoreSystemProperties
@@ -40,6 +42,7 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
     public static final String AWS_PROFILE = 'prodadmin'
     public static final String ROLE_ARN = 'arn:aws:iam::000000000000:role/AccountAdminRole'
     public static final String REGION = 'ca-central-1'
+    public static final OperatingSystem OS = OperatingSystem.current()
 
     File srcDir
     File destFile
@@ -50,8 +53,8 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
         srcDir = new File(projectDir, 'src/tf/main')
         srcDir.mkdirs()
         destFile = createTF()
-        configFile = new File(projectDir,'.aws-config')
-        credentialsFile = new File(projectDir,'.aws-credentials')
+        configFile = new File(projectDir, '.aws-config')
+        credentialsFile = new File(projectDir, '.aws-credentials')
     }
 
     void cleanup() {
@@ -104,8 +107,8 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
             result.output.contains("\"AWS_ACCESS_KEY_ID\"           = \"${AWS_KEY}\"")
             result.output.contains("\"AWS_SECRET_ACCESS_KEY\"       = \"${AWS_SECRET}\"")
             result.output.contains("\"AWS_PROFILE\"                 = \"${AWS_PROFILE}\"")
-            result.output.contains("\"AWS_CONFIG_FILE\"             = \"${configFile.absolutePath}\"")
-            result.output.contains("\"AWS_SHARED_CREDENTIALS_FILE\" = \"${credentialsFile.absolutePath}\"")
+            result.output.contains("\"AWS_CONFIG_FILE\"             = \"${safePath(configFile)}\"")
+            result.output.contains("\"AWS_SHARED_CREDENTIALS_FILE\" = \"${safePath(credentialsFile)}\"")
         }
     }
 
@@ -116,7 +119,7 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
         when:
         BuildResult result = getGradleRunner(['tfPlan'])
             .withEnvironment(System.getenv() + [
-                AWS_ACCESS_KEY_ID: "ENV_${AWS_KEY}".toString(),
+                AWS_ACCESS_KEY_ID    : "ENV_${AWS_KEY}".toString(),
                 AWS_SECRET_ACCESS_KEY: AWS_SECRET
             ])
             .withDebug(false)
@@ -149,7 +152,7 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
         when:
         BuildResult result = getGradleRunner(['tfPlan'])
             .withEnvironment(System.getenv() + [
-                AWS_ACCESS_KEY_ID: "ENV_${AWS_KEY}".toString(),
+                AWS_ACCESS_KEY_ID    : "ENV_${AWS_KEY}".toString(),
                 AWS_SECRET_ACCESS_KEY: AWS_SECRET
             ])
             .withDebug(false)
@@ -252,5 +255,9 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
             durationSeconds = 5
         }
         """
+    }
+
+    String safePath(File file) {
+        escapedFilePath(OS, file.absoluteFile)
     }
 }
