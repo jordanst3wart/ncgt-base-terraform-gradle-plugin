@@ -44,7 +44,7 @@ license {
         java = 'SLASHSTAR_STYLE'
         groovy = 'SLASHSTAR_STYLE'
     }
-    ext.year = '2017-2021'
+    ext.year = '2017-2022'
     excludes([
         '**/*.adoc', '**/*.md',
         '**/*.properties',

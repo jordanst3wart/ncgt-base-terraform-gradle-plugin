@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.gradle.api.Project
 import org.gradle.api.Transformer
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
+import org.ysb33r.gradle.terraform.aws.internal.DefaultAwsCredentialsSpec
 import org.ysb33r.gradle.terraform.aws.internal.TerraformAwsAssumeRoleCredentials
 import org.ysb33r.gradle.terraform.aws.internal.TerraformAwsFixedCredentials
 import org.ysb33r.gradle.terraform.credentials.SessionCredentials
@@ -31,8 +32,6 @@ import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsPro
 
 import java.util.concurrent.Callable
 
-import static org.ysb33r.gradle.terraform.aws.internal.AwsAuthentication.AWS_KEY
-import static org.ysb33r.gradle.terraform.aws.internal.AwsAuthentication.AWS_SECRET
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 /**
@@ -147,15 +146,18 @@ class AwsExtension implements SessionCredentialsProvider {
      *
      * @param accessKeyIdPropertyName Property name for AWS access key.
      * @param secretPropertyName Property name for AWS secret.
+     *
+     * @deprecated Use {@link #usePropertiesForAws(Action < AwsCredentialsSpec > creds)} instead.
      */
+    @Deprecated
     void usePropertiesForAws(
         String accessKeyIdPropertyName,
         String secretPropertyName
     ) {
-        usePropertiesForAws(
-            projectOperations.resolveProperty(accessKeyIdPropertyName),
-            projectOperations.resolveProperty(secretPropertyName)
-        )
+        usePropertiesForAws {
+            it.accessKey = accessKeyIdPropertyName
+            it.secretKey = secretPropertyName
+        }
     }
 
     /**
@@ -169,17 +171,19 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param workspace Workspace to apply this to.
      * @param accessKeyIdPropertyName Property name for AWS access key.
      * @param secretPropertyName Property name for AWS secret.
+     *
+     * @deprecated Use {@link #usePropertiesForAws(String workspace, Action < AwsCredentialsSpec > creds)} instead.
      */
+    @Deprecated
     void usePropertiesForAws(
         String workspace,
         String accessKeyIdPropertyName,
         String secretPropertyName
     ) {
-        usePropertiesForAws(
-            workspace,
-            projectOperations.resolveProperty(accessKeyIdPropertyName),
-            projectOperations.resolveProperty(secretPropertyName)
-        )
+        usePropertiesForAws(workspace) {
+            it.accessKey = accessKeyIdPropertyName
+            it.secretKey = secretPropertyName
+        }
     }
 
     /**
@@ -192,16 +196,19 @@ class AwsExtension implements SessionCredentialsProvider {
      *
      * @param accessKeyId Provider for AWS access key.
      * @param secret Provider for AWS secret.
+     *
+     * @deprecated Use {@link #usePropertiesForAws(Action < AwsCredentialsSpec > creds)} instead.
      */
     @SuppressWarnings('UnnecessaryCast')
+    @Deprecated
     void usePropertiesForAws(
         Provider<String> accessKeyId,
         Provider<String> secret
     ) {
-        this.defaultCreds = new Config([
-            (AWS_KEY)   : accessKeyId,
-            (AWS_SECRET): secret
-        ] as Map<String, Object>)
+        usePropertiesForAws {
+            it.accessKey = accessKeyId
+            it.secretKey = secret
+        }
     }
 
     /**
@@ -215,17 +222,62 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param workspace Workspace to apply this to.
      * @param accessKeyId Provider for AWS access key.
      * @param secret Provider for AWS secret.
+     *
+     * @deprecated Use {@link #usePropertiesForAws(String workspace, Action < AwsCredentialsSpec > creds)} instead.
      */
+    @Deprecated
     @SuppressWarnings('UnnecessaryCast')
     void usePropertiesForAws(
         String workspace,
         Provider<String> accessKeyId,
         Provider<String> secret
     ) {
-        credentialsMap.put(workspace, new Config([
-            (AWS_KEY)   : accessKeyId,
-            (AWS_SECRET): secret
-        ] as Map<String, Object>))
+        usePropertiesForAws(workspace) {
+            it.accessKey = accessKeyId
+            it.secretKey = secret
+        }
+    }
+
+    /**
+     * Pass these provider value to {@code Terraform} to use as authentication for all workspaces.
+     *
+     * Use the values that are supplied by the following providers.
+     *
+     * Calling this will remove any external influence available via
+     * {@link #useAwsCredentialsFromEnvironmentForAssumeRole}.
+     *
+     * @param profile Provider for AWS credentials profile.
+     *
+     * @since 0.15
+     */
+    void usePropertiesForAws(
+        Action<AwsCredentialsSpec> creds
+    ) {
+        def spec = new DefaultAwsCredentialsSpec(projectOperations)
+        creds.execute(spec)
+        this.defaultCreds = new Config(spec.asMap)
+    }
+
+    /**
+     * Pass these provider value to {@code Terraform} to use as authentication for a specific workspace.
+     *
+     * Use the values that are supplied by the following providers.
+     *
+     * Calling this will remove any external influence available via
+     * {@link #useAwsCredentialsFromEnvironmentForAssumeRole}.
+     *
+     * @param workspace Workspace to apply this to.
+     * @param profile Provider for AWS credentials profile.
+     *
+     * @since 0.15
+     */
+    void usePropertiesForAws(
+        String workspace,
+        Action<AwsCredentialsSpec> creds
+    ) {
+        def spec = new DefaultAwsCredentialsSpec(projectOperations)
+        creds.execute(spec)
+        credentialsMap.put(workspace, new Config(spec.asMap))
     }
 
     /**
@@ -238,7 +290,10 @@ class AwsExtension implements SessionCredentialsProvider {
      * Calling this will remove any customisation done via {@link #usePropertiesForAssumeRole}.
      *
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void useAwsCredentialsFromEnvironmentForAssumeRole(
         Action<AssumedRoleSpec> assumedRoleSpec
     ) {
@@ -259,7 +314,10 @@ class AwsExtension implements SessionCredentialsProvider {
      *
      * @param workspace Workspace to use credentials
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void useAwsCredentialsFromEnvironmentForAssumeRole(
         String workspace,
         Action<AssumedRoleSpec> assumedRoleSpec
@@ -286,7 +344,10 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param accessKeyIdPropertyName Property name for AWS access key.
      * @param secretPropertyName Property name for AWS secret.
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void usePropertiesForAssumeRole(
         String accessKeyIdPropertyName,
         String secretPropertyName,
@@ -311,7 +372,10 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param accessKeyIdPropertyName Property name for AWS access key.
      * @param secretPropertyName Property name for AWS secret.
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void usePropertiesForAssumeRole(
         String workspace,
         String accessKeyIdPropertyName,
@@ -337,7 +401,10 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param accessKeyId Provider for AWS access key.
      * @param secret Provider for AWS secret.
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void usePropertiesForAssumeRole(
         Provider<String> accessKeyId,
         Provider<String> secret,
@@ -365,7 +432,10 @@ class AwsExtension implements SessionCredentialsProvider {
      * @param accessKeyId Provider for AWS access key.
      * @param secret Provider for AWS secret.
      * @param assumedRoleSpec Configure the assumed role details.
+     *
+     * @deprecated It is better to allow Terraform to assume roles.
      */
+    @Deprecated
     void usePropertiesForAssumeRole(
         String workspace,
         Provider<String> accessKeyId,

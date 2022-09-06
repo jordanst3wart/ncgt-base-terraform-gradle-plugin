@@ -2,9 +2,17 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 0.14.0 - 0.14.1
+== 0.15.0
 
 // tag::changelog[]
+=== Features
+
+* {issue}78[#78] - Support AWS profiles, configuration & credentials files as DSL configurables.
+
+// end::changelog[]
+
+== 0.14.0 - 0.14.1
+
 === Features
 
 * {issue}74[#74] - New tasks `tfProvidersShow`, `tfProvidersLock` and `tfProvidersSchema` which are the equivalent of `terraform providers`, terraform providers lock` and `terraform providers schema`.
@@ -12,8 +20,6 @@
 === Other
 
 * Terraform default version is 1.2.8.
-
-// end::changelog[]
 
 == 0.13.0 - 0.13.1
 

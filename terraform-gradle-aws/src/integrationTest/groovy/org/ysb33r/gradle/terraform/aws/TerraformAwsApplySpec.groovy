@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,21 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
     public static final String FILE_CONTENTS = 'foo!!'
     public static final String AWS_KEY = 'abcdefghijklo'
     public static final String AWS_SECRET = 'asdfgsdafsdfdssdaf'
+    public static final String AWS_PROFILE = 'prodadmin'
     public static final String ROLE_ARN = 'arn:aws:iam::000000000000:role/AccountAdminRole'
     public static final String REGION = 'ca-central-1'
 
     File srcDir
     File destFile
+    File configFile
+    File credentialsFile
 
     void setup() {
         srcDir = new File(projectDir, 'src/tf/main')
         srcDir.mkdirs()
         destFile = createTF()
+        configFile = new File(projectDir,'.aws-config')
+        credentialsFile = new File(projectDir,'.aws-credentials')
     }
 
     void cleanup() {
@@ -86,12 +91,22 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
         createBuildFile(usePropertiesForTest())
 
         when:
-        BuildResult result = getGradleRunner(['tfPlan']).build()
+        BuildResult result = getGradleRunner([
+            'tfPlan',
+            "-Pmy.profile=${AWS_PROFILE}".toString(),
+            "-Pmy.config=${configFile.absolutePath}".toString(),
+            "-Pmy.credentials=${credentialsFile.absolutePath}".toString()
+        ]).build()
 
         then:
         result.task(':tfPlan').outcome == SUCCESS
-        result.output.contains("\"AWS_ACCESS_KEY_ID\"     = \"${AWS_KEY}\"")
-        result.output.contains("\"AWS_SECRET_ACCESS_KEY\" = \"${AWS_SECRET}\"")
+        verifyAll {
+            result.output.contains("\"AWS_ACCESS_KEY_ID\"           = \"${AWS_KEY}\"")
+            result.output.contains("\"AWS_SECRET_ACCESS_KEY\"       = \"${AWS_SECRET}\"")
+            result.output.contains("\"AWS_PROFILE\"                 = \"${AWS_PROFILE}\"")
+            result.output.contains("\"AWS_CONFIG_FILE\"             = \"${configFile.absolutePath}\"")
+            result.output.contains("\"AWS_SHARED_CREDENTIALS_FILE\" = \"${credentialsFile.absolutePath}\"")
+        }
     }
 
     void 'Run terraform plan with environment variables'() {
@@ -206,7 +221,15 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
     }
 
     String usePropertiesForTest() {
-        "usePropertiesForAws 'default', 'my.aws.key' , 'my.aws.secret'"
+        '''
+        usePropertiesForAws 'default', {
+            accessKey = 'my.aws.key' 
+            secretKey = 'my.aws.secret'
+            profile = 'my.profile'
+            configFile = 'my.config'
+            credentialsFile = 'my.credentials'
+        }
+        '''
     }
 
     String useEnvironmentForTest() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,9 @@ class AwsAuthentication {
     public static final String AWS_KEY = 'AWS_ACCESS_KEY_ID'
     public static final String AWS_SECRET = 'AWS_SECRET_ACCESS_KEY'
     public static final String AWS_TOKEN = 'AWS_SESSION_TOKEN'
+    public static final String AWS_PROFILE = 'AWS_PROFILE'
+    public static final String AWS_CONFIG_FILE = 'AWS_CONFIG_FILE'
+    public static final String AWS_CREDENTIALS_FILE = 'AWS_SHARED_CREDENTIALS_FILE'
 
     static class SimpleAwsCredentials implements AwsCredentials {
         String accessKey
