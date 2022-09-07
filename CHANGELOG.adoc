@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 0.15.0
+== 0.15.0 - 0.15.1
 
 // tag::changelog[]
 === Features
@@ -11,7 +11,8 @@
 
 === Bugs
 
-* {issue}77[#77] - Exclude .terraform.tfstate.local* to prevent endless loops in continuous mode.
+* {issue}77[#77] - Exclude `.terraform.tfstate.local*` to prevent endless loops in continuous mode.
+* {issue}79[#79] - Empty providers or properties must be ignored in `AwsExtension`.
 
 // end::changelog[]
 

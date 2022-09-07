@@ -112,6 +112,25 @@ class TerraformAwsApplySpec extends IntegrationSpecification {
         }
     }
 
+    void 'Empty properties will not be pushed as environment variables'() {
+        setup:
+        createBuildFile(usePropertiesForTest())
+
+        when:
+        BuildResult result = getGradleRunner([
+            'tfPlan',
+            '-Pmy.profile=',
+            "-Pmy.config=${configFile.absolutePath}".toString(),
+            "-Pmy.credentials=${credentialsFile.absolutePath}".toString()
+        ]).build()
+
+        then:
+        result.task(':tfPlan').outcome == SUCCESS
+        verifyAll {
+            !result.output.contains("\"AWS_PROFILE\"")
+        }
+    }
+
     void 'Run terraform plan with environment variables'() {
         setup:
         createBuildFile(useEnvironmentForTest())

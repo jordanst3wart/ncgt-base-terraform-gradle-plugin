@@ -34,58 +34,67 @@ class DefaultAwsCredentialsSpec implements AwsCredentialsSpec {
 
     @Override
     void setAccessKey(String prop) {
-        map[AwsAuthentication.AWS_KEY] = projectOperations.resolveProperty(prop)
+        map[AwsAuthentication.AWS_KEY] = resolver(prop)
     }
 
     @Override
     void setAccessKey(Provider<String> prop) {
-        map[AwsAuthentication.AWS_KEY] = prop
+        map[AwsAuthentication.AWS_KEY] = resolver(prop)
     }
 
     @Override
     void setSecretKey(String prop) {
-        map[AwsAuthentication.AWS_SECRET] = projectOperations.resolveProperty(prop)
+        map[AwsAuthentication.AWS_SECRET] = resolver(prop)
     }
 
     @Override
     void setSecretKey(Provider<String> prop) {
-        map[AwsAuthentication.AWS_SECRET] = prop
+        map[AwsAuthentication.AWS_SECRET] = resolver(prop)
     }
 
     @Override
     void setProfile(String prop) {
-        map[AwsAuthentication.AWS_PROFILE] = projectOperations.resolveProperty(prop)
+        map[AwsAuthentication.AWS_PROFILE] = resolver(prop)
     }
 
     @Override
     void setProfile(Provider<String> prop) {
-        map[AwsAuthentication.AWS_PROFILE] = prop
+        map[AwsAuthentication.AWS_PROFILE] = resolver(prop)
     }
 
     @Override
     void setConfigFile(String prop) {
-        map[AwsAuthentication.AWS_CONFIG_FILE] = projectOperations.resolveProperty(prop)
+        map[AwsAuthentication.AWS_CONFIG_FILE] = resolver(prop)
     }
 
     @Override
     void setConfigFile(Provider<File> prop) {
-        map[AwsAuthentication.AWS_CONFIG_FILE] = prop.map { it.absolutePath }
+        map[AwsAuthentication.AWS_CONFIG_FILE] = resolver(prop.map { it.absolutePath })
     }
 
     @Override
     void setCredentialsFile(String prop) {
-        map[AwsAuthentication.AWS_CREDENTIALS_FILE] = projectOperations.resolveProperty(prop)
+        map[AwsAuthentication.AWS_CREDENTIALS_FILE] = resolver(prop)
     }
 
     @Override
     void setCredentialsFile(Provider<File> prop) {
-        map[AwsAuthentication.AWS_CREDENTIALS_FILE] = prop.map { it.absolutePath }
+        map[AwsAuthentication.AWS_CREDENTIALS_FILE] = resolver(prop.map { it.absolutePath })
     }
 
     Map<String, Object> getAsMap() {
-        this.map as Map<String,Object>
+        this.map as Map<String, Object>
+    }
+
+    private Provider<String> resolver(String prop) {
+        resolver(projectOperations.resolveProperty(prop))
+    }
+
+    private Provider<String> resolver(Provider<String> prop) {
+        projectOperations.providerTools.orElse(prop, EMPTY)
     }
 
     private final ProjectOperations projectOperations
     private final Map<String, Provider<String>> map = [:]
+    private static final String EMPTY = ''
 }

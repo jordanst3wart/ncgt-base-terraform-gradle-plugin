@@ -76,18 +76,19 @@ class AwsExtension implements SessionCredentialsProvider {
                         config.assumedRoleSpec
                     )
                 } else {
-                    new TerraformAwsFixedCredentials(stringizeValues(config.env))
+                    new TerraformAwsFixedCredentials(stringizeValues(config.env).findAll { it.value })
                 }
             }
         }
         this.sessionNameFactory = new Callable<Provider<String>>() {
             @Override
             Provider<String> call() throws Exception {
-                projectOperations.map(projectOperations.systemProperty('user.name')) { String it ->
-                    final String head = it ? "tf-${it}" : 'terraform'
-                    final String name = "${head}-${UUID.randomUUID()}"
-                    name.size() > 64 ? name[0..63] : name
-                }
+                projectOperations.providerTools
+                    .map(projectOperations.systemProperty('user.name')) { String it ->
+                        final String head = it ? "tf-${it}" : 'terraform'
+                        final String name = "${head}-${UUID.randomUUID()}"
+                        name.size() > 64 ? name[0..63] : name
+                    }
             }
         }
     }
@@ -246,7 +247,8 @@ class AwsExtension implements SessionCredentialsProvider {
      * Calling this will remove any external influence available via
      * {@link #useAwsCredentialsFromEnvironmentForAssumeRole}.
      *
-     * @param profile Provider for AWS credentials profile.
+     * @param creds Credentials specification.
+     *   If any of these resolve to null or empty, they will be ignored when providers are resolved.
      *
      * @since 0.15
      */
@@ -267,7 +269,8 @@ class AwsExtension implements SessionCredentialsProvider {
      * {@link #useAwsCredentialsFromEnvironmentForAssumeRole}.
      *
      * @param workspace Workspace to apply this to.
-     * @param profile Provider for AWS credentials profile.
+     * @param creds Credentials specification.
+     *   If any of these resolve to null or empty, they will be ignored when providers are resolved.
      *
      * @since 0.15
      */
