@@ -27,7 +27,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformMajorVersion
-import org.ysb33r.grolifant.api.v4.MapUtils
 
 import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitor
@@ -142,7 +141,7 @@ class TerraformInit extends AbstractTerraformTask {
      * @since 0.4.0
      */
     void setBackendConfigFile(Object location) {
-        projectOperations.updateFileProperty(this.backendConfig, projectOperations.provider { ->
+        projectOperations.fsOperations.updateFileProperty(this.backendConfig, projectOperations.provider { ->
             projectOperations.fsOperations.fileOrNull(location)
         })
     }
@@ -168,7 +167,7 @@ class TerraformInit extends AbstractTerraformTask {
      */
     @Input
     Map<String, String> getBackendConfigValues() {
-        MapUtils.stringizeValues(this.backendConfigValues)
+        projectOperations.stringTools.stringizeValues(this.backendConfigValues)
     }
 
     /** Replaces any existing backend configuration values with a new set.

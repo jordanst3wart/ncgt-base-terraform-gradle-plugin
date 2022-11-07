@@ -70,7 +70,7 @@ class TerraformRCExtension {
         }.curry(new File(projectOperations.projectCacheDir, '.terraformrc')) as Callable<File>)
 
         this.pluginCacheDir = project.objects.property(File)
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             this.pluginCacheDir,
             projectOperations.gradleUserHomeDir.map { new File(it, 'caches/terraform.d') }
         )
@@ -85,10 +85,10 @@ class TerraformRCExtension {
      * @param dir Anything that is convertible using {@code project.file}.
      */
     void setPluginCacheDir(Object dir) {
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             this.pluginCacheDir,
             projectOperations.provider({ ->
-                projectOperations.file(dir)
+                projectOperations.fsOperations.file(dir)
             } as Callable<File>)
         )
     }

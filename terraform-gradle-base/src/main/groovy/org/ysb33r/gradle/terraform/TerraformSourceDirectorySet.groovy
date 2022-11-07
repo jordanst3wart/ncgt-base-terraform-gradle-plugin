@@ -115,22 +115,22 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         logDir = objects.property(File)
         reportsDir = objects.property(File)
 
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             sourceDir,
             "src/tf/${name}"
         )
 
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             dataDir,
             projectOperations.buildDirDescendant("tf/${name}")
         )
 
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             logDir,
             projectOperations.buildDirDescendant("tf/${name}/logs")
         )
 
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             reportsDir,
             projectOperations.buildDirDescendant("reports/tf/${name}")
         )
@@ -147,7 +147,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         this.secondarySources = []
         this.secondarySourcesProvider = projectOperations.provider({ List<Object> files ->
-            projectOperations.fileize(files)
+            projectOperations.fsOperations.files(files).toList()
         }.curry(this.secondarySources))
 
         this.workspaces = createWorkspaceContainer(tempProjectReference, objects)
@@ -213,7 +213,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @return {@code this}.
      */
     void setSrcDir(Object dir) {
-        projectOperations.updateFileProperty(this.sourceDir, dir)
+        projectOperations.fsOperations.updateFileProperty(this.sourceDir, dir)
     }
 
     /** Data directory provider.
@@ -230,7 +230,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @return {@code this}.
      */
     void setDataDir(Object dir) {
-        projectOperations.updateFileProperty(this.dataDir, dir)
+        projectOperations.fsOperations.updateFileProperty(this.dataDir, dir)
     }
 
     /** Log directory provider.
@@ -247,7 +247,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @return {@code this}.
      */
     void setLogDir(Object dir) {
-        projectOperations.updateFileProperty(this.logDir, dir)
+        projectOperations.fsOperations.updateFileProperty(this.logDir, dir)
     }
 
     /** Reports directory.
@@ -264,7 +264,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @return {@code this}.
      */
     void setReportsDir(Object dir) {
-        projectOperations.updateFileProperty(this.reportsDir, dir)
+        projectOperations.fsOperations.updateFileProperty(this.reportsDir, dir)
     }
 
     /** Returns the pattern filter.
@@ -522,10 +522,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      * @since 0.11
      */
     Provider<Set<SessionCredentials>> getCredentialProviders(String wsName = DEFAULT_WORKSPACE) {
-        projectOperations.map(
-            projectOperations.provider { -> wsName },
-            workspaceSessionCredentialsTransformer
-        )
+        projectOperations.provider { -> wsName }.map(workspaceSessionCredentialsTransformer)
     }
 
     static class Workspace implements Named {

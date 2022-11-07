@@ -264,7 +264,7 @@ class TerraformRemoteStateExtension implements BackendAttributesSpec {
      * @param p Object that can be converted to a string. Can be a {@code Provider} as well.
      */
     void setPrefix(Object p) {
-        projectOperations.updateStringProperty(this.prefix, p)
+        projectOperations.stringTools.updateStringProperty(this.prefix, p)
     }
 
     /** A prefix that is added to remote state names.

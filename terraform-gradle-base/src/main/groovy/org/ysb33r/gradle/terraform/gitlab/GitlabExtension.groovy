@@ -63,10 +63,7 @@ class GitlabExtension implements SessionCredentialsProvider {
      */
     @Override
     Provider<SessionCredentials> getCredentialsEnvForWorkspace(String name) {
-        projectOperations.map(
-            projectOperations.provider { -> name },
-            this.transformer
-        )
+        projectOperations.provider { -> name }.map(this.transformer)
     }
 
     /**
@@ -84,7 +81,7 @@ class GitlabExtension implements SessionCredentialsProvider {
      *
      */
     void useGitlabTokenFromEnvironment() {
-        projectOperations.updateStringProperty(
+        projectOperations.stringTools.updateStringProperty(
             this.defaultCreds,
             projectOperations.environmentVariable(GitlabSessionCredentials.GITLAB_TOKEN)
         )
@@ -153,7 +150,7 @@ class GitlabExtension implements SessionCredentialsProvider {
     void useProperty(
         Provider<String> gitlabTokenProvider
     ) {
-        projectOperations.updateStringProperty(this.defaultCreds, gitlabTokenProvider)
+        projectOperations.stringTools.updateStringProperty(this.defaultCreds, gitlabTokenProvider)
     }
 
     /**

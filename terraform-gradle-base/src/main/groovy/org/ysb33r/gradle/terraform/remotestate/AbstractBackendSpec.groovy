@@ -277,7 +277,7 @@ abstract class AbstractBackendSpec implements BackendSpec {
                     if (actualTemplateFile instanceof Provider && !((Provider) actualTemplateFile).present) {
                         null
                     } else {
-                        po.file(actualTemplateFile)
+                        po.fsOperations.file(actualTemplateFile)
                     }
                 } else {
                     null

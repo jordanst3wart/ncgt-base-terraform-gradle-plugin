@@ -39,8 +39,6 @@ import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.core.Version
-import org.ysb33r.grolifant.api.v4.MapUtils
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
@@ -49,7 +47,6 @@ import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask.defaultEnvironment
-import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -87,7 +84,7 @@ class TerraformExtension extends AbstractToolExtension {
     /** The default version of Terraform that will be used on
      * a supported platform if nothing else is configured.
      */
-    public static final String TERRAFORM_DEFAULT = '1.2.8'
+    public static final String TERRAFORM_DEFAULT = '1.3.4'
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -121,11 +118,11 @@ class TerraformExtension extends AbstractToolExtension {
         executableDetails = [:]
         this.fsMirror = task.project.objects.property(File)
         this.netMirror = task.project.objects.property(String)
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             this.fsMirror,
             ((TerraformExtension) projectExtension).localMirrorDirectory
         )
-        projectOperations.updateStringProperty(
+        projectOperations.stringTools.updateStringProperty(
             this.netMirror,
             ((TerraformExtension) projectExtension).netMirror
         )
@@ -252,7 +249,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @return Map of environmental variables that will be passed.
      */
     Map<String, String> getEnvironment() {
-        task ? ((AbstractTerraformTask) task).environment : MapUtils.stringizeValues(this.env)
+        task ? ((AbstractTerraformTask) task).environment : projectOperations.stringTools.stringizeValues(this.env)
     }
 
     /** Add environmental variables to be passed to the exe.
@@ -322,7 +319,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @since 0.14.0
      */
     void setLocalMirrorDirectory(Object path) {
-        projectOperations.updateFileProperty(this.fsMirror, path)
+        projectOperations.fsOperations.updateFileProperty(this.fsMirror, path)
     }
 
     /**
@@ -344,7 +341,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @since 0.14.0
      */
     void setNetMirror(Object uri) {
-        projectOperations.updateStringProperty(this.netMirror, uri)
+        projectOperations.stringTools.updateStringProperty(this.netMirror, uri)
     }
 
     /**
@@ -389,7 +386,7 @@ class TerraformExtension extends AbstractToolExtension {
     TerraformMajorVersion resolveTerraformVersion() {
         String ver
         if (executableDetails[VERSION_KEY]) {
-            ver = stringize(executableDetails[VERSION_KEY])
+            ver = projectOperations.stringTools.stringize(executableDetails[VERSION_KEY])
         } else {
             TerraformExecSpec tes = new TerraformExecSpec(projectOperations, resolver)
             def strm = new ByteArrayOutputStream()

@@ -1,35 +1,31 @@
-apply plugin : 'org.ysb33r.vfs'
-
 ext {
 
 
-
-    currentOS = org.gradle.internal.os.OperatingSystem.current()
     // These are Terraform plugins we are going to cache, so we don't have to download them everytime.
     terraformTestPlugins = [
         [name: 'local', version: '1.0.0'],
-        [name: 'aws', 'version': '1.0.0']
+        [name: 'aws', 'version': '4.38.0']
     ]
 
     terraformOsArch = { ->
         def terraformArch
         def terraformOS
 
-        if (currentOS.windows) {
+        if (OS.windows) {
             terraformOS = 'windows'
             if (System.getProperty('os.arch').contains('64')) {
                 terraformArch = 'amd64'
             } else {
                 terraformArch = '386'
             }
-        } else if (currentOS.linux) {
+        } else if (OS.linux) {
             terraformOS = 'linux'
             if (System.getProperty('os.arch').contains('64')) {
                 terraformArch = 'amd64'
             } else {
                 terraformArch = '386'
             }
-        } else if (currentOS.macOsX) {
+        } else if (OS.macOsX) {
             terraformOS = 'darwin'
             terraformArch = 'amd64'
         }
@@ -38,43 +34,71 @@ ext {
     }.call()
 }
 
-task cacheTerraformBinaries {
 
-    enabled = !project.gradle.startParameter.offline
-
-    terraformTestVersions.each { ver ->
-
-        final String relativePath = "terraform/${ver}/terraform_${ver}_${terraformOsArch}.zip"
-        final File target = file("${terraformTestCacheDir}/${relativePath}")
-        outputs.file target
-
-        doLast {
-            if (!target.exists()) {
-                mkdir target.parentFile
-                vfs {
-                    cp "https://releases.hashicorp.com/${relativePath}",
-                        target,
-                        overwrite: true, recursive: false
-                }
-            }
+repositories {
+    ivy {
+        name 'Downloader for Terraform distributions'
+        url 'https://releases.hashicorp.com/terraform/'
+        resolve.dynamicMode = false
+        layout 'pattern', {
+            artifact "[revision]/[artifact]_[revision]_[classifier].[ext]"
+        }
+        content {
+            includeGroup 'terraform'
+        }
+        metadataSources {
+            artifact()
+            ignoreGradleMetadataRedirection()
         }
     }
 
-    terraformTestPlugins.each { plugin ->
-        final String relativePath = "terraform-provider-${plugin.name}/${plugin.version}/terraform-provider-${plugin.name}_${plugin.version}_${terraformOsArch}.zip"
-        final File target = file("${terraformTestCacheDir}/${relativePath}")
-
-        outputs.file target
-        doLast {
-            if (!target.exists()) {
-                mkdir target.parentFile
-                vfs {
-                    cp "https://releases.hashicorp.com/${relativePath}",
-                        target,
-                        overwrite: true, recursive: false
-                }
-            }
+    ivy {
+        name 'Downloader for Terraform providers'
+        url 'https://releases.hashicorp.com/'
+        resolve.dynamicMode = false
+        layout 'pattern', {
+            artifact "terraform-provider-[artifact]/[revision]/terraform-provider-[artifact]_[revision]_[classifier].[ext]"
         }
-
+        content {
+            includeGroup 'terraform-provider'
+        }
+        metadataSources {
+            artifact()
+            ignoreGradleMetadataRedirection()
+        }
     }
 }
+
+terraformTestVersions.each { ver ->
+    configurations.create("terraform_${ver}")
+    dependencies.add("terraform_${ver}", "terraform:terraform:${ver}:${terraformOsArch}@zip")
+}
+
+terraformTestPlugins.each { plugin ->
+    configurations.maybeCreate("terraform_provider_${plugin.version}")
+    dependencies.add("terraform_provider_${plugin.version}", "terraform-provider:${plugin.name}:${plugin.version}:${terraformOsArch}@zip")
+}
+
+tasks.register('cacheTerraformBinaries') {
+    enabled = !project.gradle.startParameter.offline
+    outputs.dir(terraformTestCacheDir)
+    doLast {
+        delete terraformTestCacheDir
+        copy {
+            terraformTestVersions.each { ver ->
+                from configurations.getByName("terraform_${ver}"), {
+                    rename '^.+$', "terraform_${ver}_${terraformOsArch}.zip"
+                    into "terraform/${ver}"
+                }
+            }
+            terraformTestPlugins.each { plugin ->
+                from configurations.getByName("terraform_provider_${plugin.version}"), {
+                    rename '^.+$', "terraform-provider-${plugin.name}_${plugin.version}_${terraformOsArch}.zip"
+                    into "terraform-provider-${plugin.name}/${plugin.version}/"
+                }
+            }
+            into terraformTestCacheDir
+        }
+    }
+}
+

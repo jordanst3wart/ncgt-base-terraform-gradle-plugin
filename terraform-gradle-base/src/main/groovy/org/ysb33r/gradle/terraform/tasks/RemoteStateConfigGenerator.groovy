@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -28,7 +27,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.internal.remotestate.Templates
 import org.ysb33r.gradle.terraform.internal.remotestate.TextTemplates
-import org.ysb33r.gradle.terraform.remotestate.BackendSpec
 import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -57,7 +55,6 @@ class RemoteStateConfigGenerator extends DefaultTask {
 
         this.templateFileProvider = project.objects.property(File)
         this.textTemplateProvider = project.objects.property(BackendTextTemplate)
-        this.backendProvider = project.objects.property(BackendSpec)
 
         this.outputFile.set(
             project.provider(new Callable<File>() {
@@ -73,15 +70,6 @@ class RemoteStateConfigGenerator extends DefaultTask {
         }
 
         inputs.property('textTemplate') { textTemplate.getOrNull()?.template(remoteState) }.optional(true)
-    }
-
-    @Deprecated
-    void configure(Action<? extends BackendSpec> configurator) {
-        if (backendProvider.present) {
-            backendProvider.get().configure(configurator)
-        } else {
-            logger.warn "Configurator ignored for task '${name}' as no backend associated with task."
-        }
     }
 
     /**
@@ -104,8 +92,7 @@ class RemoteStateConfigGenerator extends DefaultTask {
      */
     void setRemoteState(TerraformRemoteStateExtension source) {
         this.remoteState = source
-        this.backendProvider.set(source.backendProvider)
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             this.templateFileProvider,
             source.templateFile
         )
@@ -158,7 +145,7 @@ class RemoteStateConfigGenerator extends DefaultTask {
      * @param file Location of template file
      */
     void setTemplateFile(Object file) {
-        projectOperations.updateFileProperty(this.templateFileProvider, file)
+        projectOperations.fsOperations.updateFileProperty(this.templateFileProvider, file)
         this.textTemplateProvider.set((BackendTextTemplate) null)
     }
 
@@ -249,40 +236,6 @@ class RemoteStateConfigGenerator extends DefaultTask {
         this.tokenProviders.add(tokenProvider)
     }
 
-    /** Starting delimiter for tokens.
-     *
-     * Only useful when a custom template is used.
-     *
-     * @return Delimiter
-     *
-     * @deprecated
-     */
-    @Deprecated
-    @Internal
-    String getBeginToken() {
-        beginTokenProvider.get()
-    }
-
-    /** Terminating delimiter for tokens
-     *
-     * Only useful when a custom template is used.
-     *
-     * @return Delimiter
-     *
-     * @deprecated
-     */
-    @Deprecated
-    @Internal
-    String getEndToken() {
-        endTokenProvider.get()
-    }
-
-    @Internal
-    @Deprecated
-    Provider<BackendSpec> getBackendProvider() {
-        this.backendProvider
-    }
-
     @TaskAction
     void exec() {
         Templates.generateFromTemplate(
@@ -305,7 +258,4 @@ class RemoteStateConfigGenerator extends DefaultTask {
     private final Property<File> templateFileProvider
     private final Property<BackendTextTemplate> textTemplateProvider
     private final List<Provider<Map<String, Object>>> tokenProviders = []
-
-    @Deprecated
-    private final Property<BackendSpec> backendProvider
 }

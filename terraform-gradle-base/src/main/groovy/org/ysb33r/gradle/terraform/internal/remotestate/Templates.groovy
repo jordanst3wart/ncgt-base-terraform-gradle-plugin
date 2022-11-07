@@ -24,8 +24,6 @@ import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.remotestate.BackendAttributesSpec
 import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.MapUtils
-import org.ysb33r.grolifant.api.v5.FileUtils
 
 @CompileStatic
 class Templates {
@@ -72,7 +70,7 @@ class Templates {
                     rename '(.+)', backendConfigFile.name
                     filter ReplaceTokens,
                         beginToken: beginToken, endToken: endToken,
-                        tokens: MapUtils.stringizeValues(tokens)
+                        tokens: projectOperations.stringTools.stringizeValues(tokens)
                 }
             }
         }
@@ -88,8 +86,9 @@ class Templates {
         BackendTextTemplate textTemplate,
         BackendAttributesSpec attributes
     ) {
+        final safeName = projectOperations.fsOperations.toSafeFileName(filenamePrefix)
         File target = projectOperations
-            .buildDirDescendant("tmp/${FileUtils.toSafeFileName(filenamePrefix)}.template.tf")
+            .buildDirDescendant("tmp/${safeName}.template.tf")
             .get()
         target.parentFile.mkdirs()
         target.text = textTemplate.template(attributes)

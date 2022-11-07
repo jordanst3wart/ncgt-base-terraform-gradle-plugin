@@ -54,7 +54,7 @@ class TerraformDestroyPlan extends TerraformPlan {
 
     @Override
     Provider<File> getVariablesFile() {
-        projectOperations.providerTools.map(super.variablesFile) {
+        super.variablesFile.map {
             new File(it.parentFile, "_d_.${workspaceName}.tfVars")
         }
     }

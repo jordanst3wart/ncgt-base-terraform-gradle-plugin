@@ -22,10 +22,11 @@ import org.ysb33r.gradle.terraform.remotestate.LocalBackendSpec
 import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.RemoteStateConfigGenerator
+import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.core.StringTools
 import spock.lang.Specification
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.backendTaskName
-import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
 
 class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
@@ -33,6 +34,8 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
     public static final String SOURCE_SET_NAME = 'main'
 
     Project project = ProjectBuilder.builder().build()
+    ProjectOperations po
+    StringTools stringTools
     TerraformRemoteStateExtension remote
     RemoteStateS3Spec s3
     LocalBackendSpec local
@@ -43,6 +46,8 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
     void setup() {
         project.apply plugin: PLUGIN_ID
+        po = ProjectOperations.maybeCreateExtension(project)
+        stringTools = po.stringTools
         remote = TerraformRemoteStateExtension.findExtension(project)
         s3 = RemoteStateS3Spec.findExtension(project)
         sourceSetRemote = TerraformRemoteStateExtension.findExtension(project, SOURCE_SET_NAME)
@@ -75,17 +80,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         project.tasks.getByName('createTfBackendConfiguration')
     }
 
-    void 'Tasks are created for additional source sets'() {
-        setup:
-        project.terraformSourceSets {
-            additional {
-            }
-        }
-
-        expect:
-        project.tasks.getByName('createTfAdditionalS3BackendConfiguration')
-    }
-
     void 'Configuring terraform.remote.s3 sets properties on task'() {
         setup:
         def region = 'blah-blah'
@@ -105,9 +99,9 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         tss.getByName('main').remote.remoteStateVar = true
 
         and: 'obtaining tokens from various sources'
-        def taskTokens = stringizeValues(project.tasks.createTfBackendConfiguration.tokens)
-        def globalSpecTokens = stringizeValues(s3.tokens)
-        def tssSpecTokens = stringizeValues(tss.getByName('main').remote.s3.tokens)
+        def taskTokens = stringTools.stringizeValues(project.tasks.createTfBackendConfiguration.tokens)
+        def globalSpecTokens = stringTools.stringizeValues(s3.tokens)
+        def tssSpecTokens = stringTools.stringizeValues(tss.getByName('main').remote.s3.tokens)
 
         then: 'the task will pick up appropriate aws configuration'
         taskTokens['bucket'] == bucket
@@ -141,24 +135,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         project.tasks.createTfBackendConfiguration.destinationDir.get() == main.parentFile
     }
 
-    void 'Can customise the template'() {
-        when: 'the plugin is applied'
-        String defaultDelimiter = '@@'
-
-        then: 'the token delimiters are "@@"'
-        generatorTask.beginToken == defaultDelimiter
-        generatorTask.endToken == defaultDelimiter
-        !generatorTask.templateFile.present
-
-        when: 'the template file and tokens are changed'
-        s3.delimiterTokenPair('##', '$$')
-        generatorTask.templateFile = 'src/foo.tmpl'
-
-        then: 'the new values are expected to be set'
-        generatorTask.beginToken == '##'
-        generatorTask.endToken == '$$'
-        generatorTask.templateFile.get().name == 'foo.tmpl'
-    }
 
     void 'Tokens for the template can be configured'() {
         when: 'the plugin is applied'
@@ -233,6 +209,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
     }
 
     private Map<String, String> getAllTokens() {
-        stringizeValues(sourceSetRemote.tokenProvider.get())
+        po.stringTools.stringizeValues(sourceSetRemote.tokenProvider.get())
     }
 }

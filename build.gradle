@@ -1,20 +1,11 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'commons-httpclient:commons-httpclient:3.1'
-    }
-}
-
 plugins {
     id 'idea'
+    id 'org.ysb33r.os' version '0.9'
     id 'org.ysb33r.gradletest' version '2.0' apply false
     id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
     id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
     id 'com.gradle.plugin-publish' version '0.15.0' apply false
     id 'com.github.hierynomus.license' version '0.14.0' apply false
-    id 'org.ysb33r.vfs' version '1.0' apply false
     id 'org.ajoberstar.git-publish' version '2.1.1' apply false
     id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5' apply false
 }
@@ -38,7 +29,12 @@ allprojects {
     }
 
     repositories {
-        mavenCentral()
+        mavenCentral() {
+            content {
+                excludeGroup 'terraform'
+                excludeGroup 'terraform-provider'
+            }
+        }
 
         if (!notSnapshot()) {
             mavenLocal()

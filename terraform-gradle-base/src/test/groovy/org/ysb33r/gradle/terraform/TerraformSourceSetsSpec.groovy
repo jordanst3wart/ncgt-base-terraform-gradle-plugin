@@ -17,19 +17,12 @@ package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Provider
-import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import spock.lang.Issue
 import spock.lang.Specification
-
-import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_BUCKET
-import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_DYNAMODB_TABLE_ARN
-import static org.ysb33r.gradle.terraform.remotestate.RemoteStateS3Spec.TOKEN_REGION
 
 class TerraformSourceSetsSpec extends Specification {
     Project project = ProjectBuilder.builder().build()
@@ -149,28 +142,24 @@ class TerraformSourceSetsSpec extends Specification {
                 main {
                     remote {
                         s3 {
-                            follow(project.testExt.myProviders)
                         }
                     }
                 }
                 create('created') {
                     remote {
                         s3 {
-                            follow(project.testExt.myProviders)
                         }
                     }
                 }
                 register('registered') {
                     remote {
                         s3 {
-                            follow(project.testExt.myProviders)
                         }
                     }
                 }
                 groovyAutoAddStyle {
                     remote {
                         s3 {
-                            follow(project.testExt.myProviders)
                         }
                     }
                 }
@@ -185,30 +174,6 @@ class TerraformSourceSetsSpec extends Specification {
         TestExtension(ProviderFactory p,Project p1) {
             this.providers = p
             this.project1 = p1
-        }
-
-        RemoteStateS3Provider getMyProviders() {
-            new RemoteStateS3Provider() {
-                @Override
-                Provider<Map<String, ?>> getAttributesMap() {
-                    providers.provider { ->
-                        [
-                            (TOKEN_REGION)            : 'region',
-                            (TOKEN_BUCKET)            : 'bucket',
-                            (TOKEN_DYNAMODB_TABLE_ARN): 'table'
-                        ]
-                    }
-                }
-
-                @Override
-                void setAssociatedRemoteStateExtension(TerraformRemoteStateExtension trse) {
-                }
-
-                @Override
-                TerraformRemoteStateExtension getAssociatedRemoteStateExtension() {
-                    project1.terraform.remote
-                }
-            }
         }
     }
 }

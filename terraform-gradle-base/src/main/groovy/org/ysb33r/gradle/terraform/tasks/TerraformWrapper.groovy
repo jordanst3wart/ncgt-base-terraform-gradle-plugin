@@ -62,7 +62,7 @@ class TerraformWrapper extends AbstractScriptWrapperTask {
         [
             APP_BASE_NAME               : 'terraform',
             GRADLE_WRAPPER_RELATIVE_PATH: rootRelativePath,
-            DOT_GRADLE_RELATIVE_PATH    : projectOperations.relativePath(cacheTaskParent),
+            DOT_GRADLE_RELATIVE_PATH    : projectOperations.fsOperations.relativePath(cacheTaskParent),
             APP_LOCATION_FILE           : cacheTask.locationPropertiesFile.get().name,
             CACHE_TASK_NAME             : cacheTask.name,
             TERRAFORMRC_TASK_NAME       : TERRAFORM_RC_TASK

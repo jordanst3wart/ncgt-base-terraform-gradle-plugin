@@ -60,8 +60,8 @@ class TerraformAwsCredentialsProvider implements AwsCredentialsProvider {
     @Override
     AwsCredentials resolveCredentials() {
         new TerraformAwsCredentialsProvider.Credentials(
-            projectOperations.providerTools.getOrNull(access),
-            projectOperations.providerTools.getOrNull(secret),
+            access.getOrNull(),
+            secret.getOrNull()
         )
     }
 

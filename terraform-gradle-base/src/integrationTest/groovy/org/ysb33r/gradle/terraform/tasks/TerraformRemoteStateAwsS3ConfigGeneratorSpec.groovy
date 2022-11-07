@@ -96,24 +96,4 @@ class TerraformRemoteStateAwsS3ConfigGeneratorSpec extends ConfigGeneratorSpecif
             lines.contains('workspace_key_prefix = "ws"')
         }
     }
-
-    @Deprecated
-    void 'Create S3 configuration file via legacy task'() {
-        setup:
-        String legacyTaskName = 'createTfS3BackendConfiguration'
-
-        when:
-        BuildResult result = getGradleRunner(
-            IS_GROOVY_DSL,
-            projectDir,
-            [
-                legacyTaskName,
-                '-i',
-            ]
-        ).withTestKitDir(testkitDir).build()
-
-        then:
-        result.task(":${taskName}").outcome == SUCCESS
-        result.task(":${legacyTaskName}").outcome == SUCCESS
-    }
 }

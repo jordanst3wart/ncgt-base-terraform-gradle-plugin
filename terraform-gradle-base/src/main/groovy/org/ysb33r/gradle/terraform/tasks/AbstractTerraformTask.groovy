@@ -22,14 +22,12 @@ import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
@@ -40,14 +38,12 @@ import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTyp
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
-import org.ysb33r.grolifant.api.v4.StringUtils
 
 import java.util.concurrent.ConcurrentHashMap
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_0
-import static org.ysb33r.grolifant.api.v4.StringUtils.stringize
 
 /** A base class for performing a {@code terraform} execution.
  *
@@ -61,7 +57,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
     /**
      *
-     * @param source Source set of anything that can be resolved using {@link StringUtils#stringize(Object s)}
+     * @param source Source set of anything that can be resolved using {@link StringTools#stringize(Object s)}
      * and looked up as a Terraform source set.
      */
     void setSourceSet(Object source) {
@@ -76,7 +72,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
             case TerraformSourceDirectorySet:
                 return (TerraformSourceDirectorySet) this.sourceSetProxy
             default:
-                project.extensions.getByType(TerraformSourceSets).getByName(stringize(this.sourceSetProxy))
+                project.extensions.getByType(
+                    TerraformSourceSets).getByName(projectOperations.stringTools.stringize(this.sourceSetProxy)
+                )
         }
     }
 
@@ -118,26 +116,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      */
     void setLogProgress(boolean state) {
         this.terraformLogLevel = state ? 'TRACE' : null
-    }
-
-    @Deprecated
-    void unsetLogLevel() {
-        logger.warn('unsetLogLevel is deprecated. Use setLogProgress instead.')
-        this.logProgress = false
-    }
-
-    @Deprecated
-    @SuppressWarnings('DuplicateStringLiteral')
-    void setLogLevel(String lvl) {
-        logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
-        logProgress = lvl == 'INFO' || lvl == 'DEBUG'
-    }
-
-    @Deprecated
-    @SuppressWarnings('DuplicateStringLiteral')
-    void setLogLevel(LogLevel lvl) {
-        logger.warn('setLogLevel is deprecated. Use setLogProgress instead.')
-        logProgress = lvl == LogLevel.INFO || lvl == LogLevel.DEBUG
     }
 
     /** Adds AWS environmental variables to Terraform runtime environment.
@@ -254,6 +232,8 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate', '.terraform.tfstate.lock*')
         this.workspaceName = workspaceName
         this.projectName = project.name
+
+        projectOperations.tasks.ignoreEmptyDirectories(inputs, this.sourceFiles)
     }
 
     /**
@@ -286,8 +266,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      *
      * @since 0.10.0
      */
-    @InputFiles
-    @SkipWhenEmpty
+    @Internal
     protected FileCollection getSourceFiles() {
         this.sourceFiles
     }

@@ -18,8 +18,7 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.SkipWhenEmpty
+import org.gradle.api.tasks.Internal
 import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
@@ -75,8 +74,7 @@ abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
      *
      * @return List of directories
      */
-    @InputFiles
-    @SkipWhenEmpty
+    @Internal
     abstract Provider<Set<File>> getSourceDirectories()
 
     abstract protected void addCommandSpecificsForFmt(TerraformExecSpec execSpec)

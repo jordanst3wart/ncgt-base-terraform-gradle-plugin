@@ -61,7 +61,7 @@ class TerraformDestroy extends AbstractTerraformTask {
 
         inputs.files(taskProvider('init'))
 
-        variablesFile = projectOperations.providerTools.map(plan) {
+        variablesFile = plan.map {
             new File(it.variablesFile.get().parentFile, "_d_.${workspaceName}.tfVars")
         }
     }

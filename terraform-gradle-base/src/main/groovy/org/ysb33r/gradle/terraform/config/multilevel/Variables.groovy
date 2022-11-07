@@ -67,7 +67,7 @@ class Variables implements TerraformTaskConfigExtension,
      *
      * @param name Name of variable.
      * @param value Lazy-evaluated form of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Object)}
+     * {@link org.ysb33r.grolifant.api.core.StringTools#stringize(Object)}
      * is accepted.
      */
     @Override
@@ -82,7 +82,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @param name Name of variable.
      * @param val1 First
      * @param map Lazy-evaluated form of map.
-     *  Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues(Map)}
+     *  Anything resolvable via {@link org.ysb33r.grolifant.api.core.StringTools#stringizeValues(Map)}
      * is accepted.
      */
     @Override
@@ -110,7 +110,7 @@ class Variables implements TerraformTaskConfigExtension,
      * @param name Name of variable.
      * @param val1 First
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.core.StringTools#stringize(Iterable <?>)} is accepted.
      */
     @Override
     void list(final String name, Object val1, Object... vals) {
@@ -125,7 +125,7 @@ class Variables implements TerraformTaskConfigExtension,
      *
      * @param name Name of variable.
      * @param vals Lazy-evaluated forms of variable. Anything resolvable via
-     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Iterable <?>)} is accepted.
+     * {@link org.ysb33r.grolifant.api.core.StringTools#stringize(Iterable <?>)} is accepted.
      */
     @Override
     void list(final String name, Iterable<?> vals) {
@@ -135,7 +135,7 @@ class Variables implements TerraformTaskConfigExtension,
     /** Adds a name of a file containing {@code terraform} variables.
      *
      * @param fileName Files that can be converted via
-     * {@link org.ysb33r.grolifant.api.v4.StringUtils#stringize(Object o)} and resolved relative to the appropriate
+     * {@link org.ysb33r.grolifant.api.core.StringTools#stringize(Object o)} and resolved relative to the appropriate
      * {@link org.ysb33r.gradle.terraform.TerraformSourceDirectorySet}.
      */
     @Override

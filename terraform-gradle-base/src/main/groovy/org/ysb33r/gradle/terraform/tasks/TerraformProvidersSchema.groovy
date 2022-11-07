@@ -33,17 +33,12 @@ class TerraformProvidersSchema extends AbstractTerraformProviderTask {
     TerraformProvidersSchema() {
         super('schema')
         outputFile = project.objects.property(File)
-        projectOperations.updateFileProperty(
+        projectOperations.fsOperations.updateFileProperty(
             outputFile,
             reportsDir.map { new File(it, "${sourceSet.name}.schema.json") }
         )
         captureStdOutTo(schemaOutputFile)
 
-//        inputs.files(sourceDir.map { File f ->
-//            projectOperations.fileTree(f).matching { PatternFilterable pat ->
-//                pat.include('*.tf')
-//            }
-//        })
         inputs.files(taskProvider('init'))
     }
 

@@ -21,7 +21,6 @@ import groovy.util.logging.Slf4j
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Provider
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
@@ -37,15 +36,12 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
 @CompileStatic
 @SuppressWarnings('MethodCount')
 @Slf4j
-class RemoteStateS3Spec extends AbstractBackendSpec implements RemoteStateS3Provider {
+class RemoteStateS3Spec extends AbstractBackendSpec {
     public static final String NAME = 's3'
     public static final String TOKEN_BUCKET = 'bucket'
     public static final String TOKEN_REMOTE_STATE_NAME = 'key'
     public static final String TOKEN_REGION = 'region'
     public static final String TOKEN_ASSUME_ROLE_POLICY = 'assume_role_policy'
-
-    @Deprecated
-    public static final String TOKEN_DYNAMODB_TABLE_ARN = 'aws_dynamodb_lock_table_arn'
 
     /** Utility method to find this extension on a project.
      *
@@ -322,18 +318,6 @@ region = "@@region@@"
     }
 
     /**
-     * Sets a token called {@code aws_dynamodb_lock_table_arn}.
-     *
-     * @param value Full ARN to DynamoDB lock tabke.
-     *
-     * @deprecated Use {@link #setDynamoDbTable} instead.
-     */
-    @Deprecated
-    void setDynamoDbLockTableArn(Object value) {
-        token(TOKEN_DYNAMODB_TABLE_ARN, value)
-    }
-
-    /**
      * Sets a token called {@code access_key}.
      *
      * @param value AWS access key
@@ -407,7 +391,7 @@ region = "@@region@@"
      */
     void setCredentialsFile(Object value) {
         token('shared_credentials_file', projectOperations.provider { ->
-            projectOperations.file(value).absolutePath
+            projectOperations.fsOperations.file(value).absolutePath
         })
     }
 
@@ -507,47 +491,4 @@ region = "@@region@@"
     void setRegion(Object region) {
         awsRegion = region
     }
-
-    /** Make settings follow that of another {@code RemoteStateS3} provider.
-     *
-     * Following a provider will apply those items first and then customise with any local settings.
-     *
-     * @param s3 Another S3 state provider.
-     * @deprecated Do not use this at all. Use {@link TerraformRemoteStateExtension#follow} instead.
-     */
-    @Deprecated
-    @SuppressWarnings('LineLength')
-    void follow(RemoteStateS3Provider s3) {
-        log.warn("${this.class.canonicalName}.follow is deprecated. Use 'follow' on the ${TerraformRemoteStateExtension.NAME} extension instead")
-        this.trse.follow(s3.associatedRemoteStateExtension)
-    }
-
-    /**
-     * Returns a provider to a map of all S3 backend attributes that could possible be configured.
-     *
-     * @return Map provider
-     *
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    Provider<Map<String, ?>> getAttributesMap() {
-        log.warn("${this.class.canonicalName}.getAttributesMap is deprecated. Use getTokenProvider instead")
-        tokenProvider
-    }
-
-    @Deprecated
-    @Override
-    void setAssociatedRemoteStateExtension(TerraformRemoteStateExtension trse) {
-        this.trse = trse
-    }
-
-    @Override
-    @Deprecated
-    TerraformRemoteStateExtension getAssociatedRemoteStateExtension() {
-        this.trse
-    }
-
-    @Deprecated
-    private TerraformRemoteStateExtension trse
 }

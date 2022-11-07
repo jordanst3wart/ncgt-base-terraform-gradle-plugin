@@ -18,9 +18,7 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.process.ExecResult
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.TerraformSourceFormatViolation
@@ -52,12 +50,14 @@ class TerraformCustomFmtCheck extends AbstractTerraformCustomFmt {
             new Callable<Set<File>>() {
                 @Override
                 Set<File> call() throws Exception {
-                    projectOperations.fileize(sourceDirs).findAll {
+                    projectOperations.fsOperations.files(sourceDirs).findAll { File it ->
                         it.exists() && it.directory
                     }.toSet()
                 }
             }
         )
+
+        projectOperations.tasks.ignoreEmptyDirectories(inputs, sourceDirProvider)
     }
 
     @Internal
@@ -70,8 +70,6 @@ class TerraformCustomFmtCheck extends AbstractTerraformCustomFmt {
      *
      * @return List of directories
      */
-    @InputFiles
-    @SkipWhenEmpty
     @Override
     Provider<Set<File>> getSourceDirectories() {
         this.sourceDirProvider

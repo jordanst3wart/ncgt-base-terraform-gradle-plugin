@@ -30,7 +30,6 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.terraformEnvironment
-import static org.ysb33r.grolifant.api.v4.FileUtils.toSafeFileName
 
 /** An internal cache of output variables
  *
@@ -51,9 +50,10 @@ class OutputVariablesCache {
         this.outputTaskProvider = outputTask
         this.terraformrc = terraformrc
         this.tmpDirProvider = outputTask.map {
-            def sourceSetName = it.sourceSet.name
+            final sourceSetName = it.sourceSet.name
+            final safeName = projectOperations.fsOperations.toSafeFileName(sourceSetName)
             projectOperations.buildDirDescendant(
-                "tmp/tf-output-var-cache/${toSafeFileName(sourceSetName)}.${it.workspaceName ?: ''}.tmp.---.json"
+                "tmp/tf-output-var-cache/${safeName}.${it.workspaceName ?: ''}.tmp.---.json"
             ).get()
         }
     }

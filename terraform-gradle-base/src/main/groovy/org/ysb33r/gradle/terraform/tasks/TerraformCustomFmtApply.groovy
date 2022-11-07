@@ -33,15 +33,20 @@ import javax.inject.Inject
 @CompileStatic
 class TerraformCustomFmtApply extends AbstractTerraformCustomFmt {
 
-    @Override
-    final Provider<Set<File>> getSourceDirectories() {
-        checkTaskProvider.get().sourceDirectories
-    }
-
     @Inject
     TerraformCustomFmtApply(TaskProvider<TerraformCustomFmtCheck> checkTaskProvider) {
         super()
         this.checkTaskProvider = checkTaskProvider
+
+        this.sourceDirectoriesProvider = projectOperations.providerTools.flatMap(checkTaskProvider) {
+            it.sourceDirectories
+        }
+        projectOperations.tasks.ignoreEmptyDirectories(inputs, sourceDirectories)
+    }
+
+    @Override
+    final Provider<Set<File>> getSourceDirectories() {
+        this.sourceDirectoriesProvider
     }
 
     protected void addCommandSpecificsForFmt(TerraformExecSpec execSpec) {
@@ -63,5 +68,6 @@ class TerraformCustomFmtApply extends AbstractTerraformCustomFmt {
         result.assertNormalExitValue()
     }
 
+    private final Provider<Set<File>> sourceDirectoriesProvider
     private final TaskProvider<TerraformCustomFmtCheck> checkTaskProvider
 }

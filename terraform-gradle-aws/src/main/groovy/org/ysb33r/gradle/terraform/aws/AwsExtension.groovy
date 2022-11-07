@@ -83,12 +83,11 @@ class AwsExtension implements SessionCredentialsProvider {
         this.sessionNameFactory = new Callable<Provider<String>>() {
             @Override
             Provider<String> call() throws Exception {
-                projectOperations.providerTools
-                    .map(projectOperations.systemProperty('user.name')) { String it ->
-                        final String head = it ? "tf-${it}" : 'terraform'
-                        final String name = "${head}-${UUID.randomUUID()}"
-                        name.size() > 64 ? name[0..63] : name
-                    }
+                projectOperations.systemProperty('user.name').map { String it ->
+                    final String head = it ? "tf-${it}" : 'terraform'
+                    final String name = "${head}-${UUID.randomUUID()}"
+                    name.size() > 64 ? name[0..63] : name
+                }
             }
         }
     }
