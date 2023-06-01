@@ -2,11 +2,15 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 1.0.0
+== 1.0.0 - 1.0.1
 
 // tag::changelog[]
 
-== Other
+=== Bugs
+
+* {issue}81[#81] - Syooirt ARM architecture on MacOSX.
+
+=== Other
 
 * {issue}80[#80] - Use Grolifant 2.0
 

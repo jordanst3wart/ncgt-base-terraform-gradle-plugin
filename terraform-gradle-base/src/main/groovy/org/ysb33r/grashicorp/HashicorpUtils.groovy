@@ -24,6 +24,7 @@ import org.ysb33r.grolifant.api.core.OperatingSystem
 
 import java.util.regex.Pattern
 
+import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.ARM64
 import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
 import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
@@ -76,9 +77,20 @@ class HashicorpUtils {
                 case X86:
                     variant = VARIANT_32BIT
                     break
+                case ARM64:
+                    variant = VARIANT_ARM64
+                    break
             }
         } else if (os.macOsX) {
             osname = 'darwin'
+            switch (arch) {
+                case X86_64:
+                    variant = VARIANT_64BIT
+                    break
+                case ARM64:
+                    variant = VARIANT_ARM64
+                    break
+            }
             variant = VARIANT_64BIT
         } else if (os.solaris) {
             osname = 'solaris'
@@ -156,6 +168,7 @@ class HashicorpUtils {
 
     private final static String VARIANT_32BIT = '386'
     private final static String VARIANT_64BIT = 'amd64'
+    private final static String VARIANT_ARM64 = 'arm64'
     private final static Pattern BACKSLASH = ~/\x5C/
     private final static String DOUBLE_BACKSLASH = '\\\\\\\\'
 }
