@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 1.0.0 - 1.0.1
+== 1.0.0 - 1.0.2
 
 // tag::changelog[]
 
