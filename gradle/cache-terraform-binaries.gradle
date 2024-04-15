@@ -82,6 +82,7 @@ terraformTestPlugins.each { plugin ->
 tasks.register('cacheTerraformBinaries') {
     enabled = !project.gradle.startParameter.offline
     outputs.dir(terraformTestCacheDir)
+    inputs.property('binaries', terraformTestVersions)
     doLast {
         delete terraformTestCacheDir
         copy {

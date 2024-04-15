@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
-import org.gradle.api.Action
 import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
@@ -28,17 +27,18 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
-import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformMajorVersion
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.WorkspaceExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 
+import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
@@ -234,6 +234,32 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         this.projectName = project.name
 
         projectOperations.tasks.ignoreEmptyDirectories(inputs, this.sourceFiles)
+
+        if (workspaceName != null) {
+            final execSpecProvider = {
+                TerraformExecSpec execSpec = createExecSpec()
+                addExecutableToExecSpec(execSpec)
+                Map<String, String> tfEnv = terraformEnvironment
+                execSpec.identity {
+                    command 'workspace'
+                    workingDir sourceDir
+                    environment tfEnv
+                }
+                execSpec.environment(environment)
+                addSessionCredentialsIfAvailable(execSpec)
+                execSpec
+            } as Callable<TerraformExecSpec>
+
+            workspaceController = extensions.create(
+                WorkspaceExtension.NAME,
+                WorkspaceExtension,
+                project.provider { -> sourceSet },
+                logDir,
+                execSpecProvider,
+                workspaceName,
+                projectOperations
+            )
+        }
     }
 
     /**
@@ -246,12 +272,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      */
     @SuppressWarnings('UnnecessaryGetter')
     protected boolean hasWorkspaces() {
-        if (workspaceName == null) {
-            false
-        } else {
-            TerraformSourceDirectorySet tsds = getSourceSet()
-            tsds == null ? false : tsds.hasWorkspaces()
-        }
+        workspaceController?.hasWorkspaces() ?: false
     }
 
     @Override
@@ -440,7 +461,8 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         }
     }
 
-    /** This task is workspace aware, but workspaces should not be switched
+    /**
+     * This task is workspace aware, but workspaces should not be switched
      *
      * @since 0.10
      */
@@ -457,6 +479,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     protected void doesNotRequireSessionCredentials() {
         this.requiresSessionCredentials = false
     }
+
     /**
      * Switches workspaces to the correct one if the source set has workspaces and the current workspace is not the
      * correct one. If no additional workspace or the task is workspace agnostic, then it will do-nothing.
@@ -465,16 +488,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      */
     protected void switchWorkspace() {
         if (hasWorkspaces()) {
-            def workspaces = listWorkspaces()
-            String current = workspaces.find { k, v -> v == true }.key
-
-            if (current != workspaceName) {
-                if (workspaces.containsKey(workspaceName)) {
-                    runWorkspaceSubcommand('select', workspaceName)
-                } else {
-                    runWorkspaceSubcommand('new', workspaceName)
-                }
-            }
+            workspaceController.switchWorkspace()
         }
     }
 
@@ -482,53 +496,22 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      * Runs a {@code terraform workspace} subcommand.
      *
      * @param cmd Subcommand to run.
-     * @return Output from command.
+     * @return Output from command. Returns {@code null} is workspace-agnostic.
      *
      * @since 0.10
      */
     protected String runWorkspaceSubcommand(String cmd, String... args) {
-        TerraformExecSpec execSpec = createExecSpec()
-        addExecutableToExecSpec(execSpec)
-        Map<String, String> tfEnv = terraformEnvironment
-        def strm = new ByteArrayOutputStream()
-        execSpec.identity {
-            command 'workspace'
-            workingDir sourceDir
-            environment tfEnv
-            cmdArgs cmd
-            cmdArgs args
-            standardOutput(strm)
-        }
-        execSpec.environment(environment)
-        addSessionCredentialsIfAvailable(execSpec)
-        Action<ExecSpec> runner = new Action<ExecSpec>() {
-            @Override
-            void execute(ExecSpec spec) {
-                execSpec.copyToExecSpec(spec)
-            }
-        }
-
-        logDir.get().mkdirs()
-        projectOperations.exec(runner).assertNormalExitValue()
-        strm.toString()
+        workspaceController?.runWorkspaceSubcommand(cmd, args)
     }
 
     /**
      * Lists the workspaces as currently known to Terraform
      *
-     * @return List of workspaces.
+     * @return List of workspaces. Returns empty map if workspace-agnostic.
      */
     @SuppressWarnings('UnnecessarySubstring')
     protected Map<String, Boolean> listWorkspaces() {
-        runWorkspaceSubcommand('list').readLines().findAll {
-            !it.empty
-        }.collectEntries {
-            if (it.startsWith('*')) {
-                [it.substring(1).trim(), true]
-            } else {
-                [it.trim(), false]
-            }
-        }
+        workspaceController?.listWorkspaces() ?: [(DEFAULT_WORKSPACE): true]
     }
 
     @Synchronized
@@ -566,4 +549,5 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     private final ConfigurableFileTree sourceFiles
     private final Provider<List<File>> secondarySources
     private final String projectName
+    private final WorkspaceExtension workspaceController
 }

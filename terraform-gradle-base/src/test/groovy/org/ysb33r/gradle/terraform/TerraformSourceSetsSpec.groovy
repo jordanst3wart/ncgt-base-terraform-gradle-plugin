@@ -123,6 +123,7 @@ class TerraformSourceSetsSpec extends Specification {
                 main {
                     variables {
                         file 'foo.tfvars'
+                        file 'foo2.tfvars'
                     }
                 }
             }
@@ -130,10 +131,16 @@ class TerraformSourceSetsSpec extends Specification {
 
         when:
         Variables vars = project.terraformSourceSets.getByName('main').variables
+        final cmdline = vars.commandLineArgs
+        final fooPos = cmdline.findIndexOf { it.endsWith('foo.tfvars')}
+        final foo2Pos = cmdline.findIndexOf { it.endsWith('foo2.tfvars')}
 
         then:
         vars.fileNames.contains('foo.tfvars')
-        vars.commandLineArgs.contains("-var-file=${project.file('src/tf/main/foo.tfvars')}".toString())
+        cmdline.contains("-var-file=${project.file('src/tf/main/foo.tfvars')}".toString())
+
+        and:
+        fooPos < foo2Pos
     }
 
     void configureFourSourceSets() {

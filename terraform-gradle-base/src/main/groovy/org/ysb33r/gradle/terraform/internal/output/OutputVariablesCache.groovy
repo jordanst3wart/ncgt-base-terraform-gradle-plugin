@@ -25,6 +25,7 @@ import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.gradle.terraform.WorkspaceExtension
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -77,6 +78,8 @@ class OutputVariablesCache {
             }
         }
 
+        log.debug("Switching to workspace '${outputTask.workspaceName}' prior to reading output")
+        outputTask.extensions.getByType(WorkspaceExtension).switchWorkspace()
         log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}/${outputTask.workspaceName}"
         File tmpFile = tmpDirProvider.get()
         tmpFile.parentFile.mkdirs()

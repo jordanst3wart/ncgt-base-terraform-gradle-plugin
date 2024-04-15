@@ -32,7 +32,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_W
 class TerraformCleanupWorkspaces extends AbstractTerraformTask {
 
     TerraformCleanupWorkspaces() {
-        super('workspace', [], [], null)
+        super('workspace', [], [], DEFAULT_WORKSPACE)
         alwaysOutOfDate()
         doesNotRequireSessionCredentials()
     }

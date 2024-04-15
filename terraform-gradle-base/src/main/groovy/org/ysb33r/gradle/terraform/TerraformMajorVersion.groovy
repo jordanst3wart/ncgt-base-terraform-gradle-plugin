@@ -41,6 +41,7 @@ enum TerraformMajorVersion {
     VERSION_160,
     VERSION_170,
     VERSION_180,
+    VERSION_190,
     UNKNOWN
 
     static TerraformMajorVersion version(String version) {

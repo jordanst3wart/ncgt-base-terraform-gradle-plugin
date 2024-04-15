@@ -83,9 +83,6 @@ class VarsFilesPair {
      * @since 0.12
      */
     List<String> commandLineArgs(Path root) {
-//        final List<String> varList = escapedVars.collectMany { String k, String v ->
-//            ['-var', "$k=$v".toString()]
-//        } as List<String>
         final List<String> varList = []
         varList.addAll(fileNames.stream().map { String fileName ->
             "-var-file=${root.resolve(fileName).toFile().absolutePath}".toString()
