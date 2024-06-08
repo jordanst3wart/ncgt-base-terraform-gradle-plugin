@@ -2,7 +2,7 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
-== 1.0.0 - 1.0.3
+== 1.0.0 - 1.0.4
 
 // tag::changelog[]
 
@@ -11,9 +11,10 @@
 * {issue}81[#81] - Support ARM architecture on MacOSX.
 * {issue}86[#86] - SourceSet output variables do not always read from the correct sourceset.
 
+
 === Other
 
-* {issue}80[#80] - Use Grolifant 2.0
+* {issue}80[#80] - use Grolifant 3.0.1 supporting gradle 8, after using Grolifant 2
 * Default version of Terraform is 1.8.0.
 
 // end::changelog[]
