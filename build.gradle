@@ -1,13 +1,12 @@
 plugins {
     id 'idea'
-    id 'org.ysb33r.os' version '0.9'
+    id 'org.ysb33r.os' version '1.0.0'
     id 'org.ysb33r.gradletest' version '2.0' apply false
     id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
     id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
     id 'com.gradle.plugin-publish' version '0.15.0' apply false
-    id 'com.github.hierynomus.license' version '0.14.0' apply false
-    id 'org.ajoberstar.git-publish' version '2.1.1' apply false
-    id 'org.ysb33r.cloudci.appveyor.testreporter' version '2.5' apply false
+    id 'com.github.hierynomus.license' version '0.15.0' apply false
+    id 'org.ajoberstar.git-publish' version '3.0.1' apply false
 }
 
 allprojects {

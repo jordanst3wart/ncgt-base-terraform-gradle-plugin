@@ -15,11 +15,7 @@
  */
 package org.ysb33r.grashicorp
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import org.cyberneko.html.parsers.SAXParser
-import org.gradle.api.GradleException
-import org.gradle.util.GradleVersion
 import org.ysb33r.grolifant.api.core.OperatingSystem
 
 import java.util.regex.Pattern
@@ -117,53 +113,6 @@ class HashicorpUtils {
      */
     static String escapedFilePath(OperatingSystem os, File path) {
         os.windows ? path.absolutePath.replaceAll(BACKSLASH, DOUBLE_BACKSLASH) : path.absolutePath
-    }
-
-    /** Obtains the latest version of a Terraform provider
-     *
-     * @param provider
-     * @return Latest version or {@code null}
-     */
-    static String getLatestTerraformProviderVersion(final String provider) {
-        final String name = "terraform-provider-${provider}"
-        final String host = getDownloadBaseUri(name)
-        if (host.startsWith('file:')) {
-            getLatestVersionFileSystem(host)
-        } else if (host.startsWith('http')) {
-            getLatestVersionHttp('terraform-gradle-plugin', host, name)
-        } else {
-            throw new GradleException("${host} is not a supported URI")
-        }
-    }
-
-    // Assumes physical layout on disk as per Hashicorp cloud.
-    // If the cloud path was https://releases.hashicorp.com/terraform-provider-aws/0.1.0/terraform-provider-aws_0.1.0_darwin_amd64.zip,
-    // then expect the host to point to a directory above terraform-provider-aws
-    private static getLatestVersionFileSystem(final String host) {
-        File baseDir = new File(host.toURI())
-        final List<String> versions = baseDir.listFiles(new FileFilter() {
-            @Override
-            boolean accept(File pathname) {
-                pathname.directory
-            }
-        })*.name.sort { a, b ->
-            GradleVersion.version((String) b) <=> GradleVersion.version((String) a)
-        }
-        versions.empty ? null : versions[0]
-    }
-
-    @CompileDynamic
-    private static getLatestVersionHttp(final String agentName, final String host, final String name) {
-        SAXParser parser = new SAXParser()
-        def page = new XmlSlurper(parser).parseText(host.toURL().getText(requestProperties: ['User-Agent': agentName]))
-        List<String> versions = page.depthFirst().findAll {
-            it.@href.toString().startsWith("/${name}")
-        }.collect {
-            it.toString().replace("${name}_", '')
-        }.sort { a, b ->
-            GradleVersion.version(b) <=> GradleVersion.version(a)
-        }
-        versions.empty ? null : versions[0]
     }
 
     private final static String VARIANT_32BIT = '386'

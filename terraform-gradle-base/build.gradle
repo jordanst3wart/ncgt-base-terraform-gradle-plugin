@@ -7,22 +7,17 @@ plugins {
     id 'org.asciidoctor.editorconfig'
     id 'com.gradle.plugin-publish'
     id 'com.github.hierynomus.license'
-    id 'org.ysb33r.cloudci.appveyor.testreporter'
 }
 
 apply from: rootProject.file('gradle/plugin-dev.gradle')
 apply from: rootProject.file('gradle/codenarc.gradle')
-
-dependencies {
-    implementation "net.sourceforge.nekohtml:nekohtml:1.9.14"
-}
 
 processResources {
     filesMatching '**/*.properties', {
         filter org.apache.tools.ant.filters.ReplaceTokens,
             beginToken: '@@', endToken: '@@',
             tokens: [
-                VERSION: project.version
+                VERSION: project.version.toString()
             ]
     }
 }

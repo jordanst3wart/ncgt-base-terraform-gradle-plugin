@@ -5,7 +5,6 @@ plugins {
     id 'org.ysb33r.gradletest'
     id 'com.gradle.plugin-publish'
     id 'com.github.hierynomus.license'
-    id 'org.ysb33r.cloudci.appveyor.testreporter'
 }
 
 apply from: rootProject.file('gradle/plugin-dev.gradle')
