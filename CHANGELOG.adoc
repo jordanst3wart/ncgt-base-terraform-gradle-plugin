@@ -2,6 +2,12 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
+== 1.1.1
+
+=== Other
+
+* Add additional Terrform CLI configuration setting plugin_cache_may_break_dependency_lock_file (false as default) to the TerraformRCextension.
+
 == 1.1.0
 
 === Other

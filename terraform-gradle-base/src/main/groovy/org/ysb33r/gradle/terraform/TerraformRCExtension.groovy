@@ -62,6 +62,19 @@ class TerraformRCExtension {
      */
     boolean useGlobalConfig = false
 
+    /** Plugin cache may break dependency lock file.
+     *
+     * Setting this option gives Terraform CLI permission to create an incomplete dependency
+     * lock file entry for a provider if that would allow Terraform to use the cache to install that provider.
+     *
+     * In that situation the dependency lock file will be valid for use on the current system but may not be
+     * valid for use on another computer with a different operating system or CPU architecture, because it
+     * will include only a checksum of the package in the global cache.
+     *
+     * Default is {@code false}.
+     */
+    boolean pluginCacheMayBreakDependencyLockFile = false
+
     TerraformRCExtension(Project project) {
         this.projectOperations = ProjectOperations.find(project)
 
@@ -137,6 +150,7 @@ class TerraformRCExtension {
         writer.println "disable_checkpoint = ${this.disableCheckPoint}"
         writer.println "disable_checkpoint_signature = ${this.disableCheckPointSignature}"
         writer.println "plugin_cache_dir = \"${escapedFilePath(OperatingSystem.current(), pluginCacheDir.get())}\""
+        writer.println "plugin_cache_may_break_dependency_lock_file = ${this.pluginCacheMayBreakDependencyLockFile}"
         this.credentials.each { String key, String token ->
             writer.println "credentials \"${key}\" {"
             writer.println "  token = \"${token}\""
