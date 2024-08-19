@@ -31,12 +31,11 @@ include::{gendocdir}/display-versions.adoc[]
 * https://gitlab.com/ysb33rOrg/terraform-gradle-plugin[Fork me on GitLab]
 
 
-////
 == Contributors
 
 A special thank you goes to:
 
-* https://github.com/xyz[XYZ] - DESCRIPTION.
+* https://gitlab.com/EvansM4[@EvansM4] and https://gitlab.com/diggeles-newscorp[@diggeles-newscorp] - For fixing the https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/90[Terraform caching bug].
 
-If you would like to contribute, please see https://github.com/ysb33r/grolifant/blob/master/HACKING.adoc[HACKING.adoc]
-////
+// If you would like to contribute, please see https://github.com/ysb33r/grolifant/blob/master/HACKING.adoc[HACKING.adoc]
+
