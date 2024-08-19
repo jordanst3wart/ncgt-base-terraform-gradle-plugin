@@ -53,6 +53,7 @@ class TerraformRCExtensionSpec extends Specification {
         hcl == """disable_checkpoint = true
 disable_checkpoint_signature = false
 plugin_cache_dir = "${escapedFilePath(os, terraformrc.pluginCacheDir.get())}"
+plugin_cache_may_break_dependency_lock_file = false
 credentials "foo.terraform.example" {
   token = "foo.terraform.token"
 }
