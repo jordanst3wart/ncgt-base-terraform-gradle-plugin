@@ -37,6 +37,14 @@ jobs:
                   else
                     ./gradlew -i -s assemble
                   fi
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v2
+              with:
+                name: build-artifacts-jdk${{ matrix.java }}
+                path: |
+                  .gradle/
+                  build/
+                retention-days: 1
 
     test:
         needs: build
