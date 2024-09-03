@@ -132,8 +132,8 @@ class TerraformSourceSetsSpec extends Specification {
         when:
         Variables vars = project.terraformSourceSets.getByName('main').variables
         final cmdline = vars.commandLineArgs
-        final fooPos = cmdline.findIndexOf { it.endsWith('foo.tfvars')}
-        final foo2Pos = cmdline.findIndexOf { it.endsWith('foo2.tfvars')}
+        final fooPos = cmdline.findIndexOf { it.endsWith('foo.tfvars') }
+        final foo2Pos = cmdline.findIndexOf { it.endsWith('foo2.tfvars') }
 
         then:
         vars.fileNames.contains('foo.tfvars')
@@ -178,7 +178,7 @@ class TerraformSourceSetsSpec extends Specification {
         final ProviderFactory providers
         final Project project1
 
-        TestExtension(ProviderFactory p,Project p1) {
+        TestExtension(ProviderFactory p, Project p1) {
             this.providers = p
             this.project1 = p1
         }

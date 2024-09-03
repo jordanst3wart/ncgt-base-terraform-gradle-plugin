@@ -49,8 +49,11 @@ ruleset {
     EqualsOverloaded
     ExplicitGarbageCollection
     ForLoopShouldBeWhileLoop
+    HardCodedWindowsFileSeparator
+    HardCodedWindowsRootDirectory
     IntegerGetInteger
     MultipleUnaryOperators
+    ParameterAssignmentInFilterClosure
     RandomDoubleCoercedToZero
     RemoveAllOnSelf
     ReturnFromFinallyBlock
@@ -63,9 +66,13 @@ ruleset {
     WhileStatementBraces
 
     // rulesets/convention.xml
+    CompileStatic {
+        doNotApplyToFileNames = '*Spec.groovy,*Specification.groovy'
+    }
     ConfusingTernary
     CouldBeElvis
     CouldBeSwitchStatement
+    FieldTypeRequired
     HashtableIsObsolete
     IfStatementCouldBeTernary
     InvertedCondition
@@ -123,11 +130,15 @@ ruleset {
     LineLength
     MissingBlankLineAfterImports
     MissingBlankLineAfterPackage
+    MissingBlankLineBeforeAnnotatedField
     SpaceAfterCatch
     SpaceAfterClosingBrace
     SpaceAfterComma
     SpaceAfterFor
     SpaceAfterIf
+    SpaceAfterMethodCallName
+    SpaceAfterMethodDeclarationName
+    SpaceAfterNotOperator
     SpaceAfterOpeningBrace
     SpaceAfterSemicolon
     SpaceAfterSwitch
@@ -136,7 +147,7 @@ ruleset {
     SpaceAroundOperator
     SpaceBeforeClosingBrace
     SpaceBeforeOpeningBrace
-    TrailingWhitespace  {
+    TrailingWhitespace {
         doNotApplyToFileNames = '*Spec.groovy,*Specification.groovy'
     }
 
@@ -296,7 +307,6 @@ ruleset {
     UnnecessarySemicolon
     UnnecessarySetter
     UnnecessaryStringInstantiation
-    UnnecessarySubstring
     UnnecessaryTernaryExpression
     UnnecessaryToString
     UnnecessaryTransientModifier

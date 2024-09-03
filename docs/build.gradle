@@ -14,10 +14,10 @@ configurations {
 }
 
 dependencies {
-    groovyDoc "org.codehaus.groovy:groovy:${GroovySystem.version}"
-    groovyDoc "org.codehaus.groovy:groovy-groovydoc:${GroovySystem.version}"
-    groovyDoc "org.codehaus.groovy:groovy-ant:${GroovySystem.version}"
-    groovyDoc "org.codehaus.groovy:groovy-templates:${GroovySystem.version}"
+    groovyDoc "org.codehaus.groovy:groovy:${groovyVer}"
+    groovyDoc "org.codehaus.groovy:groovy-groovydoc:${groovyVer}"
+    groovyDoc "org.codehaus.groovy:groovy-ant:${groovyVer}"
+    groovyDoc "org.codehaus.groovy:groovy-templates:${groovyVer}"
     groovyDoc "org.fusesource.jansi:jansi:1.18"
 }
 

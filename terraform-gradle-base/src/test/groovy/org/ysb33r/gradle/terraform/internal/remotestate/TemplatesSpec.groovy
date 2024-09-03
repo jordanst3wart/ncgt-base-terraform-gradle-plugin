@@ -44,9 +44,9 @@ class TemplatesSpec extends Specification {
             projectOperations,
             attributes,
             project.objects.property(File),
-            project.provider { -> new TextTemplates.ReplaceTokens({ ->
-                'bucket = "@@bucket_name@@"'
-            })},
+            project.provider { ->
+                new TextTemplates.ReplaceTokens({ -> 'bucket = "@@bucket_name@@"' })
+            } as Provider<BackendTextTemplate>,
             outputFile,
             '@@',
             '@@',
@@ -59,35 +59,18 @@ class TemplatesSpec extends Specification {
     }
 
     static class FakeAttributes implements BackendAttributesSpec {
-        @Override
-        String getDefaultTextTemplate() {
-            return null
-        }
 
-        @Override
-        Provider<File> getTemplateFile() {
-            return null
-        }
+        final String defaultTextTemplate = null
 
-        @Override
-        Provider<BackendTextTemplate> getTextTemplate() {
-            return null
-        }
+        final Provider<File> templateFile = null
 
-        @Override
-        Provider<Map<String, ?>> getTokenProvider() {
-            return null
-        }
+        final Provider<BackendTextTemplate> textTemplate = null
 
-        @Override
-        Provider<String> getBeginTokenProvider() {
-            return null
-        }
+        final Provider<Map<String, ?>> tokenProvider = null
 
-        @Override
-        Provider<String> getEndTokenProvider() {
-            return null
-        }
+        final Provider<String> beginTokenProvider = null
+
+        final Provider<String> endTokenProvider = null
 
         @Override
         Map<String, Object> getTokens() {

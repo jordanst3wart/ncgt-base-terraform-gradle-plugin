@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     ext {
-        spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
+        spockGroovyVer = groovyVer.replaceAll(/\.\d+$/, '')
         notSnapshot = { !version.endsWith('-SNAPSHOT') }
         terraformTestCacheDir = file("${rootProject.buildDir}/terraform-binaries")
 

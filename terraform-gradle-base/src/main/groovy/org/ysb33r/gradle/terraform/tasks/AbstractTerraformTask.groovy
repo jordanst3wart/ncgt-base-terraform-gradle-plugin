@@ -509,7 +509,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      *
      * @return List of workspaces. Returns empty map if workspace-agnostic.
      */
-    @SuppressWarnings('UnnecessarySubstring')
     protected Map<String, Boolean> listWorkspaces() {
         workspaceController?.listWorkspaces() ?: [(DEFAULT_WORKSPACE): true]
     }

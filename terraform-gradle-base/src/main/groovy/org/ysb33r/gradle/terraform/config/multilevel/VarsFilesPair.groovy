@@ -141,7 +141,7 @@ class VarsFilesPair {
      */
     @Override
     String toString() {
-        "vars=${vars.toString()}, files=${files.toString()}, additionalsCount=${additionalVariables.size()}"
+        "vars=${vars}, files=${files}, additionalsCount=${additionalVariables.size()}"
     }
 
     private Map<String, String> escapeProvidedVars(boolean escapeInnerLevel) {

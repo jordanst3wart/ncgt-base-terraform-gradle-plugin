@@ -57,7 +57,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         generatorTask = project.tasks.getByName(backendTaskName(SOURCE_SET_NAME))
     }
 
-
     void 'Plugin is applied'() {
         expect: 'Default tasks are created'
         project.tasks.getByName('createTfBackendConfiguration')
@@ -134,7 +133,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
         project.tasks.createTfBackendConfiguration.destinationDir.get() == main.parentFile
     }
-
 
     void 'Tokens for the template can be configured'() {
         when: 'the plugin is applied'

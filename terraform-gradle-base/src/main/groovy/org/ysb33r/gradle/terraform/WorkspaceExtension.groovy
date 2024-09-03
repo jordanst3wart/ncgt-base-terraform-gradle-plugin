@@ -106,7 +106,6 @@ class WorkspaceExtension {
      *
      * @return List of workspaces.
      */
-    @SuppressWarnings('UnnecessarySubstring')
     Map<String, Boolean> listWorkspaces() {
         runWorkspaceSubcommand('list').readLines().findAll {
             !it.empty

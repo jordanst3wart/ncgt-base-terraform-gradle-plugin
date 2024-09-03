@@ -206,7 +206,7 @@ class Variables implements TerraformTaskConfigExtension,
 
     @Override
     String toString() {
-        "Terraform variables: ${this.varsFilesPair.toString()}"
+        "Terraform variables: ${this.varsFilesPair}"
     }
 
     /** Returns a description of the files and variables

@@ -33,26 +33,6 @@ jdk11:
         - pages
         - tags
 
-test:gradle_4.9,4.10.3:
-    stage: test
-    image: openjdk:8
-    except:
-        - pages
-        - tags
-    dependencies:
-        - jdk8
-    script: ./run-compatibility-test-on-ci.sh
-
-test:gradle_5.0,5.6.2:
-    stage: test
-    image: openjdk:8
-    except:
-        - pages
-        - tags
-    dependencies:
-        - jdk8
-    script: ./run-compatibility-test-on-ci.sh
-
 test:gradle_6.0,6.3,6.8.1:
     stage: test
     image: openjdk:11
@@ -88,10 +68,10 @@ test:gradle_8.0.2,8.1.1:
 
 publish:
     stage: release
-    image: openjdk:8
+    image: openjdk:11
     script: ./gradlew installDocs publishPlugins gitPublishPush -i -Dgradle.publish.key=$GRADLE_PORTAL_KEY -Dgradle.publish.secret=$GRADLE_PORTAL_SECRET -Dorg.ajoberstar.grgit.auth.username=$PAGES_PUBLISH_USER -Dorg.ajoberstar.grgit.auth.password=$PAGES_PUBLISH_KEY -Dorg.ajoberstar.grgit.auth.force=hardcoded
     dependencies:
-        - jdk8
+        - jdk11
     only:
         - release
 

@@ -25,23 +25,23 @@ class TerraformUtilsSpec extends Specification {
 
     void 'Can escape string'() {
         expect:
-        escapeOneItem('123',true) == '"123"'
+        escapeOneItem('123', true) == '"123"'
     }
 
     void 'Can escape string with quotes'() {
         expect:
-        escapeOneItem('1"2"3',true) == '"1\\"2\\"3"'
+        escapeOneItem('1"2"3', true) == '"1\\"2\\"3"'
     }
 
     void 'Can escape boolean'() {
         expect:
-        escapeOneItem(true,true) == 'true'
-        escapeOneItem(false,true) == 'false'
+        escapeOneItem(true, true) == 'true'
+        escapeOneItem(false, true) == 'false'
     }
 
     void 'Can escape number'() {
         expect:
-        escapeOneItem(123,true) == '123'
+        escapeOneItem(123, true) == '123'
     }
 
     void 'Can escape map'() {
@@ -56,7 +56,7 @@ class TerraformUtilsSpec extends Specification {
 
     void 'Can escape collections inside collections'() {
         expect:
-        escapedMap([a: [123, "456"], b: [aa: '!@#', bb: '%^&', cc: [true, 890]]], true) ==
+        escapedMap([a: [123, '456'], b: [aa: '!@#', bb: '%^&', cc: [true, 890]]], true) ==
             '{"a" = [123, "456"], "b" = {"aa" = "!@#", "bb" = "%^&", "cc" = [true, 890]}}'
         escapedList([123, [a: 'aa'], [true, 'TRUE']], true) == '[123, {"a" = "aa"}, [true, "TRUE"]]'
     }
