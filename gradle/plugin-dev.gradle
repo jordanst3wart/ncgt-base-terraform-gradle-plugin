@@ -1,5 +1,8 @@
 apply plugin: 'maven-publish'
 
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
 dependencies {
     implementation "org.codehaus.groovy:groovy-all:${groovyVer}"
     implementation gradleApi()
