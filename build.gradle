@@ -1,7 +1,7 @@
 plugins {
     id 'idea'
     id 'org.ysb33r.os' version '1.0.0'
-    id 'org.ysb33r.gradletest' version '2.0' apply false
+    id 'org.ysb33r.gradletest' version '3.0.0' apply false
     id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
     id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
     id 'com.gradle.plugin-publish' version '0.15.0' apply false

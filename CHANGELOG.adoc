@@ -9,6 +9,7 @@
 * Bump dependencies
 * Drop support for gradle 4, and 5
 * Bump to jdk 11
+* Bump gradletest to 3
 
 == 1.1.1 - 1.1.2
 
