@@ -31,3 +31,24 @@ pluginBundle {
         }
     }
 }
+
+def githubUsername = System.getenv().get("GH_USERNAME")
+/*
+ * this is a github classic token that requires publishing permissions to write a new package
+ */
+def githubToken = System.getenv().get("GH_PACKAGES_TOKEN")
+
+
+// publish to github
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/newscorp-ghfb/ncgt-base-terraform-gradle-plugin")
+            credentials {
+                username = githubUsername
+                password = githubToken
+            }
+        }
+    }
+}
