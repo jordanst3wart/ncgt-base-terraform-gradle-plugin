@@ -87,7 +87,6 @@ class HashicorpUtils {
                     variant = VARIANT_ARM64
                     break
             }
-            variant = VARIANT_64BIT
         } else if (os.solaris) {
             osname = 'solaris'
             variant = VARIANT_64BIT
