@@ -168,7 +168,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
 
     void 'Run terraform destroy on a local resource'() {
         when:
-        BuildResult result = getGradleRunner(['tfApply', 'tfDestroy', '--approve']).build()
+        BuildResult result = getGradleRunner(['tfApply', 'tfDestroy']).build()
 
         then:
         result.task(':tfDestroy').outcome == SUCCESS
@@ -183,7 +183,7 @@ class TerraformPlanApplyAndDestroySpec extends IntegrationSpecification {
         terraformApplyOutputFile << '\n\n\n'
 
         and: 'tfDestroy is called without tfApply preceding it'
-        BuildResult result = getGradleRunner(['tfDestroy', '--approve']).build()
+        BuildResult result = getGradleRunner(['tfDestroy']).build()
 
         then: 'Only tfDestroy should be executed'
         result.task(':tfDestroy').outcome == SUCCESS

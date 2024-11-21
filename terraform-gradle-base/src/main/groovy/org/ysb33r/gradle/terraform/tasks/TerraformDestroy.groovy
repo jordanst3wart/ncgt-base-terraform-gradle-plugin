@@ -40,6 +40,7 @@ class TerraformDestroy extends AbstractTerraformTask {
     @Inject
     TerraformDestroy(TerraformPlanProvider plan, String workspaceName) {
         super('destroy', [Lock, StateOptionsFull], [], workspaceName)
+        supportsAutoApprove()
         supportsInputs()
         supportsColor()
 
@@ -63,19 +64,6 @@ class TerraformDestroy extends AbstractTerraformTask {
 
         variablesFile = plan.map {
             new File(it.variablesFile.get().parentFile, "_d_.${workspaceName}.tfVars")
-        }
-    }
-
-    /** Set auto-approve mode.
-     *
-     * Once set it cannot be unset for the duration of the Gradle task graph execution.
-     *
-     * @param state {@code true} will auto-approve destruction.
-     */
-    @Option(option = 'approve', description = 'Auto-approve destruction of resources')
-    void setAutoApprove(Boolean state) {
-        if (state) {
-            supportsAutoApprove()
         }
     }
 

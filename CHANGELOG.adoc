@@ -2,6 +2,9 @@
 :issue:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/
 :mr:  https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/merge_requests/
 
+== 1.2.1
+* Remove `--approve` being required for tfDestroy tasks
+
 == 1.2.0
 
 === Other
