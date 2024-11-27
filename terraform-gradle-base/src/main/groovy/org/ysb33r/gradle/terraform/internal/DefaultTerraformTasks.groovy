@@ -42,7 +42,6 @@ enum DefaultTerraformTasks {
     STATE_PULL(32, 'statePull', TerraformStatePull, 'Pulls remote state local to local file'),
     STATE_RM(33, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
     UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
-    UPGRADE(40, 'upgrade', TerraformUpgrade, 'Upgrades Terraform source to current version', true),
     FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted', true),
     FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set', true),
     CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true),

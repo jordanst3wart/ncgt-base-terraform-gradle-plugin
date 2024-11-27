@@ -343,15 +343,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         defaultCommandParameters.add '-auto-approve'
     }
 
-    /**
-     * To be called from tasks where the command supports {@code yes}.
-     *
-     * @since 0.10.0
-     */
-    protected void supportsYes() {
-        defaultCommandParameters.add '-yes'
-    }
-
     /** To be called from tasks where the command supports {@code no-color}.
      *
      * <p> Will get set if {@code --console=plain was provided to Gradle}
