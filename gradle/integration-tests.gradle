@@ -29,7 +29,6 @@ task integrationTest(type: Test, dependsOn: jar) {
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
 
     mustRunAfter test
-    dependsOn ':cacheTerraformBinaries'
 
     enabled = !project.gradle.startParameter.isOffline()
 }

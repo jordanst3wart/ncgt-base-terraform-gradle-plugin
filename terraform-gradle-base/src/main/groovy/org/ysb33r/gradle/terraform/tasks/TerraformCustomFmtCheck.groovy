@@ -52,7 +52,7 @@ class TerraformCustomFmtCheck extends AbstractTerraformCustomFmt {
                 Set<File> call() throws Exception {
                     projectOperations.fsOperations.files(sourceDirs).findAll { File it ->
                         it.exists() && it.directory
-                    }.toSet()
+                    }.toSet() as Set<File>
                 }
             }
         )
@@ -79,7 +79,7 @@ class TerraformCustomFmtCheck extends AbstractTerraformCustomFmt {
      *
      * @param d Directories to add. Anything convertible by the like of `project.file` is acceptable.
      */
-    void setDirs(Iterable<?> d) {
+    void setDirs(Iterable<? extends Object> d) {
         this.sourceDirs.clear()
         this.sourceDirs.addAll(d)
     }

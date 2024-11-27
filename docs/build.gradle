@@ -24,7 +24,7 @@ dependencies {
 tasks.register('groovydoc', Groovydoc) {
     destinationDir = file("${buildDir}/docs/groovydoc")
     docTitle = "Jobble Gradle Plugin Suite Combined API ${project.version}"
-    includePrivate = false
+    access = GroovydocAccess.PROTECTED
     groovyClasspath = configurations.groovyDoc
     classpath = configurations.groovyDoc
 //    mustRunAfter gitPublishReset

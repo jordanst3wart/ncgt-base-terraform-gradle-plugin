@@ -15,6 +15,7 @@
  */
 package org.ysb33r.gradle.terraform.remotestate
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -91,6 +92,7 @@ class TerraformBackendExtension {
      * @param backend Class of backend.
      * @param configurator Configurator for backend.
      */
+    @CompileDynamic
     public <T extends BackendSpec> void addBackend(
         String name,
         Class<T> backend,

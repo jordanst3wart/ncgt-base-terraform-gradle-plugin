@@ -1,11 +1,10 @@
 plugins {
     id 'idea'
     id 'org.ysb33r.os' version '1.0.0'
-    id 'org.ysb33r.gradletest' version '3.0.0' apply false
     id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
     id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
     id 'com.gradle.plugin-publish' version '0.15.0' apply false
-    id 'com.github.hierynomus.license' version '0.15.0' apply false
+    id 'com.github.hierynomus.license' version '0.16.1' apply false
     id 'org.ajoberstar.git-publish' version '3.0.1' apply false
 }
 
@@ -15,7 +14,9 @@ allprojects {
         notSnapshot = { !version.endsWith('-SNAPSHOT') }
         terraformTestCacheDir = file("${rootProject.buildDir}/terraform-binaries")
 
-        codedTerraformVersion = (project(':terraform-gradle-base').file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy').readLines().grep {
+        codedTerraformVersion = (project(':terraform-gradle-base')
+            .file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy')
+            .readLines().grep {
             it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/
         })[0].replaceFirst(~/^(.+?["'])/, '').replaceFirst(~/(["'].*)$/, '')
 
@@ -40,5 +41,3 @@ allprojects {
         }
     }
 }
-
-apply from: 'gradle/cache-terraform-binaries.gradle'

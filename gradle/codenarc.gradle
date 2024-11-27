@@ -5,16 +5,7 @@ dependencies {
 codenarc {
     configFile = file("${rootDir}/gradle/codenarc/codenarc.groovy")
     // run codenarc on production sources only
+    // this should really be run on tests too
     sourceSets = [project.sourceSets.main]
-}
-
-tasks.withType(CodeNarc) { codenarcSourceSetTask ->
-    def reportName = (codenarcSourceSetTask.name - 'codenarc').uncapitalize()
-    def ideReport = reports.add(org.gradle.api.reporting.internal.TaskGeneratedSingleFileReport, 'ide', reports.task)
-    ideReport.enabled = true
-    ideReport.destination = file( "${project.codenarc.reportsDir}/${reportName}.ide.txt")
-}
-
-tasks.withType(Test) { testTask ->
-    testTask.mustRunAfter codenarcMain
+    reportFormat = "html"
 }

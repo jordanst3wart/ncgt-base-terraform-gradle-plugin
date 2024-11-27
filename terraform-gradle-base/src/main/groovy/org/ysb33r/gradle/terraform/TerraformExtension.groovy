@@ -15,6 +15,7 @@
  */
 package org.ysb33r.gradle.terraform
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
@@ -287,7 +288,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @since 0.14.0
      */
     void platforms(String... reqPlatforms) {
-        this.requiredPlatforms.addAll(reqPlatforms as List)
+        this.requiredPlatforms.addAll(reqPlatforms.toList())
     }
 
     /**
@@ -434,15 +435,14 @@ class TerraformExtension extends AbstractToolExtension {
     }
 
     @Deprecated
+    @CompileDynamic
     private void addVersionResolver(ProjectOperations projectOperations) {
         DownloaderFactory downloaderFactory = {
             Map<String, Object> options, String version, ProjectOperations p ->
                 new Downloader(version, p)
         }
 
-        DownloadedExecutable resolver = { Downloader installer ->
-            installer.terraformExecutablePath
-        }
+        DownloadedExecutable resolver = { Downloader installer -> installer.getTerraformExecutablePath() }
 
         resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)

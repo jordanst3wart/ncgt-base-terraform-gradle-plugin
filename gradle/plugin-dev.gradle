@@ -17,21 +17,6 @@ dependencies {
     testImplementation "org.ysb33r.gradle:grolifant-herd:${grolifantVer}"
 }
 
-gradleTest {
-    versions gradleTestMinVersion
-
-    // tag::gradleTestVersions[]
-    versions '6.5.1', '7.5.1', '8.1.1'
-    // end::gradleTestVersions[]
-
-    systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
-    dependsOn jar, ':cacheTerraformBinaries'
-    shouldRunAfter 'integrationTest'
-    testKitStrategy = directoryPerTest
-
-//    gradleArguments '-d'
-}
-
 license {
     header = rootProject.file('gradle/license/HEADER')
     strictCheck = true

@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
@@ -28,7 +27,7 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
 
-@CompileStatic
+@CompileDynamic
 class DefaultTerraformSourceSets implements TerraformSourceSets {
 
     DefaultTerraformSourceSets(Project project) {
@@ -61,7 +60,6 @@ class DefaultTerraformSourceSets implements TerraformSourceSets {
         project.objects.domainObjectContainer(TerraformSourceDirectorySet, factory)
     }
 
-    @CompileDynamic
     private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createContainerLegacyMode(
         NamedDomainObjectFactory factory,
         Project project

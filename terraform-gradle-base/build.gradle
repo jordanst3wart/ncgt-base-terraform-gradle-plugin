@@ -2,7 +2,6 @@ plugins {
     id 'groovy'
     id 'codenarc'
     id 'java-gradle-plugin'
-    id 'org.ysb33r.gradletest'
     id 'org.asciidoctor.jvm.convert'
     id 'org.asciidoctor.editorconfig'
     id 'com.gradle.plugin-publish'

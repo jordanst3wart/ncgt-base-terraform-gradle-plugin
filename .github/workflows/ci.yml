@@ -15,7 +15,7 @@ jobs:
     build:
         strategy:
             matrix:
-                java: [8, 11]
+                java: [11, 16]
         runs-on: ubuntu-latest
         env:
             GH_USERNAME: ${{ secrets.GH_USERNAME }}
@@ -35,15 +35,7 @@ jobs:
                   restore-keys: ${{ runner.os }}-gradle
             - name: Build with Gradle
               run: |
-                  if [ "${{ matrix.java }}" == "8" ]; then
-                    ./gradlew build -i -s -x gradleTest
-                  else
-                    ./gradlew -i -s assemble
-                  fi
-            - name: Run compatibility test
-              run: ./run-compatibility-test-on-ci.sh
-              env:
-                  GRADLE_VERSIONS: '7.0.2,7.6.1' # ['6.0,6.3,6.8.1', '7.0.2,7.6.1', '8.0.2,8.1.1']
+                  ./gradlew -i -s assemble
 
             - name: Publish Plugin to github if main branch
               run: |

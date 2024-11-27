@@ -73,18 +73,18 @@ class TerraformBasePlugin implements Plugin<Project> {
         }
     }
 
-    private TerraformExtension createGlobalTerraformExtension(Project project) {
+    private static TerraformExtension createGlobalTerraformExtension(Project project) {
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
     }
 
-    private TerraformRemoteStateExtension createGlobalRemoteStateExtension(
+    private static TerraformRemoteStateExtension createGlobalRemoteStateExtension(
         Project project,
         TerraformExtension terraform
     ) {
         addRemoteStateExtension(project, ((ExtensionAware) terraform))
     }
 
-    private TerraformSourceSets createTerraformSourceSetsExtension(Project project) {
+    private static TerraformSourceSets createTerraformSourceSetsExtension(Project project) {
         project.extensions.create(
             TerraformSourceSets,
             TERRAFORM_SOURCESETS,
@@ -94,7 +94,7 @@ class TerraformBasePlugin implements Plugin<Project> {
     }
 
     @SuppressWarnings('UnnecessarySetter')
-    private TerraformBackendExtension createTerraformBackendsExtension(
+    private static TerraformBackendExtension createTerraformBackendsExtension(
         Project project,
         TerraformRemoteStateExtension globalRemoteState,
         TerraformSourceSets tss
