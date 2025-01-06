@@ -4,7 +4,7 @@ targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
 dependencies {
-    implementation "org.codehaus.groovy:groovy-all:${groovyVer}"
+    implementation localGroovy()
     implementation gradleApi()
     api "org.ysb33r.gradle:grolifant-herd:${grolifantVer}"
 
@@ -12,7 +12,7 @@ dependencies {
         exclude module: 'groovy-all'
     }
 
-    testImplementation "org.codehaus.groovy:groovy-all:${groovyVer}"
+    testImplementation localGroovy()
     testImplementation gradleTestKit()
     testImplementation "org.ysb33r.gradle:grolifant-herd:${grolifantVer}"
 }
