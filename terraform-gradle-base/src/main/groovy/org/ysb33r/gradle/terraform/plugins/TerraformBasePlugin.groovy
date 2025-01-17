@@ -16,12 +16,13 @@
 package org.ysb33r.gradle.terraform.plugins
 
 import groovy.transform.CompileStatic
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.gradle.terraform.TerraformSourceSets
-import org.ysb33r.gradle.terraform.internal.DefaultTerraformSourceSets
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.remotestate.LocalBackendSpec
 import org.ysb33r.gradle.terraform.remotestate.TerraformBackendExtension
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
@@ -29,7 +30,9 @@ import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateConfigGenerator
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -51,7 +54,7 @@ class TerraformBasePlugin implements Plugin<Project> {
             project.apply plugin: TerraformRCPlugin
         }
 
-        ProjectOperations.maybeCreateExtension(project)
+        ProjectOperations projectOperations = ProjectOperations.maybeCreateExtension(project)
 
         project.tasks.withType(RemoteStateConfigGenerator) { RemoteStateConfigGenerator t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
@@ -64,13 +67,7 @@ class TerraformBasePlugin implements Plugin<Project> {
         def terraform = createGlobalTerraformExtension(project)
         def remoteState = createGlobalRemoteStateExtension(project, terraform)
         def tss = createTerraformSourceSetsExtension(project)
-        createTerraformBackendsExtension(project, remoteState, tss)
-
-        project.pluginManager.withPlugin('org.ysb33r.cloudci') {
-            project.tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t ->
-                t.environment TF_AUTOMATION: 1
-            }
-        }
+        createTerraformBackendsExtension(project, projectOperations, remoteState, tss)
     }
 
     private static TerraformExtension createGlobalTerraformExtension(Project project) {
@@ -84,30 +81,42 @@ class TerraformBasePlugin implements Plugin<Project> {
         addRemoteStateExtension(project, ((ExtensionAware) terraform))
     }
 
-    private static TerraformSourceSets createTerraformSourceSetsExtension(Project project) {
-        project.extensions.create(
-            TerraformSourceSets,
-            TERRAFORM_SOURCESETS,
-            DefaultTerraformSourceSets,
-            project
-        )
+    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(Project project) {
+        def objectFactory = project.objects
+        def terraformRc = locateTerraformRCExtension(project)
+        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
+            objectFactory.newInstance(
+                TerraformSourceDirectorySet,
+                project,
+                project.objects,
+                project.tasks,
+                terraformRc,
+                name,
+                sourceSetDisplayName(name)
+            )
+        }
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer = objectFactory.domainObjectContainer(TerraformSourceDirectorySet, factory)
+        project.extensions.add(TERRAFORM_SOURCESETS, sourceSetContainer)
+        sourceSetContainer
     }
 
     @SuppressWarnings('UnnecessarySetter')
     private static TerraformBackendExtension createTerraformBackendsExtension(
         Project project,
+        ProjectOperations projectOperations,
         TerraformRemoteStateExtension globalRemoteState,
-        TerraformSourceSets tss
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss
     ) {
-        project.extensions.create(
+        def backend = project.extensions.create(
             TerraformBackendExtension.NAME,
             TerraformBackendExtension,
-            ProjectOperations.find(project),
+            projectOperations,
             project.objects,
             globalRemoteState,
             tss
         )
 
         globalRemoteState.setBackend(LocalBackendSpec)
+        backend
     }
 }

@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform.remotestate
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.model.ObjectFactory
@@ -26,7 +27,7 @@ import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.gradle.terraform.TerraformSourceSets
+import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.errors.TerraformUnknownBackendException
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -86,7 +87,7 @@ class TerraformRemoteStateExtension implements BackendAttributesSpec {
      * @since 0.10.0
      */
     static TerraformRemoteStateExtension findExtension(Project project, String sourceSetName) {
-        def sourceSet = project.extensions.getByType(TerraformSourceSets).getByName(sourceSetName)
+        def sourceSet = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(sourceSetName)
         ((ExtensionAware) sourceSet).extensions.getByType(TerraformRemoteStateExtension)
     }
 

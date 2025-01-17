@@ -82,9 +82,8 @@ class Downloader extends AbstractDistributionInstaller {
      *
      * @return Location of {@code terraform} or null if not a supported operating system.
      */
-    File getTerraformExecutablePath() {
-        File root = distributionRoot
-        root == null ? null : new File(root, exeName)
+    File terraformExecutablePath() {
+        distributionRoot == null ? null : new File(distributionRoot, exeName)
     }
 
     /** Validates that the unpacked distribution is good.

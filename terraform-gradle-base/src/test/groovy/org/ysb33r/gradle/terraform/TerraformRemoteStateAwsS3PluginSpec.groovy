@@ -15,6 +15,7 @@
  */
 package org.ysb33r.gradle.terraform
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
@@ -84,7 +85,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         def region = 'blah-blah'
         def bucket = 'car'
         def table = '123'
-        TerraformSourceSets tss = project.terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
 
         when: 's3 is globally configured for region and bucket'
         sourceSetRemote.follow(remote)

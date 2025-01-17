@@ -17,11 +17,11 @@ package org.ysb33r.gradle.terraform.aws
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.plugins.TerraformPlugin
 
 @CompileStatic
@@ -30,7 +30,7 @@ class TerraformAwsPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.pluginManager.apply(TerraformPlugin)
 
-        TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
         terraformSourceSets.all(new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {

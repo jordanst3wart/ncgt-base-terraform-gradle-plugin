@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.plugins
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -24,7 +25,6 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.internal.remotestate.BackendFactory
 import org.ysb33r.gradle.terraform.remotestate.LocalBackendSpec
@@ -60,7 +60,7 @@ class TerraformPlugin implements Plugin<Project> {
             it.description = 'Formats all terraform source'
         }
 
-        TerraformSourceSets terraformSourceSets = project.extensions.getByType(TerraformSourceSets)
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
         def globalRemoteState = ((ExtensionAware) project.extensions.getByType(TerraformExtension))
             .extensions
             .getByType(TerraformRemoteStateExtension)
@@ -78,7 +78,7 @@ class TerraformPlugin implements Plugin<Project> {
         Project project,
         TerraformRemoteStateExtension globalRemoteState
     ) {
-        project.extensions.getByType(TerraformSourceSets).configureEach { TerraformSourceDirectorySet tsds ->
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach { TerraformSourceDirectorySet tsds ->
             TerraformRemoteStateExtension tsdsBackends = addRemoteStateExtension(project, ((ExtensionAware) tsds))
             BackendFactory.createBackend(
                 ProjectOperations.find(project),
@@ -103,7 +103,7 @@ class TerraformPlugin implements Plugin<Project> {
         Project project,
         TaskProvider<Task> formatAll
     ) {
-        project.extensions.getByType(TerraformSourceSets).configureEach(new Action<TerraformSourceDirectorySet>() {
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach(new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {
                 createTasksByConvention(project, tsds)

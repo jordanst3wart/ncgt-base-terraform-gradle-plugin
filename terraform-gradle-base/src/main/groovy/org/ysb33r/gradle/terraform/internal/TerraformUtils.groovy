@@ -70,39 +70,9 @@ class TerraformUtils {
     /** Get all AWS-related environmental variables.
      *
      * @return Map of environmental variables.
-     * @deprecated
      */
-    @Deprecated
     static Map<String, String> awsEnvironment() {
         System.getenv().findAll { k, v -> k.startsWith('AWS_') }
-    }
-
-    /** Obtain the required terraform execution environmental variables
-     *
-     * @param project Project context
-     * @param name Name of the source set
-     * @param dataDir Data directory provider
-     * @param logDir Log directory provider
-     * @param logLevel Level of logging. Can be {@code null}.
-     * @return Map of environmental variables
-     *
-     * @since 0.9.0*
-     * @deprecated
-     */
-    @Deprecated
-    static Map terraformEnvironment(
-        Project project,
-        String name,
-        Provider<File> dataDir,
-        Provider<File> logDir,
-        String logLevel
-    ) {
-        [
-            TF_DATA_DIR       : dataDir.get().absolutePath,
-            TF_CLI_CONFIG_FILE: TerraformConfigUtils.locateTerraformConfigFile(project).absolutePath,
-            TF_LOG_PATH       : new File(logDir.get(), "${name}.log").absolutePath,
-            TF_LOG            : logLevel ?: '',
-        ]
     }
 
     /** Obtain the required terraform execution environmental variables

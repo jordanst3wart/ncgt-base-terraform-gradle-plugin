@@ -38,18 +38,6 @@ class TerraformConfigUtils {
 
     /** Locates the Terraform configuration file in use by the specific project
      *
-     * @param project Project requesting Terraform location.
-     * @return Location of Terraform config file. Never {@code null}.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    static File locateTerraformConfigFile(Project project) {
-        locateTerraformConfigFile(locateTerraformRCExtension(project))
-    }
-
-    /** Locates the Terraform configuration file in use by the specific project
-     *
      * @param terraformrc {@link TerraformRCExtension}.
      * @return Location of Terraform config file. Never {@code null}.
      */

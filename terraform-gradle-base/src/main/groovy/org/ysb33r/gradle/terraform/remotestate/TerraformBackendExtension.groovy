@@ -15,14 +15,13 @@
  */
 package org.ysb33r.gradle.terraform.remotestate
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.remotestate.BackendFactory.createBackend
@@ -39,7 +38,7 @@ class TerraformBackendExtension {
         ProjectOperations projectOperations,
         ObjectFactory objectFactory,
         TerraformRemoteStateExtension globalRemote,
-        TerraformSourceSets terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets
     ) {
         this.projectOperations = projectOperations
         this.objectFactory = objectFactory
@@ -56,7 +55,7 @@ class TerraformBackendExtension {
      * @param name Name of backend.
      * @param backend Class of backend.
      */
-    public <T extends BackendSpec> void addBackend(String name, Class<T> backend) {
+    def <T extends BackendSpec> void addBackend(String name, Class<T> backend) {
         addBackend(name, backend) { it -> }
     }
 
@@ -68,18 +67,16 @@ class TerraformBackendExtension {
      * @param backend Class of backend.
      * @param configurator Configurator for backend.
      */
-    public <T extends BackendSpec> void addBackend(
+    def <T extends BackendSpec> void addBackend(
         String name,
         Class<T> backend,
         Action<T> configurator
     ) {
-        T globalExt = ((ExtensionAware) globalRemote).extensions.create(name, backend, projectOperations)
+        T globalExt = ((ExtensionAware) globalRemote).extensions.create(name, backend, this.projectOperations)
         configurator.execute(globalExt)
-
-        ProjectOperations po = projectOperations
         ObjectFactory objects = objectFactory
         terraformSourceSets.configureEach { TerraformSourceDirectorySet tsds ->
-            T localExt = createBackend(po, objects, tsds, name, backend)
+            T localExt = createBackend(this.projectOperations, objects, tsds, name, backend)
             configurator.execute(localExt)
         }
     }
@@ -92,17 +89,17 @@ class TerraformBackendExtension {
      * @param backend Class of backend.
      * @param configurator Configurator for backend.
      */
-    @CompileDynamic
-    public <T extends BackendSpec> void addBackend(
+    @CompileStatic
+    <T extends BackendSpec> void addBackend(
         String name,
         Class<T> backend,
         Closure configurator
     ) {
-        createBackend(projectOperations, objectFactory, globalRemote, name, backend).identity(configurator)
+        createBackend(projectOperations, objectFactory, globalRemote, name, backend).configure(configurator)
         terraformSourceSets.configureEach(new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {
-                createBackend(projectOperations, objectFactory, tsds, name, backend).identity(configurator)
+                createBackend(projectOperations, objectFactory, tsds, name, backend).configure(configurator)
             }
         })
     }
@@ -110,5 +107,5 @@ class TerraformBackendExtension {
     private final ObjectFactory objectFactory
     private final ProjectOperations projectOperations
     private final TerraformRemoteStateExtension globalRemote
-    private final TerraformSourceSets terraformSourceSets
+    private final NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets
 }

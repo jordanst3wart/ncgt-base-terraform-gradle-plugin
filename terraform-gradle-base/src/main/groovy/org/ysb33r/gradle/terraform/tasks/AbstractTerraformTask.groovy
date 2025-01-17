@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.Synchronized
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.FileCollection
@@ -31,7 +32,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformMajorVersion
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.WorkspaceExtension
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
@@ -73,7 +73,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
                 return (TerraformSourceDirectorySet) this.sourceSetProxy
             default:
                 project.extensions.getByType(
-                    TerraformSourceSets).getByName(projectOperations.stringTools.stringize(this.sourceSetProxy)
+                    NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(projectOperations.stringTools.stringize(this.sourceSetProxy)
                 )
         }
     }

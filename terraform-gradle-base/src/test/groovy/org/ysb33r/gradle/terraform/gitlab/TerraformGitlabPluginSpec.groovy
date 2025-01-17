@@ -15,10 +15,10 @@
  */
 package org.ysb33r.gradle.terraform.gitlab
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.credentials.SessionCredentials
 import spock.lang.Specification
 
@@ -43,7 +43,7 @@ class TerraformGitlabPluginSpec extends Specification {
             }
         }
 
-        TerraformSourceSets tss = project.terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
         TerraformSourceDirectorySet main = tss.getByName('main')
         Set<SessionCredentials> set = main.credentialProviders.get()
 

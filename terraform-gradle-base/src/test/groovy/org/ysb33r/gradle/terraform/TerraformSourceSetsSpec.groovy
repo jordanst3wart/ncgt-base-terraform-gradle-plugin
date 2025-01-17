@@ -16,6 +16,7 @@
 package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.testfixtures.ProjectBuilder
@@ -55,7 +56,7 @@ class TerraformSourceSetsSpec extends Specification {
             }
         }
 
-        TerraformSourceSets tss = project.terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
         def allVars = ((Variables) tss.getByName('main').variables).allVars
 
         then:

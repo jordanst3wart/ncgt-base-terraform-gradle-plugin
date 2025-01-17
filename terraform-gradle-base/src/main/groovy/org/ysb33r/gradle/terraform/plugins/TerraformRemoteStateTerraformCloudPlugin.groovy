@@ -17,11 +17,11 @@ package org.ysb33r.gradle.terraform.plugins
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.TerraformSourceSets
 import org.ysb33r.gradle.terraform.remotestate.TerraformBackendExtension
 import org.ysb33r.gradle.terraform.remotestate.TerraformCloudBackendSpec
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
@@ -50,7 +50,7 @@ class TerraformRemoteStateTerraformCloudPlugin implements Plugin<Project> {
         globalRemote.backend = TerraformCloudBackendSpec
         ((ExtensionAware) globalRemote).extensions.getByType(TerraformCloudBackendSpec).allTokenTemplate()
 
-        project.extensions.getByType(TerraformSourceSets).configureEach({ TerraformSourceDirectorySet tsds ->
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach({ TerraformSourceDirectorySet tsds ->
             TerraformRemoteStateExtension trse = ((ExtensionAware) tsds).extensions
                 .getByType(TerraformRemoteStateExtension)
             trse.follow(globalRemote)

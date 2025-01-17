@@ -360,10 +360,7 @@ class TerraformExtension extends AbstractToolExtension {
      *
      * @since 0.6.0
      *
-     * @deprecated Use the {@code org.ysb33r.terraform.aws} plugin instead and fine control AWS authentication in the
-     *   source sets.
      */
-    @Deprecated
     void useAwsEnvironment() {
         environment awsEnvironment()
     }
@@ -442,7 +439,7 @@ class TerraformExtension extends AbstractToolExtension {
                 new Downloader(version, p)
         }
 
-        DownloadedExecutable resolver = { Downloader installer -> installer.getTerraformExecutablePath() }
+        DownloadedExecutable resolver = { Downloader installer -> installer.terraformExecutablePath() }
 
         resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
