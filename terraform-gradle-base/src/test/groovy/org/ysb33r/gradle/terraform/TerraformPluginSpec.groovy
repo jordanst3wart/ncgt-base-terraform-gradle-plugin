@@ -15,6 +15,7 @@
  */
 package org.ysb33r.gradle.terraform
 
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.ysb33r.gradle.terraform.tasks.TerraformApply
@@ -41,7 +42,7 @@ class TerraformPluginSpec extends Specification {
             }
         }
 
-        TerraformSourceSets tss = project.terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
 
         then:
         tss.getByName('main').srcDir.get() == project.file('foo/bar')

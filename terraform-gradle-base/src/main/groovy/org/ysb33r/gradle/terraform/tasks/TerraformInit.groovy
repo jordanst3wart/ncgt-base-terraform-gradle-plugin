@@ -26,7 +26,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.TerraformMajorVersion
 
 import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitor
@@ -37,8 +36,6 @@ import java.time.LocalDateTime
 
 import static java.nio.file.FileVisitResult.CONTINUE
 import static java.nio.file.Files.readSymbolicLink
-import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_11_OR_OLDER
-import static org.ysb33r.gradle.terraform.TerraformMajorVersion.VERSION_12
 
 /** Equivalent of {@code terraform init}.
  *
@@ -254,7 +251,6 @@ class TerraformInit extends AbstractTerraformTask {
             execSpec.cmdArgs('-reconfigure')
         }
 
-        TerraformMajorVersion verGroup = terraformMajorVersion
         execSpec
     }
 

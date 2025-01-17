@@ -110,7 +110,7 @@ class TerraformApply extends AbstractTerraformTask {
                 plan.absolutePath
             }
         }))
-        return execSpec
+        execSpec
     }
 
     @InputFile

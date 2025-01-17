@@ -107,7 +107,7 @@ class TerraformSourceSetsSpec extends Specification {
             }
         }
 
-        TerraformSourceSets tss = project.terraformSourceSets
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
         def main = tss.getByName('main')
 
         then:

@@ -21,7 +21,6 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.config.VariablesSpec
@@ -36,7 +35,6 @@ import org.ysb33r.gradle.terraform.credentials.SessionCredentials
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.Downloader
-import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -103,8 +101,6 @@ class TerraformExtension extends AbstractToolExtension {
         this.warnOnNewVersion = false
         this.env = [:]
         this.credentialsCache = new CredentialsCache(projectOperations)
-        this.fsMirror = project.objects.property(File)
-        this.netMirror = project.objects.property(String)
         addVariablesExtension()
     }
 
@@ -117,16 +113,6 @@ class TerraformExtension extends AbstractToolExtension {
     TerraformExtension(AbstractTerraformBaseTask task, List<TerraformExtensionConfigTypes> configExtensions) {
         super(task, NAME)
         executableDetails = [:]
-        this.fsMirror = task.project.objects.property(File)
-        this.netMirror = task.project.objects.property(String)
-        projectOperations.fsOperations.updateFileProperty(
-            this.fsMirror,
-            ((TerraformExtension) projectExtension).localMirrorDirectory
-        )
-        projectOperations.stringTools.updateStringProperty(
-            this.netMirror,
-            ((TerraformExtension) projectExtension).netMirror
-        )
         if (task instanceof AbstractTerraformTask) {
             configExtensions.each { TerraformExtensionConfigTypes config ->
                 switch (config.type) {
@@ -265,97 +251,6 @@ class TerraformExtension extends AbstractToolExtension {
         }
     }
 
-    /**
-     * Add one or more platforms to support for providers.
-     *
-     * Use {@link #getAllPlatforms} to add all platforms supported bu this plugin.
-     *
-     * @param reqPlatforms Platforms to add.
-     *
-     * @since 0.14.0
-     */
-    void platforms(Iterable<String> reqPlatforms) {
-        this.requiredPlatforms.addAll(reqPlatforms)
-    }
-
-    /**
-     * Add one or more platforms to support for providers.
-     *
-     * Use {@link #getAllPlatforms} to add all platforms supported bu this plugin.
-     *
-     * @param reqPlatforms Platforms to add.
-     *
-     * @since 0.14.0
-     */
-    void platforms(String... reqPlatforms) {
-        this.requiredPlatforms.addAll(reqPlatforms.toList())
-    }
-
-    /**
-     * Provide the list of platforms that need to be supported.
-     *
-     * If empty, only the current platform will be supported.
-     *
-     * @return List of supported platforms.
-     *
-     * @since 0.14.0
-     */
-    Set<String> getPlatforms() {
-        if (task) {
-            if (this.requiredPlatforms.empty) {
-                ((TerraformExtension) projectExtension).platforms
-            } else {
-                this.requiredPlatforms
-            }
-        } else {
-            this.requiredPlatforms
-        }
-    }
-
-    /**
-     * Set an alternative local directory to look for provider packages rather than in upstream registries.
-     *
-     * @param path Local path.
-     *
-     * @since 0.14.0
-     */
-    void setLocalMirrorDirectory(Object path) {
-        projectOperations.fsOperations.updateFileProperty(this.fsMirror, path)
-    }
-
-    /**
-     * An alternative local directory to look for provider packages rather than in upstream registries.
-     *
-     * @return Provider to a location. Can be empty.
-     *
-     * @since 0.14.0
-     */
-    Provider<File> getLocalMirrorDirectory() {
-        this.fsMirror
-    }
-
-    /**
-     * Set an alternative network mirror service for provide packages.
-     *
-     * @param uri Mirror location.
-     *
-     * @since 0.14.0
-     */
-    void setNetMirror(Object uri) {
-        projectOperations.stringTools.updateStringProperty(this.netMirror, uri)
-    }
-
-    /**
-     * An alternative network mirror service for provider packages.
-     *
-     * @return Provider to a URL. Can be empty.
-     *
-     * @since 0.14.0
-     */
-    Provider<String> getNetMirror() {
-        this.netMirror
-    }
-
     /** Adds AWS environmental variables to Terraform runtime environment.
      *
      * @since 0.6.0
@@ -363,16 +258,6 @@ class TerraformExtension extends AbstractToolExtension {
      */
     void useAwsEnvironment() {
         environment awsEnvironment()
-    }
-
-    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
-     * platform.
-     *
-     * @param file Object that can be converted using {@code project.file}.
-     * @return String version adapted on a per-platform basis
-     */
-    String terraformPath(Object file) {
-        TerraformUtils.terraformPath(projectOperations, file)
     }
 
     /**
@@ -509,11 +394,8 @@ class TerraformExtension extends AbstractToolExtension {
     ].toSet()
 
     private Boolean warnOnNewVersion
-    private final Property<File> fsMirror
-    private final Property<String> netMirror
     private final Map<String, Object> env
     private final Map<String, Object> executableDetails
     private final CredentialsCache credentialsCache
-    private final Set<String> requiredPlatforms = []
 }
 

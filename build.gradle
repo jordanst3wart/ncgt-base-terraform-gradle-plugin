@@ -13,19 +13,6 @@ allprojects {
         spockGroovyVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
         notSnapshot = { !version.endsWith('-SNAPSHOT') }
         terraformTestCacheDir = file("${rootProject.buildDir}/terraform-binaries")
-
-        codedTerraformVersion = (project(':terraform-gradle-base')
-            .file('src/main/groovy/org/ysb33r/gradle/terraform/TerraformExtension.groovy')
-            .readLines().grep {
-            it =~ /static\s+final\s+String\s+TERRAFORM_DEFAULT\s+=/
-        })[0].replaceFirst(~/^(.+?["'])/, '').replaceFirst(~/(["'].*)$/, '')
-
-        // Always list the primary test version as the first one in this list.
-        terraformTestVersions = [codedTerraformVersion, '0.12.24']
-    }
-
-    tasks.withType(Test).configureEach {
-        systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
     }
 
     repositories {

@@ -81,7 +81,9 @@ class TerraformBasePlugin implements Plugin<Project> {
         addRemoteStateExtension(project, ((ExtensionAware) terraform))
     }
 
-    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(Project project) {
+    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(
+        Project project
+    ) {
         def objectFactory = project.objects
         def terraformRc = locateTerraformRCExtension(project)
         NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
@@ -95,7 +97,8 @@ class TerraformBasePlugin implements Plugin<Project> {
                 sourceSetDisplayName(name)
             )
         }
-        NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer = objectFactory.domainObjectContainer(TerraformSourceDirectorySet, factory)
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer =
+            objectFactory.domainObjectContainer(TerraformSourceDirectorySet, factory)
         project.extensions.add(TERRAFORM_SOURCESETS, sourceSetContainer)
         sourceSetContainer
     }

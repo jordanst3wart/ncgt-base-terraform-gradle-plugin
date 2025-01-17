@@ -51,11 +51,6 @@ pluginBundle {
             displayName = 'Terraform Configuration (terraformrc) plugin'
             description = 'Deals specifically with the creation of terraformrc files'
         }
-        terraformWrapperPlugin {
-            id = 'org.ysb33r.terraform.wrapper'
-            displayName = 'Terraform Wrapper plugin'
-            description = 'Provides terraformw wrapper script so that terraform can be run from the command-line using exactly the same binary that the Gradle project will use.'
-        }
         terraformS3RemoteStatePlugin {
             id = 'org.ysb33r.terraform.remotestate.s3'
             displayName = 'Terraform remote state in S3'

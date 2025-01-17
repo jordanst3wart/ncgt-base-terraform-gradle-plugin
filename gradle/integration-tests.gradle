@@ -24,7 +24,6 @@ task integrationTest(type: Test, dependsOn: jar) {
     reports.html.destination = file("${reporting.baseDir}/integrationTest")
 
     systemProperties TERRAFORM_CACHE_DIR: terraformTestCacheDir.absolutePath
-    systemProperties TERRAFORM_VERSION: terraformTestVersions[0]
     systemProperties RESOURCES_DIR: file('src/integrationTest/resources').absolutePath
     systemProperties 'org.ysb33r.gradle.hashicorp.releases.uri': terraformTestCacheDir.absoluteFile.toURI()
 

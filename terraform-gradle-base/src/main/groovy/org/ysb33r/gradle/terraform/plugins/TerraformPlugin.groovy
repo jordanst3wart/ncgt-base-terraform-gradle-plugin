@@ -60,7 +60,8 @@ class TerraformPlugin implements Plugin<Project> {
             it.description = 'Formats all terraform source'
         }
 
-        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets =
+            project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
         def globalRemoteState = ((ExtensionAware) project.extensions.getByType(TerraformExtension))
             .extensions
             .getByType(TerraformRemoteStateExtension)
@@ -78,7 +79,8 @@ class TerraformPlugin implements Plugin<Project> {
         Project project,
         TerraformRemoteStateExtension globalRemoteState
     ) {
-        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach { TerraformSourceDirectorySet tsds ->
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach {
+            TerraformSourceDirectorySet tsds ->
             TerraformRemoteStateExtension tsdsBackends = addRemoteStateExtension(project, ((ExtensionAware) tsds))
             BackendFactory.createBackend(
                 ProjectOperations.find(project),
@@ -103,7 +105,8 @@ class TerraformPlugin implements Plugin<Project> {
         Project project,
         TaskProvider<Task> formatAll
     ) {
-        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach(new Action<TerraformSourceDirectorySet>() {
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach(
+            new Action<TerraformSourceDirectorySet>() {
             @Override
             void execute(TerraformSourceDirectorySet tsds) {
                 createTasksByConvention(project, tsds)

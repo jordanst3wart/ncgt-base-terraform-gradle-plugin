@@ -87,7 +87,8 @@ class TerraformRemoteStateExtension implements BackendAttributesSpec {
      * @since 0.10.0
      */
     static TerraformRemoteStateExtension findExtension(Project project, String sourceSetName) {
-        def sourceSet = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(sourceSetName)
+        def sourceSet = project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
+            .getByName(sourceSetName)
         ((ExtensionAware) sourceSet).extensions.getByType(TerraformRemoteStateExtension)
     }
 

@@ -22,7 +22,7 @@ import spock.lang.Specification
 @SuppressWarnings('LineLength')
 class DownloadTestSpecification extends Specification {
 
-    static final String TERRAFORM_VERSION = System.getProperty('TERRAFORM_VERSION') ?: TerraformExtension.TERRAFORM_DEFAULT
+    static final String TERRAFORM_VERSION = TerraformExtension.TERRAFORM_DEFAULT
     static final File TERRAFORM_CACHE_DIR = new File(
         System.getProperty('TERRAFORM_CACHE_DIR') ?: './build/terraform-binaries',
         'terraform'

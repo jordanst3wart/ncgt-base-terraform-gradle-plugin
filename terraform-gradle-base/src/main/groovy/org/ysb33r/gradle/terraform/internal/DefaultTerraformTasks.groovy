@@ -44,13 +44,10 @@ enum DefaultTerraformTasks {
     UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
     FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted', true),
     FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set', true),
-    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true),
-    PROVIDER(70, 'providersShow', TerraformProvidersShow, 'Show provider information', true),
-    PROVIDER_LOCK(71, 'providersLock', TerraformProvidersLock, 'Lock provider package versions', true),
-    PROVIDER_SCHEMA(72, 'providersSchema', TerraformProvidersSchema, 'Write detailed provider schemas to a file', true)
+    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true)
 
     static List<DefaultTerraformTasks> ordered() {
-        DefaultTerraformTasks.values().sort { a, b -> a.order <=> b.order } as List
+        values().sort { a, b -> a.order <=> b.order } as List
     }
 
     /**

@@ -1,6 +1,5 @@
 rootProject.name = 'terraform-gradle-plugin'
 include 'terraform-gradle-base'
-include 'terraform-gradle-aws'
 include 'docs'
 
 

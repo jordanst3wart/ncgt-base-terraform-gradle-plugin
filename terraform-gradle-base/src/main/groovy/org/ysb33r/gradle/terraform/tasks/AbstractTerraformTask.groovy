@@ -59,7 +59,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      * @param source Source set of anything that can be resolved using {@link StringTools#stringize(Object s)}
      * and looked up as a Terraform source set.
      */
-    void setSourceSet(Object source) {
+    void setSourceSet(TerraformSourceDirectorySet source) {
         this.sourceSetProxy = source
     }
 
@@ -72,7 +72,8 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
                 return (TerraformSourceDirectorySet) this.sourceSetProxy
             default:
                 project.extensions.getByType(
-                    NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(projectOperations.stringTools.stringize(this.sourceSetProxy)
+                    NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(
+                    projectOperations.stringTools.stringize(this.sourceSetProxy)
                 )
         }
     }
@@ -485,7 +486,7 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     private static final ConcurrentHashMap<String, TerraformMajorVersion> TF_VERSIONS =
         new ConcurrentHashMap<String, TerraformMajorVersion>()
 
-    private Object sourceSetProxy
+    private TerraformSourceDirectorySet sourceSetProxy
     private String terraformLogLevel = 'TRACE'
     private boolean switchWorkspaceBeforeExecution = true
     private boolean requiresSessionCredentials = true

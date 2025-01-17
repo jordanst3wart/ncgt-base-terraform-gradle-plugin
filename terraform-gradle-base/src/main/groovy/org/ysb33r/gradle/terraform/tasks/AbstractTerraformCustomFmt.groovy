@@ -37,7 +37,6 @@ abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
     @Override
     void exec() {
         workingDirForCommand.get().mkdirs()
-        //             createPluginCacheDir(terraformrc)
 
         for (File target : sourceDirectories.get()) {
             TerraformExecSpec execSpec = createExecSpec()

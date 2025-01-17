@@ -36,7 +36,7 @@ class TerraformPlanProvider {
         String taskName = TerraformConvention.taskName(sourceSetName, 'plan', workspaceName)
         TaskContainer tasks = project.tasks
         this.plan = project.provider {
-            (TerraformPlan) tasks.getByName(taskName)
+            (TerraformPlan) tasks.named(taskName)
         }
     }
 }

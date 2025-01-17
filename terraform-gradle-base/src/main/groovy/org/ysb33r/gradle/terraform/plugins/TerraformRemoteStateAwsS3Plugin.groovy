@@ -51,7 +51,8 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
         ((ExtensionAware) globalRemote).extensions.getByType(RemoteStateS3Spec).textTemplate =
             TextTemplates.LegacyS3ReplaceTokens.INSTANCE
 
-        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach({ TerraformSourceDirectorySet tsds ->
+        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach({
+            TerraformSourceDirectorySet tsds ->
             TerraformRemoteStateExtension trse = ((ExtensionAware) tsds).extensions
                 .getByType(TerraformRemoteStateExtension)
             trse.follow(globalRemote)

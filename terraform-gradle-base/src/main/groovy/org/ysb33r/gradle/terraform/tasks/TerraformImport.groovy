@@ -111,7 +111,6 @@ class TerraformImport extends AbstractTerraformTask {
         }
     }
 
-
     private String type
     private String resourceName
     private String path
