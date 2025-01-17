@@ -61,34 +61,6 @@ public interface BackendAttributesSpec {
      * <p>
      * Only useful when a custom template is used.
      *
-     * @return Delimiter
-     *
-     * @deprecated Use {@link #getBeginTokenProvider}.
-     */
-    @Deprecated
-    default String getBeginToken() {
-        return getBeginTokenProvider().getOrNull();
-    }
-
-    /**
-     * Terminating delimiter for tokens
-     * <p>
-     * Only useful when a custom template is used.
-     *
-     * @return Delimiter
-     *
-     * @deprecated Use {@link #getEndTokenProvider}.
-     */
-    @Deprecated
-    default String getEndToken() {
-        return getEndTokenProvider().getOrNull();
-    }
-
-    /**
-     * Starting delimiter for tokens.
-     * <p>
-     * Only useful when a custom template is used.
-     *
      * @return Provider for start delimiter
      */
     Provider<String> getBeginTokenProvider();

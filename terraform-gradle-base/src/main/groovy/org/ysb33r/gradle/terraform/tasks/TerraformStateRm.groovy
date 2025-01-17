@@ -73,10 +73,6 @@ class TerraformStateRm extends AbstractTerraformStateTask {
     }
 
     private String path
-
-    @Deprecated
     private String type
-
-    @Deprecated
     private String resourceName
 }

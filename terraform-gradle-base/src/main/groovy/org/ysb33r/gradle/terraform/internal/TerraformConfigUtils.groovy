@@ -123,19 +123,6 @@ class TerraformConfigUtils {
 
     /** Creates the plugin cache directory if it is not a global configuration.
      *
-     * @param project Project from which this is called.
-     * @return Location of the cache directory or {@code empty} if a global configuration is used.
-     *
-     * @throw {@link MissingTerraformConfiguration} if {@link TerraformRCExtension} cannot be located.
-     * @deprecated
-     */
-    @Deprecated
-    static Optional<File> createPluginCacheDir(Project project) {
-        createPluginCacheDir(locateTerraformRCExtension(project))
-    }
-
-    /** Creates the plugin cache directory if it is not a global configuration.
-     *
      * @param terraformrc {@link TerraformRCExtension}.
      * @return Location of the cache directory or {@code empty} if a global configuration is used.
      *

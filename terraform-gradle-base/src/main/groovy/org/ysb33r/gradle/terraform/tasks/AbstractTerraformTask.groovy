@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
-import static org.ysb33r.grolifant.api.core.LegacyLevel.PRE_5_0
 
 /** A base class for performing a {@code terraform} execution.
  *
@@ -391,47 +390,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     @InputFiles
     protected Provider<List<File>> getSecondarySources() {
         this.secondarySources
-    }
-
-    /** Adds a boolean command-line option with correct formatting to the execution specification.
-     *
-     * @param execSpec ExecSpec to configure
-     * @param optionName Name of option
-     * @param value Boolean value
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected void addBooleanCmdLineOption(TerraformExecSpec execSpec, final String optionName, boolean value) {
-        execSpec.cmdArgs "-${optionName}=${value ? 'true' : 'false'}"
-    }
-
-    /** Adds Terraform variables to execution specification.
-     *
-     * @param execSpec Specification to be configured.
-     * @param vars Map of variables to be added.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected void addVariablesToCmdLine(TerraformExecSpec execSpec, final Map<String, String> vars) {
-        vars.each { String key, String val ->
-            execSpec.cmdArgs '-var', "${key}=${val}"
-        }
-    }
-
-    /** Add files containing variables to command-line.
-     *
-     * @param execSpec Specification to be configured
-     * @param collection Collection of files containing variables.
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected void addVariableFilesToCmdLine(TerraformExecSpec execSpec, final FileCollection collection) {
-        for (File f in collection.files) {
-            execSpec.cmdArgs "-var-file=${f.absolutePath}"
-        }
     }
 
     /**

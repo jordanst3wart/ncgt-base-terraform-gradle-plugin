@@ -72,7 +72,7 @@ class TerraformShowState extends AbstractTerraformTask {
         super.exec()
         URI fileLocation = statusReportOutputFile.get().toURI()
         logger.lifecycle(
-            "The textual representation of the plan file has been generated into ${fileLocation}"
+            "The textual representation of the state file has been generated into ${fileLocation}"
         )
     }
 

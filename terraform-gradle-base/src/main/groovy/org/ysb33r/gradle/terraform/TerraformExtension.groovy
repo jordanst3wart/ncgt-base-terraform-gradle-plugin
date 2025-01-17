@@ -148,7 +148,7 @@ class TerraformExtension extends AbstractToolExtension {
      *
      * @since 0.14.0
      */
-    Set<String> getAllPlatforms() {
+    static Set<String> getAllPlatforms() {
         PLATFORMS.asImmutable()
     }
 
@@ -164,7 +164,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @return Returns a special option to be used in {@link #executable}
      */
     static Map<String, Object> searchPath() {
-        TerraformExtension.SEARCH_PATH
+        SEARCH_PATH
     }
 
     /** Print a warning message if a new version of {@code terraform} is available.

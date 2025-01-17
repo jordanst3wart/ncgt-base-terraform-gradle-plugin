@@ -44,20 +44,6 @@ class TerraformUtils {
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
      * platform.
      *
-     * @param project Project context.
-     * @param file Object that can be converted using {@code project.file}.
-     * @return String version adapted on a per-platform basis
-     * @deprecated
-     */
-    @Deprecated
-    static String terraformPath(Project project, Object file) {
-        String path = project.file(file).absolutePath
-        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, FORWARD_SLASH) : path
-    }
-
-    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
-     * platform.
-     *
      * @param projectOperations Project context.
      * @param file Object that can be converted using {@code project.file}.
      * @return String version adapted on a per-platform basis

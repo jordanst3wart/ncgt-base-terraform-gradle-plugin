@@ -66,11 +66,6 @@ pluginBundle {
             displayName = 'Terraform source checks'
             description = 'Adds Terraform source format validation into the check lifecycle'
         }
-        terraformGitlabPlugin {
-            id = 'org.ysb33r.terraform.gitlab'
-            displayName = 'Terraform Gitlab provider support'
-            description = 'Authentication support for the Gitlab provider in Terraform'
-        }
     }
 }
 

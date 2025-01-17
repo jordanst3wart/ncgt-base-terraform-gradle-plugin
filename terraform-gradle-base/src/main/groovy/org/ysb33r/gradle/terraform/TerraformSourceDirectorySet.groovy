@@ -40,7 +40,6 @@ import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
-import org.ysb33r.grolifant.api.core.LegacyLevel
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import javax.inject.Inject
@@ -150,7 +149,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             projectOperations.fsOperations.files(files).toList()
         }.curry(this.secondarySources))
 
-        this.workspaces = createWorkspaceContainer(tempProjectReference, objects)
+        this.workspaces = createWorkspaceContainer(objects)
         def xref = this
         this.workspaces.configureEach(new Action<Workspace>() {
             @Override
@@ -535,14 +534,9 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
     @CompileDynamic
     private static NamedDomainObjectContainer<Workspace> createWorkspaceContainer(
-        Project tempProjectReference,
         ObjectFactory objects
     ) {
-        if (LegacyLevel.PRE_5_5) {
-            tempProjectReference.container(Workspace)
-        } else {
-            objects.domainObjectContainer(Workspace)
-        }
+        objects.domainObjectContainer(Workspace)
     }
 
     @SuppressWarnings('ParameterCount')
@@ -579,18 +573,10 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         ObjectFactory objectFactory1,
         Provider<Map<String, ?>> lambda
     ) {
-        if (LegacyLevel.PRE_5_1) {
-            def prop = objectFactory1.property(Map)
-            prop.set(lambda)
-            prop
-        } else {
-            def prop = objectFactory1.mapProperty(String, Object)
-            if (!LegacyLevel.PRE_6_5) {
-                prop.disallowUnsafeRead()
-            }
-            prop.set(lambda)
-            prop
-        }
+        def prop = objectFactory1.mapProperty(String, Object)
+        prop.disallowUnsafeRead()
+        prop.set(lambda)
+        prop
     }
 
     private final Property<File> sourceDir

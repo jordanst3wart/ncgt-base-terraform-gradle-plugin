@@ -211,14 +211,6 @@ class TerraformInit extends AbstractTerraformTask {
         terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
-    /** Whether plugins should be verified.
-     *
-     * @deprecated Only used for Terraform 0.12 or older
-     */
-    @Internal
-    @Deprecated
-    boolean verifyPlugins = false
-
     /** Add specific command-line options for the command.
      * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
      * to {@code terraform init}.
@@ -263,9 +255,6 @@ class TerraformInit extends AbstractTerraformTask {
         }
 
         TerraformMajorVersion verGroup = terraformMajorVersion
-        if (verifyPlugins && verGroup == VERSION_11_OR_OLDER || verGroup == VERSION_12) {
-            execSpec.cmdArgs "-verify-plugins=${verifyPlugins}"
-        }
         execSpec
     }
 

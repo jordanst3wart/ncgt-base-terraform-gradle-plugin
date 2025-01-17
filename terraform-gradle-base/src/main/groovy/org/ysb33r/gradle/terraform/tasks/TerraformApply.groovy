@@ -24,7 +24,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
-import org.ysb33r.grolifant.api.core.LegacyLevel
 
 import javax.inject.Inject
 import java.time.LocalDateTime
@@ -63,10 +62,6 @@ class TerraformApply extends AbstractTerraformTask {
 
         outputs.file(tracker).optional()
         inputs.files(taskProvider('plan'))
-
-        if (LegacyLevel.PRE_5_0) {
-            dependsOn(plan.get())
-        }
     }
 
     /** Select specific resources.
@@ -115,6 +110,7 @@ class TerraformApply extends AbstractTerraformTask {
                 plan.absolutePath
             }
         }))
+        return execSpec
     }
 
     @InputFile
