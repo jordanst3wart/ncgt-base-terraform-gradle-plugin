@@ -42,18 +42,18 @@ import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
  * <p> (Patches welcome!)
  */
 @CompileStatic
-class Downloader extends AbstractDistributionInstaller implements  DownloaderBinary {
+class DownloaderOpenTofu extends AbstractDistributionInstaller implements DownloaderBinary {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final OperatingSystem.Arch ARCH = OS.arch
-    public static final String TOOL_IDENTIFIER = 'terraform'
-    public static final String BASEURI = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
+    public static final String TOOL_IDENTIFIER = 'tofu'
+    public static final String BASEURI = 'https://github.com/opentofu/opentofu/releases'
 
     /** Creates a downloader
      *
      * @param version Version of {@code Terraform}.
      * @param projectOperations Project this is associated with.
      */
-    Downloader(final String version, final ProjectOperations projectOperations) {
+    DownloaderOpenTofu(final String version, final ProjectOperations projectOperations) {
         super(TOOL_IDENTIFIER, version, "native-binaries/${TOOL_IDENTIFIER}", projectOperations)
     }
 
@@ -74,7 +74,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
     @Override
     URI uriFromVersion(final String ver) {
         final String osArch = HashicorpUtils.osArch(OS)
-        osArch ? "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
+        osArch ? "${BASEURI}/download/v${ver}/tofu_${ver}_${osArch}.zip".toURI() : null
     }
 
     /** Returns the path to the {@code terraform} executable.
@@ -108,7 +108,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
     }
 
     private String getExeName() {
-        OS.windows ? 'terraform.exe' : 'terraform'
+        OS.windows ? 'tofu.exe' : 'tofu'
     }
 }
 

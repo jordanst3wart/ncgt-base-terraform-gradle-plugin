@@ -35,6 +35,8 @@ import org.ysb33r.gradle.terraform.credentials.SessionCredentials
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.Downloader
+import org.ysb33r.gradle.terraform.internal.DownloaderBinary
+import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -316,15 +318,19 @@ class TerraformExtension extends AbstractToolExtension {
         (TerraformExtension) projectExtension
     }
 
-    @Deprecated
     @CompileDynamic
     private void addVersionResolver(ProjectOperations projectOperations) {
+        def tofu = project.rootProject.properties.getOrDefault('opentofu', false)
         DownloaderFactory downloaderFactory = {
             Map<String, Object> options, String version, ProjectOperations p ->
-                new Downloader(version, p)
+                if (tofu) {
+                    new DownloaderOpenTofu(version, p)
+                } else {
+                    new Downloader(version, p)
+                }
         }
 
-        DownloadedExecutable resolver = { Downloader installer -> installer.terraformExecutablePath() }
+        DownloadedExecutable resolver = { DownloaderBinary installer -> installer.terraformExecutablePath() }
 
         resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
