@@ -307,15 +307,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
             TerraformConvention.taskName(sourceSet.name, command, ws)
         }
 
-        if (PRE_5_0) {
-            taskName.map({ String it ->
-                (AbstractTerraformTask) project.tasks.getByName(it)
-            } as Transformer<AbstractTerraformTask, String>)
-        } else {
-            taskName.flatMap({ String it ->
-                project.tasks.named(it, AbstractTerraformTask)
-            } as Transformer<Provider<AbstractTerraformTask>, String>)
-        }
+        taskName.flatMap({ String it ->
+            project.tasks.named(it, AbstractTerraformTask)
+        } as Transformer<Provider<AbstractTerraformTask>, String>)
     }
 
     /**
