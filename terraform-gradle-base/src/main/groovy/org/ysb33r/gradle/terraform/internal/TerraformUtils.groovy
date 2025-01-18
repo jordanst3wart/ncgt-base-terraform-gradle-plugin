@@ -16,12 +16,12 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.grashicorp.StringUtils
 import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.StringUtils
+
 
 /** General utilities for Terraform.
  *

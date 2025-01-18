@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.config.VariablesSpec
-import org.ysb33r.grolifant.api.v4.StringUtils
+import org.ysb33r.grashicorp.StringUtils
 
 import java.nio.file.Path
 import java.util.stream.Collectors

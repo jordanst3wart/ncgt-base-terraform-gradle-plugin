@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.gradle.terraform.remotestate.BackendAttributesSpec
 import org.ysb33r.gradle.terraform.remotestate.BackendTextTemplate
-import org.ysb33r.grolifant.api.v4.StringUtils
+import org.ysb33r.grashicorp.StringUtils
 
 /**
  * A collection of text templates.
