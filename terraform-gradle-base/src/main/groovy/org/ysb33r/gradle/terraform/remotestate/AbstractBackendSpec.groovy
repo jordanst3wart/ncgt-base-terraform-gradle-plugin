@@ -243,19 +243,6 @@ abstract class AbstractBackendSpec implements BackendSpec {
     }
 
     /**
-     * Adds a provider of tokens.
-     * <p>
-     * These providers are processed before any of the customisations on the class.
-     *
-     * @param tokenProvider Addition provider of tokens
-     * @since 1.0
-     */
-    @Override
-    void addTokenProvider(Provider<Map<String, Object>> tokenProvider) {
-        this.additionalTokenProviders.add(tokenProvider)
-    }
-
-    /**
      * Reset all tokens as well as token delimiters.
      */
     void clear() {

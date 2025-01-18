@@ -33,11 +33,6 @@ import java.util.Map;
 public interface BackendSpec extends Named, BackendAttributesSpec {
 
     /**
-     * Clear all tokens.
-     */
-    void clear();
-
-    /**
      * Configures the backend according to a specification
      *
      * @param configurator Configurating action
@@ -105,14 +100,4 @@ public interface BackendSpec extends Named, BackendAttributesSpec {
      * @param value Lazy-evaluted value. Anything that can resolve to a string.
      */
     void token(String key, Object value);
-
-    /**
-     * Adds a provider of tokens.
-     * <p>
-     * These providers are processed before any of the customisations on the class.
-     *
-     * @param tokenProvider Addition provider of tokens
-     * @since 1.0
-     */
-    void addTokenProvider(Provider<Map<String, Object>> tokenProvider);
 }

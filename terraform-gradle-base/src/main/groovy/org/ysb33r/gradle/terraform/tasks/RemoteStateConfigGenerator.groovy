@@ -223,19 +223,6 @@ class RemoteStateConfigGenerator extends DefaultTask {
         compiledTokens
     }
 
-    /**
-     * Adds a provider of tokens.
-     *
-     * These providers are processed before any of the customisations on the backend provider.
-     *
-     * @param tokenProvider Addition provider of tokens
-     *
-     * @since 1.0
-     */
-    void addTokenProvider(Provider<Map<String, Object>> tokenProvider) {
-        this.tokenProviders.add(tokenProvider)
-    }
-
     @TaskAction
     void exec() {
         Templates.generateFromTemplate(
