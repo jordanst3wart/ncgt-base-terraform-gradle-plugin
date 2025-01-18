@@ -30,17 +30,6 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 @CompileStatic
 class TerraformUtils {
 
-    static public final String PLUGIN_VERSION
-
-    static {
-        def props = new Properties()
-        TerraformUtils.getResourceAsStream('/terraform-gradle-templates/terraform.properties')
-            .withCloseable { input ->
-                props.load(input)
-            }
-        PLUGIN_VERSION = props['plugin-version']
-    }
-
     /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
      * platform.
      *
@@ -84,7 +73,6 @@ class TerraformUtils {
             TF_CLI_CONFIG_FILE  : TerraformConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
             TF_LOG_PATH         : terraformLogFile(name, logDir).absolutePath,
             TF_LOG              : logLevel ?: '',
-            TF_APPEND_USER_AGENT: "terraform-gradle-plugin/${PLUGIN_VERSION}"
         ]
     }
 
