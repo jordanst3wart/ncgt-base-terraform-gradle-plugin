@@ -30,7 +30,6 @@ import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 
 /**
@@ -43,27 +42,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
 @CompileStatic
 abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension> {
 
-    @SuppressWarnings('UnnecessaryCast')
-    static Map<String, Object> getDefaultEnvironment() {
-        // tag::default-environment[]
-        if (OS.windows) {
-            [
-                TEMP        : System.getenv('TEMP'),
-                TMP         : System.getenv('TMP'),
-                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
-                HOMEPATH    : System.getenv('HOMEPATH'),
-                USERPROFILE : System.getenv('USERPROFILE'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ] as Map<String, Object>
-        } else {
-            [
-                HOME        : System.getProperty('user.home'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ] as Map<String, Object>
-        }
-        // end::default-environment[]
-    }
-
     /** Replace current environment with new one.
      *
      * Calling this will also remove any project extension environment from this task.
@@ -73,7 +51,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
     @Override
     void setEnvironment(Map<String, ?> args) {
         noProjectEnvironment = true
-        super.setEnvironment(defaultEnvironment)
+        super.setEnvironment(TerraformExtension.defaultEnvironment())
         environment(args)
     }
 
@@ -189,7 +167,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
 
         withConfigExtensions(configExtensions)
         withTerraformConfigExtensions(terraformConfigExtensions)
-        environment(defaultEnvironment)
+        environment(TerraformExtension.defaultEnvironment())
     }
 
     @Input

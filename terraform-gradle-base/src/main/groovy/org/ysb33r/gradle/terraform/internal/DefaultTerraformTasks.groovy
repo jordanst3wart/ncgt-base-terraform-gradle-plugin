@@ -72,7 +72,7 @@ enum DefaultTerraformTasks {
     final Class type
     final String description
     final boolean workspaceAgnostic
-    final Class dependsOnProvider
+    final Class<TerraformPlanProvider> dependsOnProvider
 
     @SuppressWarnings('ParameterCount')
     private DefaultTerraformTasks(
@@ -81,7 +81,7 @@ enum DefaultTerraformTasks {
         Class type,
         String description,
         boolean workspaceAgnostic = false,
-        Class dependsOn = null
+        Class<TerraformPlanProvider> dependsOn = null
     ) {
         this.order = order
         this.command = name

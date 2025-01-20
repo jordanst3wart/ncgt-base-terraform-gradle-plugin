@@ -46,8 +46,8 @@ import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 
 import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
-import static org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask.defaultEnvironment
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -86,6 +86,27 @@ class TerraformExtension extends AbstractToolExtension {
      * a supported platform if nothing else is configured.
      */
     public static final String TERRAFORM_DEFAULT = '1.8.0'
+
+    @SuppressWarnings('UnnecessaryCast')
+    static Map<String, String> defaultEnvironment() {
+        // tag::default-environment[]
+        if (OS.windows) {
+            [
+                TEMP        : System.getenv('TEMP'),
+                TMP         : System.getenv('TMP'),
+                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
+                HOMEPATH    : System.getenv('HOMEPATH'),
+                USERPROFILE : System.getenv('USERPROFILE'),
+                (OS.pathVar): System.getenv(OS.pathVar)
+            ]
+        } else {
+            [
+                HOME        : System.getProperty('user.home'),
+                (OS.pathVar): System.getenv(OS.pathVar)
+            ]
+        }
+        // end::default-environment[]
+    }
 
     /** Constructs a new extension which is attached to the provided project.
      *
@@ -278,7 +299,7 @@ class TerraformExtension extends AbstractToolExtension {
             tes.standardOutput(strm)
             tes.executable(resolvableExecutable)
             tes.command(VERSION_CMD_ARGS)
-            tes.environment(defaultEnvironment)
+            tes.environment(defaultEnvironment())
             Action<ExecSpec> runner = new Action<ExecSpec>() {
                 @Override
                 void execute(ExecSpec spec) {

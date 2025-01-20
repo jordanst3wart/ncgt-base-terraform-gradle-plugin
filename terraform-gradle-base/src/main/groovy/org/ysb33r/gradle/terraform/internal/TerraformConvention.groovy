@@ -219,7 +219,7 @@ class TerraformConvention {
             taskProvider = project.tasks.register(
                 newTaskName,
                 taskDetails.type,
-                taskDetails.dependsOnProvider.newInstance(project, sourceSet.name, workspaceName),
+                project.objects.newInstance(taskDetails.dependsOnProvider, project, sourceSet.name, workspaceName),
                 workspaceName
             ) as TaskProvider<AbstractTerraformTask>
         } else if (taskDetails.workspaceAgnostic) {

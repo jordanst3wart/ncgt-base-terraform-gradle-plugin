@@ -21,6 +21,8 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskContainer
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
+import javax.inject.Inject
+
 /** A provider of a {@link TerraformPlan} task instance.
  *
  * @author Schalk W. Cronjé
@@ -32,6 +34,7 @@ class TerraformPlanProvider {
     @Delegate
     final Provider<TerraformPlan> plan
 
+    @Inject
     TerraformPlanProvider(Project project, String sourceSetName, String workspaceName) {
         String taskName = TerraformConvention.taskName(sourceSetName, 'plan', workspaceName)
         TaskContainer tasks = project.tasks
