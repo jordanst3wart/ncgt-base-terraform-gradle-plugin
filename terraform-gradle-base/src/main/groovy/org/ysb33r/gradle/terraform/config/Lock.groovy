@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 /** Allows for lock configurations on a task.
  *
@@ -32,10 +31,6 @@ class Lock implements TerraformTaskConfigExtension {
     boolean enabled = true
     Integer timeout = 0
 
-    Lock(AbstractTerraformTask task) {
-        this.terraformTask = task
-    }
-
     @Override
     List<Closure> getInputProperties() {
         []
@@ -46,6 +41,4 @@ class Lock implements TerraformTaskConfigExtension {
     List<String> getCommandLineArgs() {
         ["-lock=${enabled}", "-lock-timeout=${timeout}s"] as List<String>
     }
-
-    private final AbstractTerraformTask terraformTask
 }

@@ -158,6 +158,10 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+        if (project.hasProperty('tf.plan.refresh')) {
+            logger.lifecycle('tf.plan.refresh property found setting refresh to false')
+            extensions.getByType(StateOptionsFull).refresh = false
+        }
         super.addCommandSpecificsToExecSpec(execSpec)
         if (jsonReport) {
             execSpec.cmdArgs(JSON_FORMAT)

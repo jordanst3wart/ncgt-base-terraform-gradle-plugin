@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 /** Allows for options related to walking the state tree.
  *
@@ -27,10 +26,6 @@ class StateOptionsConcurrency implements TerraformTaskConfigExtension {
     final String name = 'stateOptions'
 
     Integer maxParallel = 10
-
-    StateOptionsConcurrency(AbstractTerraformTask task) {
-        this.terraformTask = task
-    }
 
     @Override
     List<Closure> getInputProperties() {
@@ -43,6 +38,4 @@ class StateOptionsConcurrency implements TerraformTaskConfigExtension {
             "-parallelism=${maxParallel}".toString(),
         ]
     }
-
-    private final AbstractTerraformTask terraformTask
 }

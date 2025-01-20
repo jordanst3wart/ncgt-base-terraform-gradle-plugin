@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 /** Allows for options related to walking the state tree.
  *
@@ -25,10 +24,6 @@ import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 @CompileStatic
 class StateOptionsFull extends StateOptionsConcurrency {
     boolean refresh = true
-
-    StateOptionsFull(AbstractTerraformTask task) {
-        super(task)
-    }
 
     @Override
     List<String> getCommandLineArgs() {

@@ -17,7 +17,6 @@ package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
 import org.ysb33r.gradle.terraform.internal.Transform
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 
 /** Allows for lock configurations on a task.
  *
@@ -26,10 +25,6 @@ import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 @CompileStatic
 class ResourceFilter implements TerraformTaskConfigExtension {
     final String name = 'resources'
-
-    ResourceFilter(AbstractTerraformTask task) {
-        this.terraformTask = task
-    }
 
     @Override
     @SuppressWarnings('UnnecessaryCast')
@@ -72,7 +67,6 @@ class ResourceFilter implements TerraformTaskConfigExtension {
         }].flatten() as List<String>
     }
 
-    private final AbstractTerraformTask terraformTask
     private final List<String> targets = []
     private final List<String> replacements = []
 }
