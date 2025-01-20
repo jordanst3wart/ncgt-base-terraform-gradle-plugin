@@ -22,7 +22,6 @@ import org.ysb33r.grashicorp.StringUtils
 import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
-
 /** General utilities for Terraform.
  *
  * @since 0.2

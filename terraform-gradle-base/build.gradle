@@ -54,6 +54,14 @@ pluginBundle {
     }
 }
 
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+    jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util=ALL-UNNAMED'
+}
+
 def githubUsername = System.getenv().get("GH_USERNAME")
 /*
  * this is a github classic token that requires publishing permissions to write a new package

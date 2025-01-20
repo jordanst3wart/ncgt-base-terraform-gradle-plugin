@@ -15,7 +15,7 @@ jobs:
     build:
         strategy:
             matrix:
-                java: [11, 16]
+                java: [11, 17]
         runs-on: ubuntu-latest
         env:
             GH_USERNAME: ${{ secrets.GH_USERNAME }}
@@ -35,7 +35,7 @@ jobs:
                   restore-keys: ${{ runner.os }}-gradle
             - name: Build with Gradle
               run: |
-                  ./gradlew -i -s assemble
+                  ./gradlew -i -s check test assemble
 
             - name: Publish Plugin to github if main branch
               run: |

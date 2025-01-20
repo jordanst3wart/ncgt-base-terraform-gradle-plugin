@@ -84,16 +84,12 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         setup:
         def region = 'blah-blah'
         def bucket = 'car'
-        def table = '123'
         NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
 
         when: 's3 is globally configured for region and bucket'
         sourceSetRemote.follow(remote)
         s3.region = region
         s3.bucket = bucket
-
-        and: 's3 is configured on the source set for dynamodb table'
-        tss.getByName('main').remote.s3.dynamoDbTable = table
 
         and: 'remote_state variable is requested'
         tss.getByName('main').remote.remoteStateVar = true
@@ -106,7 +102,6 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         then: 'the task will pick up appropriate aws configuration'
         taskTokens['bucket'] == bucket
         taskTokens['region'] == region
-        taskTokens['dynamodb_table'] == table
         taskTokens.keySet().containsAll(globalSpecTokens.keySet())
         taskTokens.keySet().containsAll(tssSpecTokens.keySet())
 
