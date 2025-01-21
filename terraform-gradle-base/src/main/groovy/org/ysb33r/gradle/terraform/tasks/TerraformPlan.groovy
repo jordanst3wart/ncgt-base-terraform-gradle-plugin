@@ -17,7 +17,6 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
-import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
@@ -59,11 +58,9 @@ class TerraformPlan extends AbstractTerraformTask {
      * @return Location of plan file.
      */
     @OutputFile
-    Provider<File> getPlanOutputFile() {
+    File getPlanOutputFile() {
         final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        dataDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}${ws}.tf.plan")
-        } as Transformer<File, File>)
+        new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -71,11 +68,9 @@ class TerraformPlan extends AbstractTerraformTask {
      * @return Location of text file.
      */
     @OutputFile
-    Provider<File> getPlanReportOutputFile() {
+    File getPlanReportOutputFile() {
         final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        reportsDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}${ws}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-        } as Transformer<File, File>)
+        new File(reportsDir.get(), "${sourceSet.name}${ws}.tf.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
@@ -135,8 +130,8 @@ class TerraformPlan extends AbstractTerraformTask {
         createVarsFile()
         super.exec()
 
-        File planOut = planOutputFile.get()
-        File textOut = planReportOutputFile.get()
+        File planOut = planOutputFile
+        File textOut = planReportOutputFile
 
         textOut.withOutputStream { OutputStream report ->
             Action<ExecSpec> showExecSpec = configureShowCommand(planOut, report)
@@ -167,7 +162,7 @@ class TerraformPlan extends AbstractTerraformTask {
             execSpec.cmdArgs(JSON_FORMAT)
         }
         execSpec.identity {
-            cmdArgs "-out=${planOutputFile.get()}"
+            cmdArgs "-out=${planOutputFile}"
             cmdArgs "-var-file=${variablesFile.get().absolutePath}"
         }
         execSpec

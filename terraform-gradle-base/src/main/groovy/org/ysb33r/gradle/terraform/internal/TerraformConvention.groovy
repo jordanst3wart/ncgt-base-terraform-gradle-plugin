@@ -215,14 +215,7 @@ class TerraformConvention {
     ) {
         def taskConfigurator = taskConfigurator(sourceSet, taskDetails)
         TaskProvider<AbstractTerraformTask> taskProvider
-        if (taskDetails.dependsOnProvider) {
-            taskProvider = project.tasks.register(
-                newTaskName,
-                taskDetails.type,
-                project.objects.newInstance(taskDetails.dependsOnProvider, project, sourceSet.name, workspaceName),
-                workspaceName
-            ) as TaskProvider<AbstractTerraformTask>
-        } else if (taskDetails.workspaceAgnostic) {
+        if (taskDetails.workspaceAgnostic) {
             taskProvider = project.tasks.register(
                 newTaskName,
                 taskDetails.type

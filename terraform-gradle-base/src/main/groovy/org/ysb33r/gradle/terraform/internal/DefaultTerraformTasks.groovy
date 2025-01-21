@@ -33,9 +33,9 @@ enum DefaultTerraformTasks {
     SHOW(3, 'showState', TerraformShowState, 'Generates a report on the current state'),
     OUTPUT(4, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', false, TerraformPlanProvider),
+    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', false),
     DESTROY_PLAN(14, 'destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),
-    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', false, TerraformPlanProvider),
+    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', false),
     VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
@@ -72,7 +72,6 @@ enum DefaultTerraformTasks {
     final Class type
     final String description
     final boolean workspaceAgnostic
-    final Class<TerraformPlanProvider> dependsOnProvider
 
     @SuppressWarnings('ParameterCount')
     private DefaultTerraformTasks(
@@ -80,14 +79,12 @@ enum DefaultTerraformTasks {
         String name,
         Class type,
         String description,
-        boolean workspaceAgnostic = false,
-        Class<TerraformPlanProvider> dependsOn = null
+        boolean workspaceAgnostic = false
     ) {
         this.order = order
         this.command = name
         this.type = type
         this.description = description
         this.workspaceAgnostic = workspaceAgnostic
-        this.dependsOnProvider = dependsOn
     }
 }

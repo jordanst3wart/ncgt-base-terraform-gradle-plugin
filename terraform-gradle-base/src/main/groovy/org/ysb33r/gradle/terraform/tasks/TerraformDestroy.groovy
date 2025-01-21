@@ -16,55 +16,37 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
-import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform destroy}.
- *
- * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retrieve most of its configuration.
+ *  Note: DOES NOT USE A PLAN FILE
  *
  * @since 0.1
  */
 @CompileStatic
 class TerraformDestroy extends AbstractTerraformTask {
 
+    private boolean json = false
+
+    private final String ws
+
     @Inject
-    TerraformDestroy(TerraformPlanProvider plan, String workspaceName) {
-        super('destroy', [Lock, StateOptionsFull], [], workspaceName)
+    @SuppressWarnings('DuplicateStringLiteral')
+    TerraformDestroy(String workspaceName) {
+        super('destroy', [Lock, StateOptionsFull, ResourceFilter], [], workspaceName)
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-
-        addCommandLineProvider(
-            projectOperations.provider({ ->
-                plan.get().extensions.getByType(TerraformExtension).allVariables.commandLineArgs +
-                    plan.get().extensions.getByType(Lock).commandLineArgs +
-                    plan.get().extensions.getByType(StateOptionsFull).commandLineArgs
-            } as Callable<List<String>>)
-        )
-
-        tfVarProviders = projectOperations.provider({ ->
-            plan.get().extensions.getByType(TerraformExtension).allVariables.tfVars.flatten()
-        } as Callable<List<String>>)
-
-        doLast {
-            plan.get().internalTrackerFile.get().delete()
-        }
-
-        inputs.files(taskProvider('init'))
-
-        variablesFile = plan.map {
-            new File(it.variablesFile.get().parentFile, "_d_.${workspaceName}.tfVars")
-        }
+        ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
+        inputs.files(taskProvider('destroyPlan'))
+        mustRunAfter(taskProvider('destroyPlan'))
     }
 
     @Option(option = 'target', description = 'List of resources to target')
@@ -72,10 +54,14 @@ class TerraformDestroy extends AbstractTerraformTask {
         extensions.getByType(ResourceFilter).targets = resourceNames
     }
 
-    @Override
-    void exec() {
-        createVarsFile()
-        super.exec()
+    /**
+     * Output progress in json as per https://www.terraform.io/docs/internals/machine-readable-ui.html
+     *
+     * @param state Set to {@code true} to output in JSON.
+     */
+    @Option(option = 'json', description = 'Output progress in JSON')
+    void setJson(boolean state) {
+        this.json = state
     }
 
     /** Add specific command-line options for the command.
@@ -87,20 +73,11 @@ class TerraformDestroy extends AbstractTerraformTask {
      */
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.identity {
-            cmdArgs "-var-file=${variablesFile.get().absolutePath}"
+        if (json) {
+            execSpec.cmdArgs(JSON_FORMAT)
         }
+
+        super.addCommandSpecificsToExecSpec(execSpec)
         execSpec
     }
-
-    private void createVarsFile() {
-        def lines = tfVarProviders.get()
-        variablesFile.get().withWriter { writer ->
-            lines.each { writer.println(it) }
-        }
-    }
-
-    private final Provider<List<String>> tfVarProviders
-    private final Provider<File> variablesFile
 }

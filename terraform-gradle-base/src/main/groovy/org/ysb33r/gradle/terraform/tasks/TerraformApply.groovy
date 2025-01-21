@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.options.Option
@@ -24,9 +23,9 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
-import java.time.LocalDateTime
 import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform apply}.
@@ -39,29 +38,27 @@ import java.util.concurrent.Callable
 @CompileStatic
 class TerraformApply extends AbstractTerraformTask {
 
+    @InputFile
+    @SuppressWarnings('PrivateFieldCouldBeFinal')
+    private Provider<File> planFile
+    private boolean json = false
+
+    private final String ws
+
     @Inject
-    TerraformApply(TerraformPlanProvider plan, String workspaceName) {
-        super('apply', [Lock, StateOptionsFull], [], workspaceName)
+    @SuppressWarnings('DuplicateStringLiteral')
+    TerraformApply(String workspaceName) {
+        super('apply', [Lock, StateOptionsFull, ResourceFilter], [], workspaceName)
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        planProvider = plan
-        planFile = planProvider.map(new Transformer<File, TerraformPlan>() {
-            @Override
-            File transform(TerraformPlan terraformPlan) {
-                terraformPlan.planOutputFile.get()
-            }
-        })
-        tracker = project.provider({ ->
-            plan.get().internalTrackerFile.get()
+        ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
+        planFile = getPlanFile()
+        planFile = project.provider({ ->
+            new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
         } as Callable<File>)
-
-        doLast {
-            tracker.get().text = LocalDateTime.now().toString()
-        }
-
-        outputs.file(tracker).optional()
         inputs.files(taskProvider('plan'))
+        mustRunAfter(taskProvider('plan'))
     }
 
     /** Select specific resources.
@@ -72,7 +69,7 @@ class TerraformApply extends AbstractTerraformTask {
      */
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
-        planProvider.get().extensions.getByType(ResourceFilter).target(resourceNames)
+        extensions.getByType(ResourceFilter).target(resourceNames)
     }
 
     /** Mark resources to be replaced.
@@ -83,7 +80,7 @@ class TerraformApply extends AbstractTerraformTask {
      */
     @Option(option = 'replace', description = 'List of resources to replace')
     void setReplacements(List<String> resourceNames) {
-        planProvider.get().extensions.getByType(ResourceFilter).replace(resourceNames)
+        extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
     /**
@@ -96,6 +93,12 @@ class TerraformApply extends AbstractTerraformTask {
         this.json = state
     }
 
+    Provider<File> getPlanFile() {
+        project.provider({ ->
+            new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
+        } as Callable<File>)
+    }
+
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
@@ -104,22 +107,7 @@ class TerraformApply extends AbstractTerraformTask {
             execSpec.cmdArgs(JSON_FORMAT)
         }
 
-        execSpec.cmdArgs(planFile.map(new Transformer<String, File>() {
-            @Override
-            String transform(File plan) {
-                plan.absolutePath
-            }
-        }))
+        execSpec.cmdArgs(planFile.get().absolutePath)
         execSpec
     }
-
-    @InputFile
-    protected Provider<File> getPlanFile() {
-        this.planFile
-    }
-
-    private final Provider<File> planFile
-    private final Provider<File> tracker
-    private final TerraformPlanProvider planProvider
-    private boolean json = false
 }

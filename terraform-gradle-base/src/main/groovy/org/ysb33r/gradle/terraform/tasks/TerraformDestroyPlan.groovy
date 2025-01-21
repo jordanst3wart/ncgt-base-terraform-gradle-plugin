@@ -16,7 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
@@ -37,19 +36,15 @@ class TerraformDestroyPlan extends TerraformPlan {
     }
 
     @Override
-    Provider<File> getPlanOutputFile() {
+    File getPlanOutputFile() {
         final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        dataDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}${ws}.tf.destroy.plan")
-        } as Transformer<File, File>)
+        new File(dataDir.get(), "${sourceSet.name}${ws}.tf.destroy.plan")
     }
 
     @Override
-    Provider<File> getPlanReportOutputFile() {
+    File getPlanReportOutputFile() {
         final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        reportsDir.map({ File reportDir ->
-            new File(reportDir, "${sourceSet.name}${ws}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
-        } as Transformer<File, File>)
+        new File(reportsDir.get(), "${sourceSet.name}${ws}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     @Override
