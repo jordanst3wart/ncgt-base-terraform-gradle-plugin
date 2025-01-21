@@ -51,6 +51,10 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         stringTools = po.stringTools
         remote = TerraformRemoteStateExtension.findExtension(project)
         s3 = RemoteStateS3Spec.findExtension(project)
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets =
+            project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
+        terraformSourceSets.create(SOURCE_SET_NAME)
+        sourceSetRemote = TerraformRemoteStateExtension.findExtension(project, SOURCE_SET_NAME)
         sourceSetRemote = TerraformRemoteStateExtension.findExtension(project, SOURCE_SET_NAME)
         sourceSetS3 = RemoteStateS3Spec.findExtension(project, SOURCE_SET_NAME)
         local = LocalBackendSpec.findExtension(project, LocalBackendSpec)

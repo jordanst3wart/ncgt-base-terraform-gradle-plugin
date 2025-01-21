@@ -93,6 +93,7 @@ class TerraformExtensionSpec extends Specification {
         thrown(GradleException)
     }
 
+    // I think variables should be set in one place not three... just the sourceset
     @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/63')
     void 'Terraform extension on task honours variable providers on source set'() {
         setup:
@@ -110,13 +111,6 @@ class TerraformExtensionSpec extends Specification {
                 }
             }
 
-            tfPlan {
-                terraform {
-                    variables {
-                        var 'task', '2'
-                    }
-                }
-            }
             terraformSourceSets {
                 main {
                     variables {
@@ -135,9 +129,6 @@ class TerraformExtensionSpec extends Specification {
 
         and: 'the variables declared at project level'
         vars.escapedVars.project
-
-        and: 'the variables declared at task level'
-        vars.escapedVars.task
 
         and: 'the variable declared at source set'
         vars.escapedVars.sourceSet

@@ -34,7 +34,6 @@ import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.FMT_APPLY
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.REMOTE_STATE_VARIABLE
@@ -60,15 +59,12 @@ class TerraformPlugin implements Plugin<Project> {
             it.description = 'Formats all terraform source'
         }
 
-        NamedDomainObjectContainer<TerraformSourceDirectorySet> terraformSourceSets =
-            project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>)
         def globalRemoteState = ((ExtensionAware) project.extensions.getByType(TerraformExtension))
             .extensions
             .getByType(TerraformRemoteStateExtension)
 
         terraformSourceSetRemoteStateRules(project, globalRemoteState)
         terraformSourceSetConventionTaskRules(project, formatAll)
-        terraformSourceSets.create(DEFAULT_SOURCESET_NAME)
 
         def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
         def applyProvider = project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
