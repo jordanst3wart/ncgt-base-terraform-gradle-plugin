@@ -39,12 +39,11 @@ import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionCo
 class TerraformImport extends AbstractTerraformTask {
 
     @Inject
-    TerraformImport(String workspaceName) {
+    TerraformImport() {
         super(
             'import',
             [Lock, StateOptionsConcurrency],
-            [VARIABLES],
-            workspaceName
+            [VARIABLES]
         )
         supportsInputs()
         supportsColor()
@@ -87,7 +86,7 @@ class TerraformImport extends AbstractTerraformTask {
     @Internal
     Provider<File> getVariablesFile() {
         project.provider({ ->
-            new File(dataDir.get(), "__.${workspaceName}.tfvars")
+            new File(dataDir.get(), '__.tfvars')
         } as Callable<File>)
     }
 

@@ -33,13 +33,12 @@ class TerraformCheckPluginSpec extends Specification {
                 main {
                     srcDir = file('foo/bar')
                 }
-                release
             }
         }
 
-        def check = project.tasks.getByName('check')
-        def tfFmtCheckProvider = project.tasks.named('tfFmtCheck')
-        def tfFmtCheck = project.tasks.getByName('tfFmtCheck')
+        def check = project.tasks.named('check').get()
+        def tfFmtCheckProvider = project.tasks.named('tfMainFmtCheck').get()
+        def tfFmtCheck = project.tasks.named('tfMainFmtCheck').get()
 
         def dependsOn = check.dependsOn.flatten()
 

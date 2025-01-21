@@ -25,11 +25,9 @@ import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.WorkspaceExtension
 import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_WORKSPACE
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.terraformEnvironment
 
 /** An internal cache of output variables
@@ -54,7 +52,7 @@ class OutputVariablesCache {
             final sourceSetName = it.sourceSet.name
             final safeName = projectOperations.fsOperations.toSafeFileName(sourceSetName)
             projectOperations.buildDirDescendant(
-                "tmp/tf-output-var-cache/${safeName}.${it.workspaceName ?: ''}.tmp.---.json"
+                "tmp/tf-output-var-cache/${safeName}.tmp.---.json"
             ).get()
         }
     }
@@ -78,9 +76,7 @@ class OutputVariablesCache {
             }
         }
 
-        log.debug("Switching to workspace '${outputTask.workspaceName}' prior to reading output")
-        outputTask.extensions.getByType(WorkspaceExtension).switchWorkspace()
-        log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}/${outputTask.workspaceName}"
+        log.debug "Loading output variables from terraform sourceset ${outputTask.sourceSet.name}"
         File tmpFile = tmpDirProvider.get()
         tmpFile.parentFile.mkdirs()
         try {
@@ -89,7 +85,7 @@ class OutputVariablesCache {
                 projectOperations.exec(runner).assertNormalExitValue()
             }
             outputs.putAll(new JsonSlurper().parse(tmpFile) as Map<String, ?>)
-            log.debug "Loaded sourceset ${outputTask.sourceSet.name}/${outputTask.workspaceName} output variables with ${outputs}"
+            log.debug "Loaded sourceset ${outputTask.sourceSet.name} output variables with ${outputs}"
         } finally {
             tmpFile.delete()
         }
@@ -105,7 +101,6 @@ class OutputVariablesCache {
         )
 
         TerraformExecSpec execSpec = new TerraformExecSpec(projectOperations, terraformExt.resolver)
-        final String workspaceName = outputTask.workspaceName ?: DEFAULT_WORKSPACE
 
         execSpec.tap {
             executable terraformExt.resolvableExecutable.executable.absolutePath
@@ -114,12 +109,6 @@ class OutputVariablesCache {
             workingDir outputTask.sourceSet.srcDir
             environment tfEnv
             environment outputTask.environment
-
-            environment(terraformExt.credentialsCacheFor(
-                outputTask.sourceSet.name,
-                workspaceName,
-                outputTask.sourceSet.getCredentialProviders(workspaceName)
-            ))
         }
     }
 

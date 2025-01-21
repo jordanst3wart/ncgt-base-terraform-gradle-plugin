@@ -46,7 +46,6 @@ class TerraformProvidersSpec extends IntegrationSpecification {
         }
         
         terraform {
-          platforms allPlatforms
         }
         '''
 

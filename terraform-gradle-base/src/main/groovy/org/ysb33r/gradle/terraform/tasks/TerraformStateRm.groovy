@@ -32,8 +32,8 @@ import javax.inject.Inject
 class TerraformStateRm extends AbstractTerraformStateTask {
 
     @Inject
-    TerraformStateRm(String workspaceName) {
-        super('rm', workspaceName)
+    TerraformStateRm() {
+        super('rm')
     }
 
     /**

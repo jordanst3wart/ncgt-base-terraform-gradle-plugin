@@ -30,8 +30,8 @@ import javax.inject.Inject
 class TerraformValidate extends AbstractTerraformTask {
 
     @Inject
-    TerraformValidate(String workspaceName) {
-        super('validate', [], [], workspaceName)
+    TerraformValidate() {
+        super('validate', [], [])
         supportsColor()
         inputs.files(taskProvider('init'))
     }

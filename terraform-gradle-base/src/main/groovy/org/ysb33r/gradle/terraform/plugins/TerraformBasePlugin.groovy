@@ -56,29 +56,18 @@ class TerraformBasePlugin implements Plugin<Project> {
 
         ProjectOperations projectOperations = ProjectOperations.maybeCreateExtension(project)
 
-        project.tasks.withType(RemoteStateConfigGenerator) { RemoteStateConfigGenerator t ->
+        project.tasks.withType(RemoteStateConfigGenerator).configureEach { RemoteStateConfigGenerator t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
         }
 
-        project.tasks.withType(AbstractTerraformTask) { AbstractTerraformTask t ->
+        project.tasks.withType(AbstractTerraformTask).configureEach { AbstractTerraformTask t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
         }
 
-        def terraform = createGlobalTerraformExtension(project)
-        def remoteState = createGlobalRemoteStateExtension(project, terraform)
+        def terraform = project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
+        def remoteState = addRemoteStateExtension(project, ((ExtensionAware) terraform))
         def tss = createTerraformSourceSetsExtension(project)
         createTerraformBackendsExtension(project, projectOperations, remoteState, tss)
-    }
-
-    private static TerraformExtension createGlobalTerraformExtension(Project project) {
-        project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
-    }
-
-    private static TerraformRemoteStateExtension createGlobalRemoteStateExtension(
-        Project project,
-        TerraformExtension terraform
-    ) {
-        addRemoteStateExtension(project, ((ExtensionAware) terraform))
     }
 
     private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(

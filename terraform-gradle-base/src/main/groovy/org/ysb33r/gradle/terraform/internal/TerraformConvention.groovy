@@ -40,42 +40,20 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_
  */
 @CompileStatic
 class TerraformConvention {
-
-    public static final String DEFAULT_SOURCESET_NAME = 'main'
-    public static final String TERRAFORM_INIT = INIT.command
-    public static final String DEFAULT_WORKSPACE = 'default'
-
     /** Provides a task name
      *
      * @param sourceSetName Name of source set the task will be associated with.
      * @param commandType The Terraform command that this task will wrap.
-     * @return Name of take
-     * @deprecated
-     */
-    @Deprecated
-    static String taskName(String sourceSetName, String commandType) {
-        taskName(sourceSetName, commandType, DEFAULT_WORKSPACE)
-    }
-
-    /** Provides a task name
-     *
-     * @param sourceSetName Name of source set the task will be associated with.
-     * @param commandType The Terraform command that this task will wrap.
-     * @param workspaceName Name of workspace. if {@code null} will act as if workspace-agnostic
      * @return Name of task
      *
      * @since 0.10
      */
-    static String taskName(String sourceSetName, String commandType, String workspaceName) {
-        boolean agnostic = workspaceName ? DefaultTerraformTasks.byCommand(commandType).workspaceAgnostic : true
-        String workspace = workspaceName == DEFAULT_WORKSPACE || agnostic ? '' : workspaceName.capitalize()
-        sourceSetName == DEFAULT_SOURCESET_NAME ?
-            "tf${commandType.capitalize()}${workspace}" :
-            "tf${sourceSetName.capitalize()}${commandType.capitalize()}${workspace}"
+    static String taskName(String sourceSetName, String commandType) {
+        "tf${sourceSetName.capitalize()}${commandType.capitalize()}"
     }
 
     /**
-     * THe name of the backend configuration task.
+     * The name of the backend configuration task.
      *
      * @param sourceSetName Name of source set.
      *
@@ -84,7 +62,7 @@ class TerraformConvention {
      * @since 0.12
      */
     static String backendTaskName(String sourceSetName) {
-        "create${taskName(sourceSetName, 'backendConfiguration', null).capitalize()}"
+        "create${taskName(sourceSetName, 'backendConfiguration').capitalize()}"
     }
 
     /** Returns the default text used for a Terraform source set
@@ -93,21 +71,7 @@ class TerraformConvention {
      * @return Display name
      */
     static String sourceSetDisplayName(String sourceSetName) {
-        sourceSetName == DEFAULT_SOURCESET_NAME ?
-            'Main Terraform source set' :
-            "Terraform source set for ${sourceSetName}"
-    }
-
-    /** Creates or registers the tasks associated with a sourceset using specific conventions
-     *
-     * For any sourceset other than {@code main}, tasks will be named using a pattern such as
-     * {@code terraform<SourceSetName>           Init} and source directories will be {@code src/tf/<sourceSetName>}.
-     *
-     * @param project Project Project to attache source set to.
-     * @param sourceSetName Name of Terraform source set.
-     */
-    static void createTasksByConvention(Project project, TerraformSourceDirectorySet sourceSet) {
-        createWorkspaceTasksByConvention(project, sourceSet, DEFAULT_WORKSPACE)
+        "Terraform source set for ${sourceSetName}"
     }
 
     /** Creates or registers the tasks associated with an additional workspace in a sourceset.
@@ -117,25 +81,14 @@ class TerraformConvention {
      *
      * @param project Project to attach source set to.
      * @param sourceSetName Name of Terraform source set.
-     * @param workspaceName Name of workspace
      */
-    static void createWorkspaceTasksByConvention(
-        Project project,
-        TerraformSourceDirectorySet sourceSet,
-        String workspaceName
-    ) {
-        if (!hasTaskRegistered(project.tasks, taskName(sourceSet.name, APPLY.command, workspaceName))) {
-            if (workspaceName == DEFAULT_WORKSPACE) {
-                registerBackendConfigurationTask(sourceSet, project)
-            }
+    static void createTasksByConvention(Project project, TerraformSourceDirectorySet sourceSet) {
+        if (!hasTaskRegistered(project.tasks, taskName(sourceSet.name, APPLY.command))) {
+            registerBackendConfigurationTask(sourceSet, project)
 
             DefaultTerraformTasks.ordered().each {
-                boolean requireTask = workspaceName == DEFAULT_WORKSPACE ||
-                    workspaceName != DEFAULT_WORKSPACE && !it.workspaceAgnostic
-                if (requireTask) {
-                    String newTaskName = taskName(sourceSet.name, it.command, workspaceName)
-                    registerTask(sourceSet, project, workspaceName, it, newTaskName)
-                }
+                String newTaskName = taskName(sourceSet.name, it.command)
+                registerTask(sourceSet, project, it, newTaskName)
             }
         }
     }
@@ -152,7 +105,7 @@ class TerraformConvention {
                 t.group = TERRAFORM_TASK_GROUP
                 t.description = "${type.description} for '${name}'"
                 if (type != INIT) {
-                    t.mustRunAfter taskName(name, TERRAFORM_INIT, DEFAULT_WORKSPACE)
+                    t.mustRunAfter taskName(name, INIT.command)
                 }
             }
         }
@@ -179,9 +132,7 @@ class TerraformConvention {
         TerraformSourceDirectorySet sourceSet,
         Project project
     ) {
-        String folderName = sourceSet.name == DEFAULT_SOURCESET_NAME ?
-            'tfBackendConfiguration' :
-            "tf${sourceSet.name.capitalize()}BackendConfiguration"
+        String folderName = "tf${sourceSet.name.capitalize()}BackendConfiguration"
 
         TaskProvider<RemoteStateConfigGenerator> generator = project.tasks.register(
             backendTaskName(sourceSet.name),
@@ -193,8 +144,8 @@ class TerraformConvention {
             ProjectOperations.find(project).buildDirDescendant("tfRemoteState/${folderName}")
         ))
 
-        project.tasks.whenTaskAdded { Task t ->
-            if (t.name == taskName(sourceSet.name, INIT.command, DEFAULT_WORKSPACE)) {
+        project.tasks.configureEach { Task t ->
+            if (t.name == taskName(sourceSet.name, INIT.command)) {
                 TerraformInit newTask = (TerraformInit) t
                 newTask.dependsOn(generator)
                 newTask.backendConfigFile = ProjectOperations.find(project)
@@ -209,25 +160,14 @@ class TerraformConvention {
     private static void registerTask(
         TerraformSourceDirectorySet sourceSet,
         Project project,
-        String workspaceName,
         DefaultTerraformTasks taskDetails,
         String newTaskName
     ) {
         def taskConfigurator = taskConfigurator(sourceSet, taskDetails)
-        TaskProvider<AbstractTerraformTask> taskProvider
-        if (taskDetails.workspaceAgnostic) {
-            taskProvider = project.tasks.register(
-                newTaskName,
-                taskDetails.type
-            ) as TaskProvider<AbstractTerraformTask>
-        } else {
-            taskProvider = project.tasks.register(
-                newTaskName,
-                taskDetails.type,
-                workspaceName
-            ) as TaskProvider<AbstractTerraformTask>
-        }
-
+        TaskProvider<AbstractTerraformTask> taskProvider = project.tasks.register(
+            newTaskName,
+            taskDetails.type
+        )
         taskProvider.configure(taskConfigurator)
     }
 

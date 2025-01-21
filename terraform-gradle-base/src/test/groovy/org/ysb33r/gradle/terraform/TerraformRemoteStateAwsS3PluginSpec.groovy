@@ -59,12 +59,12 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         sourceSetS3 = RemoteStateS3Spec.findExtension(project, SOURCE_SET_NAME)
         local = LocalBackendSpec.findExtension(project, LocalBackendSpec)
         sourceSetLocal = LocalBackendSpec.findExtension(project, SOURCE_SET_NAME, LocalBackendSpec)
-        generatorTask = project.tasks.getByName(backendTaskName(SOURCE_SET_NAME))
+        generatorTask = project.tasks.named(backendTaskName(SOURCE_SET_NAME)).get()
     }
 
     void 'Plugin is applied'() {
         expect: 'Default tasks are created'
-        project.tasks.getByName('createTfBackendConfiguration')
+        project.tasks.named('createTfMainBackendConfiguration')
         project.extensions.getByName('terraform')
         project.terraform.extensions.getByName('remote')
         project.terraform.remote.extensions.getByName('s3')
@@ -81,7 +81,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
         then:
         noExceptionThrown()
-        project.tasks.getByName('createTfBackendConfiguration')
+        project.tasks.named('createTfMainBackendConfiguration').get()
     }
 
     void 'Configuring terraform.remote.s3 sets properties on task'() {
@@ -99,7 +99,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
         tss.getByName('main').remote.remoteStateVar = true
 
         and: 'obtaining tokens from various sources'
-        def taskTokens = stringTools.stringizeValues(project.tasks.createTfBackendConfiguration.tokens)
+        def taskTokens = stringTools.stringizeValues(project.tasks.createTfMainBackendConfiguration.tokens)
         def globalSpecTokens = stringTools.stringizeValues(s3.tokens)
         def tssSpecTokens = stringTools.stringizeValues(tss.getByName('main').remote.s3.tokens)
 
@@ -119,24 +119,27 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
     void 'The default destination directory is based upon the source set name'() {
         setup:
         project.terraformSourceSets {
+            main {
+
+            }
             additional {
             }
         }
 
-        File main = outputFile(project.tasks.createTfBackendConfiguration)
+        File main = outputFile(project.tasks.createTfMainBackendConfiguration)
         File additional = outputFile(project.tasks.createTfAdditionalBackendConfiguration)
 
         expect:
         main.name == 'terraform-backend-config.tf'
-        main.parentFile.name == 'tfBackendConfiguration'
+        main.parentFile.name == 'tfMainBackendConfiguration'
         additional.parentFile.name == 'tfAdditionalBackendConfiguration'
         main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
-        project.tasks.createTfBackendConfiguration.destinationDir.get() == main.parentFile
+        project.tasks.createTfMainBackendConfiguration.destinationDir.get() == main.parentFile
     }
 
     void 'Tokens for the template can be configured'() {
         when: 'the plugin is applied'
-        RemoteStateConfigGenerator task = project.tasks.createTfBackendConfiguration
+        RemoteStateConfigGenerator task = project.tasks.createTfMainBackendConfiguration
 
         then: 'there are some default tokens set'
         task.tokens.keySet().containsAll(['key'])
@@ -151,7 +154,7 @@ class TerraformRemoteStateAwsS3PluginSpec extends Specification {
 
     void 'terraformInit has configuration file correctly setup'() {
         expect:
-        project.tasks.tfInit.backendConfigFile.get() == outputFile(project.tasks.createTfBackendConfiguration)
+        project.tasks.tfMainInit.backendConfigFile.get() == outputFile(project.tasks.createTfMainBackendConfiguration)
     }
 
     void 'Extensions are added to terraform source directory sets'() {

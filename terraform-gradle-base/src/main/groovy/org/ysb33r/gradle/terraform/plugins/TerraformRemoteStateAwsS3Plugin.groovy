@@ -28,8 +28,6 @@ import org.ysb33r.gradle.terraform.remotestate.TerraformBackendExtension
 import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.DEFAULT_SOURCESET_NAME
-
 /**
  * Adds {@link RemoteStateS3Spec} backends to the global {@link TerraformBackendExtension} and to each of the same
  * extensions on each {@link TerraformSourceDirectorySet}.
@@ -58,8 +56,7 @@ class TerraformRemoteStateAwsS3Plugin implements Plugin<Project> {
             trse.follow(globalRemote)
             RemoteStateS3Spec s3 = ((ExtensionAware) trse).extensions.getByType(RemoteStateS3Spec)
             s3.remoteStateName = trse.prefix.map {
-                String baseName = tsds.name == DEFAULT_SOURCESET_NAME ? it : "${it}-${tsds.name}"
-                "${baseName}.tfstate".toString()
+                "${it}-${tsds.name}.tfstate".toString()
             }
         } as Action<TerraformSourceDirectorySet>)
     }

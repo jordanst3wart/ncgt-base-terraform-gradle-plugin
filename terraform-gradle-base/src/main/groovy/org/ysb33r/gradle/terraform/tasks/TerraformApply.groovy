@@ -23,7 +23,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -43,19 +42,16 @@ class TerraformApply extends AbstractTerraformTask {
     private Provider<File> planFile
     private boolean json = false
 
-    private final String ws
-
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
-    TerraformApply(String workspaceName) {
-        super('apply', [Lock, StateOptionsFull, ResourceFilter], [], workspaceName)
+    TerraformApply() {
+        super('apply', [Lock, StateOptionsFull, ResourceFilter], [])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         planFile = getPlanFile()
         planFile = project.provider({ ->
-            new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
+            new File(dataDir.get(), "${sourceSet.name}.tf.plan")
         } as Callable<File>)
         inputs.files(taskProvider('plan'))
         mustRunAfter(taskProvider('plan'))
@@ -95,7 +91,7 @@ class TerraformApply extends AbstractTerraformTask {
 
     Provider<File> getPlanFile() {
         project.provider({ ->
-            new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
+            new File(dataDir.get(), "${sourceSet.name}.tf.plan")
         } as Callable<File>)
     }
 

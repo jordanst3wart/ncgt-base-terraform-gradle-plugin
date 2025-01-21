@@ -61,7 +61,6 @@ class TerraformSourceSetsSpec extends Specification {
 
         then:
         verifyAll {
-            !tss.getByName('main').hasWorkspaces()
             allVars.vars.foo1 == 'bar1'
             allVars.vars.foo2 == 'bar2'
         }
@@ -91,28 +90,6 @@ class TerraformSourceSetsSpec extends Specification {
 
         then:
         noExceptionThrown()
-    }
-
-    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/34')
-    void 'Can add workspaces'() {
-        setup:
-        project.apply plugin: 'org.ysb33r.terraform'
-
-        when:
-        project.allprojects {
-            terraformSourceSets {
-                main {
-                    workspaces 'alpha', 'beta', 'gamma'
-                }
-            }
-        }
-
-        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
-        def main = tss.getByName('main')
-
-        then:
-        main.hasWorkspaces()
-        main.workspaceNames.size() == 3
     }
 
     void 'Can provide a tfvars file'() {

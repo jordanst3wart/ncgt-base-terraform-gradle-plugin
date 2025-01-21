@@ -111,11 +111,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
     }
 
     @Internal
-    protected TerraformExtension getProjectTerraform() {
-        this.projectTerraform
-    }
-
-    @Internal
     protected TerraformRCExtension getTerraformrc() {
         this.terraformrc
     }

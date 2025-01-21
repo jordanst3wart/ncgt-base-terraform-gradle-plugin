@@ -125,54 +125,6 @@ class TerraformOutputSpec extends IntegrationSpecification {
         result.task(':testOutput').outcome == SUCCESS
     }
 
-    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/66')
-    @SuppressWarnings('LineLength')
-    void 'Access outputs from another workspace'() {
-        setup:
-        def workspace = 'yellowBricks'
-        createTfSpec()
-        buildFile << """
-        terraformSourceSets {
-          main {
-            workspaces '${workspace}'
-          }
-        }
-        
-        task testOutput {
-            ext {
-                arbitraryNumber = terraformSourceSets.getByName('main').rawOutputVariable('arbitrary_number','${workspace}')
-            }
-            
-            inputs.property( 'ab', arbitraryNumber )
-            
-            doLast {
-                assert arbitraryNumber.get() == 123
-            }
-        }    
-        """
-        getGradleRunner(
-            IS_GROOVY_DSL,
-            projectDir,
-            [
-                'tfInit',
-                "tfApply${workspace.capitalize()}".toString()
-            ]
-        ).withTestKitDir(testkitDir).build()
-
-        when:
-        BuildResult result = getGradleRunner(
-            IS_GROOVY_DSL,
-            projectDir,
-            [
-                'testOutput',
-                '-i', '-s'
-            ]
-        ).withTestKitDir(testkitDir).build()
-
-        then:
-        result.task(':testOutput').outcome == SUCCESS
-    }
-
     void createTfSpec() {
         new File(srcDir, 'init.tf').text = '''
         variable "foo" {

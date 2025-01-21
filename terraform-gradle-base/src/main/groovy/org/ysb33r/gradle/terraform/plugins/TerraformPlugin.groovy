@@ -71,7 +71,7 @@ class TerraformPlugin implements Plugin<Project> {
         formatAll.configure { it.dependsOn applyProvider }
     }
 
-    private void terraformSourceSetRemoteStateRules(
+    private static void terraformSourceSetRemoteStateRules(
         Project project,
         TerraformRemoteStateExtension globalRemoteState
     ) {
@@ -97,7 +97,7 @@ class TerraformPlugin implements Plugin<Project> {
         }
     }
 
-    private void terraformSourceSetConventionTaskRules(
+    private static void terraformSourceSetConventionTaskRules(
         Project project,
         TaskProvider<Task> formatAll
     ) {
@@ -107,7 +107,7 @@ class TerraformPlugin implements Plugin<Project> {
             void execute(TerraformSourceDirectorySet tsds) {
                 createTasksByConvention(project, tsds)
                 formatAll.configure {
-                    it.dependsOn(project.tasks.named(taskName(tsds.name, FMT_APPLY.command, null)))
+                    it.dependsOn(project.tasks.named(taskName(tsds.name, FMT_APPLY.command)))
                 }
             }
         })

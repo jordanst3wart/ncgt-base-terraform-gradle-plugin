@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -34,22 +33,20 @@ class TerraformRCPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         ProjectOperations.maybeCreateExtension(project)
-        TerraformRCExtension terraformrc = project.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, project)
-        Task generator = project.tasks.create(TERRAFORM_RC_TASK)
-        generator.identity {
-            group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
-            description = 'Generates Terraform configuration file'
-            onlyIf { !terraformrc.useGlobalConfig }
-            inputs.property'details', { ->
+        TerraformRCExtension terraformRcExt = project.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, project)
+        project.tasks.register(TERRAFORM_RC_TASK) { it ->
+            it.group = TerraformBasePlugin.TERRAFORM_TASK_GROUP
+            it.description = 'Generates Terraform configuration file'
+            it.onlyIf { !terraformRcExt.useGlobalConfig }
+            it.inputs.property'details', { ->
                 StringWriter w = new StringWriter()
-                terraformrc.toHCL(w).toString()
+                terraformRcExt.toHCL(w).toString()
             }
-            outputs.file terraformrc.terraformRC
-        }
-
-        generator.doLast {
-            terraformrc.terraformRC.get().withWriter { w ->
-                terraformrc.toHCL(w)
+            it.outputs.file terraformRcExt.terraformRC
+            it.doLast {
+                terraformRcExt.terraformRC.get().withWriter { w ->
+                    terraformRcExt.toHCL(w)
+                }
             }
         }
     }

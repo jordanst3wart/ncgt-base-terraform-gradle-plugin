@@ -18,9 +18,6 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
-
-import javax.inject.Inject
 
 /**
  * Generates a destroy plan
@@ -30,27 +27,20 @@ import javax.inject.Inject
 @CompileStatic
 class TerraformDestroyPlan extends TerraformPlan {
 
-    @Inject
-    TerraformDestroyPlan(String workspaceName) {
-        super(workspaceName)
-    }
-
     @Override
     File getPlanOutputFile() {
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        new File(dataDir.get(), "${sourceSet.name}${ws}.tf.destroy.plan")
+        new File(dataDir.get(), "${sourceSet.name}.tf.destroy.plan")
     }
 
     @Override
     File getPlanReportOutputFile() {
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        new File(reportsDir.get(), "${sourceSet.name}${ws}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
+        new File(reportsDir.get(), "${sourceSet.name}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     @Override
     Provider<File> getVariablesFile() {
         super.variablesFile.map {
-            new File(it.parentFile, "_d_.${workspaceName}.tfVars")
+            new File(it.parentFile, '_d_.tfVars')
         }
     }
 

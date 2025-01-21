@@ -51,24 +51,4 @@ class TerraformPluginSpec extends Specification {
         project.tasks.getByName('tfReleasePlan') instanceof TerraformPlan
         project.tasks.getByName('tfReleaseApply') instanceof TerraformApply
     }
-
-    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/34')
-    void 'Workspaces adds extra tasks'() {
-        setup:
-        project.apply plugin: 'org.ysb33r.terraform'
-
-        when:
-        project.allprojects {
-            terraformSourceSets {
-                joe {
-                    workspaces 'biden'
-                }
-            }
-        }
-
-        then:
-        project.tasks.getByName('tfJoeApplyBiden') instanceof TerraformApply
-        !project.tasks.findByName('tfJoeFmtCheckBiden')
-        !project.tasks.findByName('tfJoeInitBiden')
-    }
 }

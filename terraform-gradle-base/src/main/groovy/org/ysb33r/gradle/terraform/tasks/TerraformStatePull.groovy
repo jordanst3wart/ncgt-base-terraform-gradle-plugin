@@ -34,8 +34,8 @@ import javax.inject.Inject
 class TerraformStatePull extends AbstractTerraformStateTask {
 
     @Inject
-    TerraformStatePull(String workspaceName) {
-        super('pull', workspaceName)
+    TerraformStatePull() {
+        super('pull')
         stateFileProvider = sourceDir.map(new Transformer<File, File>() {
             @Override
             File transform(File file) {

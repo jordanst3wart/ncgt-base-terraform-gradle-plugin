@@ -21,7 +21,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
 
@@ -35,16 +34,13 @@ class TerraformDestroy extends AbstractTerraformTask {
 
     private boolean json = false
 
-    private final String ws
-
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
-    TerraformDestroy(String workspaceName) {
-        super('destroy', [Lock, StateOptionsFull, ResourceFilter], [], workspaceName)
+    TerraformDestroy() {
+        super('destroy', [Lock, StateOptionsFull, ResourceFilter], [])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         inputs.files(taskProvider('destroyPlan'))
         mustRunAfter(taskProvider('destroyPlan'))
     }

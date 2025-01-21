@@ -19,8 +19,6 @@ import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grashicorp.StringUtils
-import org.ysb33r.grolifant.api.core.OperatingSystem
-import org.ysb33r.grolifant.api.core.ProjectOperations
 
 /** General utilities for Terraform.
  *
@@ -28,18 +26,6 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
  */
 @CompileStatic
 class TerraformUtils {
-
-    /** Converts a file path to a format suitable for interpretation by Terraform on the appropriate
-     * platform.
-     *
-     * @param projectOperations Project context.
-     * @param file Object that can be converted using {@code project.file}.
-     * @return String version adapted on a per-platform basis
-     */
-    static String terraformPath(ProjectOperations projectOperations, Object file) {
-        String path = projectOperations.fsOperations.file(file).absolutePath
-        OperatingSystem.current().windows ? path.replaceAll(~/\x5C/, FORWARD_SLASH) : path
-    }
 
     /** Get all AWS-related environmental variables.
      *
@@ -184,6 +170,5 @@ class TerraformUtils {
         thingy != null ? StringUtils.stringize(thingy) : null
     }
 
-    private static final String FORWARD_SLASH = '/'
     private static final String COMMA_SEPARATED = ', '
 }

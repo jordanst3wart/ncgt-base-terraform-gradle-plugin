@@ -32,8 +32,8 @@ import javax.inject.Inject
 class TerraformStateMv extends AbstractTerraformStateTask {
 
     @Inject
-    TerraformStateMv(String workspaceName) {
-        super('mv', workspaceName)
+    TerraformStateMv() {
+        super('mv')
     }
 
     /** The source path.

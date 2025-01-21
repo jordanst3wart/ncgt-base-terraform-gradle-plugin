@@ -26,7 +26,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -41,12 +40,11 @@ import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionCo
 class TerraformPlan extends AbstractTerraformTask {
 
     @Inject
-    TerraformPlan(String workspaceName) {
+    TerraformPlan() {
         super(
             'plan',
             [Lock, StateOptionsFull, ResourceFilter],
-            [VARIABLES],
-            workspaceName
+            [VARIABLES]
         )
         supportsInputs()
         supportsColor()
@@ -59,8 +57,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     File getPlanOutputFile() {
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        new File(dataDir.get(), "${sourceSet.name}${ws}.tf.plan")
+        new File(dataDir.get(), "${sourceSet.name}.tf.plan")
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -69,8 +66,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     File getPlanReportOutputFile() {
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
-        new File(reportsDir.get(), "${sourceSet.name}${ws}.tf.plan.${jsonReport ? 'json' : 'txt'}")
+        new File(reportsDir.get(), "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
@@ -79,9 +75,8 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Internal
     Provider<File> getInternalTrackerFile() {
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
         project.provider({ ->
-            new File(dataDir.get(), "${ws}.tracker")
+            new File(dataDir.get(), '.tracker')
         } as Callable<File>)
     }
 
@@ -94,7 +89,7 @@ class TerraformPlan extends AbstractTerraformTask {
     @Internal
     Provider<File> getVariablesFile() {
         project.provider({ ->
-            new File(dataDir.get(), "__.${workspaceName}.tfvars")
+            new File(dataDir.get(), '__.tfvars')
         } as Callable<File>)
     }
 
@@ -190,7 +185,6 @@ class TerraformPlan extends AbstractTerraformTask {
             'show',
             cmdParams
         )
-        addSessionCredentialsIfAvailable(execSpec)
 
         new Action<ExecSpec>() {
             @Override

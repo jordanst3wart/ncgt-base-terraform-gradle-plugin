@@ -17,12 +17,9 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.api.provider.Provider
-import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionEmbeddable
@@ -31,9 +28,7 @@ import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.gradle.terraform.config.multilevel.VarsFilesPair
 import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreGlobal
 import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreSourceSet
-import org.ysb33r.gradle.terraform.credentials.SessionCredentials
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-import org.ysb33r.gradle.terraform.internal.CredentialsCache
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
@@ -121,9 +116,7 @@ class TerraformExtension extends AbstractToolExtension {
         } else {
             executable searchPath()
         }
-        this.warnOnNewVersion = false
         this.env = [:]
-        this.credentialsCache = new CredentialsCache(projectOperations)
         addVariablesExtension()
     }
 
@@ -174,29 +167,6 @@ class TerraformExtension extends AbstractToolExtension {
      */
     static Map<String, Object> searchPath() {
         SEARCH_PATH
-    }
-
-    /** Print a warning message if a new version of {@code terraform} is available.
-     *
-     */
-    boolean getWarnOnNewVersion() {
-        (this.warnOnNewVersion == null && task != null) ? globalExtension.getWarnOnNewVersion() : this.warnOnNewVersion
-    }
-
-    /** Turn checkpoint warning on or off
-     *
-     * @param value {@code true} to warn on new {@code terraform} versions.
-     */
-    void setWarnOnNewVersion(boolean value) {
-        this.warnOnNewVersion = value
-    }
-
-    /** Turn checkpoint warning on or off
-     *
-     * @param value {@code true} to warn on new {@code terraform} versions.
-     */
-    void warnOnNewVersion(boolean value) {
-        this.warnOnNewVersion = value
     }
 
     /** Returns all terraform variables and descriptions of variables within files within the specific context
@@ -283,58 +253,6 @@ class TerraformExtension extends AbstractToolExtension {
         environment awsEnvironment()
     }
 
-    /**
-     * If the version is set via a version string return that, otherwise run terraform and parse the output
-     *
-     * @return The Terraform primary version or {@link TerraformMajorVersion#UNKNOWN} if version could be matched to
-     *   something known to this system
-     */
-    TerraformMajorVersion resolveTerraformVersion() {
-        String ver
-        if (executableDetails[VERSION_KEY]) {
-            ver = projectOperations.stringTools.stringize(executableDetails[VERSION_KEY])
-        } else {
-            TerraformExecSpec tes = new TerraformExecSpec(projectOperations, resolver)
-            def strm = new ByteArrayOutputStream()
-            tes.standardOutput(strm)
-            tes.executable(resolvableExecutable)
-            tes.command(VERSION_CMD_ARGS)
-            tes.environment(defaultEnvironment())
-            Action<ExecSpec> runner = new Action<ExecSpec>() {
-                @Override
-                void execute(ExecSpec spec) {
-                    tes.copyToExecSpec(spec)
-                }
-            }
-
-            projectOperations.exec(runner).assertNormalExitValue()
-            ver = strm.toString().readLines()[0].replaceFirst('Terraform v', '')
-        }
-
-        TerraformMajorVersion.version(ver)
-    }
-
-    /**
-     * Returns a map of credentials for for a source set.
-     *
-     * This can be called multiple times during task execution as credentials may time out between tasks.
-     *
-     * @param sourceSetName Name of source set.
-     * @param workspaceName Name of workspace
-     * @param creds Session credential providers.
-     * @return Credentials for the specific sourceset-workspace combination
-     *
-     * @since 0.11
-     */
-    Map<String, String> credentialsCacheFor(
-        String sourceSetName,
-        String workspaceName,
-        Provider<Set<SessionCredentials>> creds
-    ) {
-        task ? globalExtension.credentialsCacheFor(sourceSetName, workspaceName, creds) :
-            this.credentialsCache.get(sourceSetName, workspaceName, creds)
-    }
-
     private TerraformExtension getGlobalExtension() {
         (TerraformExtension) projectExtension
     }
@@ -411,8 +329,6 @@ class TerraformExtension extends AbstractToolExtension {
 
     @SuppressWarnings('UnnecessaryCast')
     private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
-    private static final String VERSION_KEY = 'version'
-    private static final String VERSION_CMD_ARGS = VERSION_KEY
     private static final Set<String> PLATFORMS = [
         'darwin_amd64', 'darwin_arm64',
         'windows_amd64', 'windows_386',
@@ -420,9 +336,7 @@ class TerraformExtension extends AbstractToolExtension {
         'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
     ].toSet()
 
-    private Boolean warnOnNewVersion
     private final Map<String, Object> env
     private final Map<String, Object> executableDetails
-    private final CredentialsCache credentialsCache
 }
 

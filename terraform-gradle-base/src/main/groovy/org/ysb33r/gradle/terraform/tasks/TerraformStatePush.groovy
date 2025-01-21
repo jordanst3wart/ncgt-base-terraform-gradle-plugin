@@ -32,8 +32,8 @@ import javax.inject.Inject
 class TerraformStatePush extends AbstractTerraformStateTask {
 
     @Inject
-    TerraformStatePush(String workspaceName) {
-        super('push', workspaceName)
+    TerraformStatePush() {
+        super('push')
     }
 
     @Input

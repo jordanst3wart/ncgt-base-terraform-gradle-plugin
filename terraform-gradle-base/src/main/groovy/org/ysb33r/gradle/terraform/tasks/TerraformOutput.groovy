@@ -24,7 +24,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -39,13 +38,12 @@ import java.util.concurrent.Callable
 class TerraformOutput extends AbstractTerraformTask {
 
     @Inject
-    TerraformOutput(String workspaceName) {
-        super('output', [], [], workspaceName)
-        final String ws = workspaceName == TerraformConvention.DEFAULT_WORKSPACE ? '' : ".${workspaceName}"
+    TerraformOutput() {
+        super('output', [], [])
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->
-                new File(reportsDir.get(), "${sourceSet.name}${ws}.outputs.${json ? 'tf.json' : 'tf'}")
+                new File(reportsDir.get(), "${sourceSet.name}.outputs.${json ? 'tf.json' : 'tf'}")
             } as Callable<File>)
         )
 

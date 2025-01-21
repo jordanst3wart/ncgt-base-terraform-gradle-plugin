@@ -122,7 +122,7 @@ class TerraformExtensionSpec extends Specification {
             terraform.variables.provider(variableProvider)
         }
 
-        Variables vars = project.tasks.tfPlan.terraform.allVariables
+        Variables vars = project.tasks.tfMainPlan.terraform.allVariables
 
         then: 'the task extension on tfPlan must make the provided values available'
         vars.escapedVars.remote_state

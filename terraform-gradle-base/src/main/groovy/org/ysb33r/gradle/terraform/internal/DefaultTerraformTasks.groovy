@@ -28,23 +28,22 @@ import org.ysb33r.gradle.terraform.tasks.*
 @CompileStatic
 @SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
-    INIT(1, 'init', TerraformInit, 'Initialises Terraform', true),
+    INIT(1, 'init', TerraformInit, 'Initialises Terraform'),
     IMPORT(2, 'import', TerraformImport, 'Imports a resource'),
     SHOW(3, 'showState', TerraformShowState, 'Generates a report on the current state'),
     OUTPUT(4, 'output', TerraformOutput, 'Generates a file of output variables'),
     PLAN(10, 'plan', TerraformPlan, 'Generates Terraform execution plan'),
-    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure', false),
+    APPLY(11, 'apply', TerraformApply, 'Builds or changes infrastructure'),
     DESTROY_PLAN(14, 'destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),
-    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure', false),
+    DESTROY(15, 'destroy', TerraformDestroy, 'Destroys infrastructure'),
     VALIDATE(20, 'validate', TerraformValidate, 'Validates the Terraform configuration'),
     STATE_MV(30, 'stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
     STATE_PUSH(31, 'statePush', TerraformStatePush, 'Pushes local state file to remote'),
     STATE_PULL(32, 'statePull', TerraformStatePull, 'Pulls remote state local to local file'),
     STATE_RM(33, 'stateRm', TerraformStateRm, 'Removes a resource from state'),
     UNTAINT(34, 'untaint', TerraformUntaint, 'Remove tainted status from resource'),
-    FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted', true),
-    FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set', true),
-    CLEANUP_WORKSPACES(60, 'cleanupWorkspaces', TerraformCleanupWorkspaces, 'Deletes any dangling workspaces', true)
+    FMT_CHECK(50, 'fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted'),
+    FMT_APPLY(51, 'fmtApply', TerraformFmtApply, 'Formats source files in source set')
 
     static List<DefaultTerraformTasks> ordered() {
         values().sort { a, b -> a.order <=> b.order } as List
@@ -71,20 +70,17 @@ enum DefaultTerraformTasks {
     final String command
     final Class type
     final String description
-    final boolean workspaceAgnostic
 
     @SuppressWarnings('ParameterCount')
     private DefaultTerraformTasks(
         int order,
         String name,
         Class type,
-        String description,
-        boolean workspaceAgnostic = false
+        String description
     ) {
         this.order = order
         this.command = name
         this.type = type
         this.description = description
-        this.workspaceAgnostic = workspaceAgnostic
     }
 }

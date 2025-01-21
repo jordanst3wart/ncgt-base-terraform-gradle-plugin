@@ -29,7 +29,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 class TerraformFmtApply extends AbstractTerraformTask {
 
     TerraformFmtApply() {
-        super('fmt', [], [], null)
+        super('fmt', [], [])
         doesNotRequireSessionCredentials()
     }
 

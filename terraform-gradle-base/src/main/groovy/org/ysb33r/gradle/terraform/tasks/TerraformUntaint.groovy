@@ -33,8 +33,8 @@ import javax.inject.Inject
 class TerraformUntaint extends AbstractTerraformTask {
 
     @Inject
-    TerraformUntaint(String workspaceName) {
-        super('untaint', [Lock], [], workspaceName)
+    TerraformUntaint() {
+        super('untaint', [Lock], [])
         supportsColor()
     }
 
