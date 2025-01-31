@@ -27,8 +27,6 @@ import org.ysb33r.gradle.terraform.config.StateOptionsConcurrency
 import javax.inject.Inject
 import java.util.concurrent.Callable
 
-import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
-
 /** Equivalent of {@code terraform import}.
  *
  * Should be used with command-line arguments {@code --type}, {@code --name} and {@code --id}.
@@ -42,8 +40,7 @@ class TerraformImport extends AbstractTerraformTask {
     TerraformImport() {
         super(
             'import',
-            [Lock, StateOptionsConcurrency],
-            [VARIABLES]
+            [Lock, StateOptionsConcurrency]
         )
         supportsInputs()
         supportsColor()

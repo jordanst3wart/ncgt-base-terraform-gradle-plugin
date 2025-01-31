@@ -31,12 +31,12 @@ class TerraformValidate extends AbstractTerraformTask {
 
     @Inject
     TerraformValidate() {
-        super('validate', [], [])
+        super('validate', [])
         supportsColor()
         inputs.files(taskProvider('init'))
     }
 
-    /** Whether output should be in JSON
+/** Whether output should be in JSON
      *
      * This option can be set from the command-line with {@code --upgrade=true}.
      */

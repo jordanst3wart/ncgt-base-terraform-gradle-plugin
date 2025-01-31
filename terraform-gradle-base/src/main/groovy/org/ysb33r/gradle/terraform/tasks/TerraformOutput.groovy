@@ -39,7 +39,7 @@ class TerraformOutput extends AbstractTerraformTask {
 
     @Inject
     TerraformOutput() {
-        super('output', [], [])
+        super('output', [])
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->

@@ -29,8 +29,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 class TerraformFmtCheck extends AbstractTerraformTask {
 
     TerraformFmtCheck() {
-        super('fmt', [], [])
-        doesNotRequireSessionCredentials()
+        super('fmt', [])
     }
 
     @Input

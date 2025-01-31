@@ -34,6 +34,11 @@ import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 @CompileStatic
 abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
 
+    protected AbstractTerraformCustomFmt() {
+        super('fmt', [])
+        this.dataDir = projectOperations.buildDirDescendant("tf/${name}")
+    }
+
     @Override
     void exec() {
         workingDirForCommand.get().mkdirs()
@@ -61,11 +66,6 @@ abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
             }
             handleExecResult(projectOperations.exec(runner))
         }
-    }
-
-    protected AbstractTerraformCustomFmt() {
-        super('fmt', [], [])
-        this.dataDir = projectOperations.buildDirDescendant("tf/${name}")
     }
 
     /**

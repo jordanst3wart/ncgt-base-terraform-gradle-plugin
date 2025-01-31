@@ -34,7 +34,7 @@ class TerraformUntaint extends AbstractTerraformTask {
 
     @Inject
     TerraformUntaint() {
-        super('untaint', [Lock], [])
+        super('untaint', [Lock])
         supportsColor()
     }
 

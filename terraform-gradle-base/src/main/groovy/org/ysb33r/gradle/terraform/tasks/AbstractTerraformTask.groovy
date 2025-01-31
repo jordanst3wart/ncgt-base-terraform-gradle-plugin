@@ -28,7 +28,6 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 
@@ -150,10 +149,9 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
      */
     protected AbstractTerraformTask(
         String cmd,
-        List<Class> configExtensions,
-        List<TerraformExtensionConfigTypes> terraformConfigExtensions
+        List<Class> configExtensions
     ) {
-        super(cmd, configExtensions, terraformConfigExtensions)
+        super(cmd, configExtensions)
 
         sourceDirProvider = project.provider {
             sourceSet.srcDir.get()
@@ -287,19 +285,8 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         this.secondarySources
     }
 
-    /**
-     * This specific task does not interact with state and thus does not require
-     * any session credentials.
-     *
-     * @since 0.11
-     */
-    protected void doesNotRequireSessionCredentials() {
-        this.requiresSessionCredentials = false
-    }
-
     private TerraformSourceDirectorySet sourceSetProxy
     private String terraformLogLevel = 'TRACE'
-    private boolean requiresSessionCredentials = true
     private final Provider<File> sourceDirProvider
     private final Provider<File> dataDirProvider
     private final Provider<File> logDirProvider

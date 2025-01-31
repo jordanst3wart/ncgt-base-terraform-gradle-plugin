@@ -21,23 +21,18 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.TaskProvider
-import org.ysb33r.gradle.terraform.TerraformExtension
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.config.VariablesSpec
-import org.ysb33r.gradle.terraform.internal.remotestate.BackendFactory
-import org.ysb33r.gradle.terraform.remotestate.LocalBackendSpec
-import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtApply
 import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
-import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 
-import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.FMT_APPLY
+import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
+import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.FMT_APPLY
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
-import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.REMOTE_STATE_VARIABLE
-import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.addRemoteStateExtension
+import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -53,47 +48,32 @@ class TerraformPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
 
-        TaskProvider<Task> formatAll = project.tasks.register(FORMAT_ALL)
-        formatAll.configure {
-            it.group = 'terraform'
-            it.description = 'Formats all terraform source'
+        def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
+        checkProvider.configure {
+            it.group = TERRAFORM_TASK_GROUP
         }
-
-        def globalRemoteState = ((ExtensionAware) project.extensions.getByType(TerraformExtension))
-            .extensions
-            .getByType(TerraformRemoteStateExtension)
-
-        terraformSourceSetRemoteStateRules(project, globalRemoteState)
+        def fmtApplyProvider = project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
+        fmtApplyProvider.configure {
+            it.group = TERRAFORM_TASK_GROUP
+        }
+        def formatAll = project.tasks.register(FORMAT_ALL)
+        formatAll.configure {
+            it.group = TERRAFORM_TASK_GROUP
+            it.description = 'Formats all terraform source'
+            it.dependsOn fmtApplyProvider
+            it.dependsOn()
+        }
         terraformSourceSetConventionTaskRules(project, formatAll)
 
-        def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
-        def applyProvider = project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
-        formatAll.configure { it.dependsOn applyProvider }
+        configureCheck(project)
     }
 
-    private static void terraformSourceSetRemoteStateRules(
-        Project project,
-        TerraformRemoteStateExtension globalRemoteState
-    ) {
-        project.extensions.getByType(NamedDomainObjectContainer<TerraformSourceDirectorySet>).configureEach {
-            TerraformSourceDirectorySet tsds ->
-            TerraformRemoteStateExtension tsdsBackends = addRemoteStateExtension(project, ((ExtensionAware) tsds))
-            BackendFactory.createBackend(
-                ProjectOperations.find(project),
-                project.objects,
-                tsds,
-                LocalBackendSpec.NAME,
-                LocalBackendSpec
-            )
-            tsdsBackends.follow(globalRemoteState)
-            tsds.variables.provider(new Action<VariablesSpec>() {
-                @Override
-                void execute(VariablesSpec variablesSpec) {
-                    if (tsdsBackends.remoteStateVarProvider.getOrElse(false)) {
-                        variablesSpec.map(REMOTE_STATE_VARIABLE, tsdsBackends.tokenProvider)
-                    }
-                }
-            })
+    private static void configureCheck(Project project) {
+        project.pluginManager.apply(LifecycleBasePlugin)
+        def check = project.tasks.named(CHECK_TASK_NAME)
+        check.configure {
+            it.dependsOn(project.tasks.withType(TerraformFmtCheck))
+            it.dependsOn(project.tasks.withType(TerraformCustomFmtCheck))
         }
     }
 

@@ -92,45 +92,4 @@ class TerraformExtensionSpec extends Specification {
         then:
         thrown(GradleException)
     }
-
-    // I think variables should be set in one place not three... just the sourceset
-    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/-/issues/63')
-    void 'Terraform extension on task honours variable providers on source set'() {
-        setup:
-        Action<VariablesSpec> variableProvider = { VariablesSpec vars ->
-            vars.map([ foo : 123 ], 'remote_state')
-        }
-
-        when: 'a variable is provided via provider'
-        project.allprojects {
-            apply plugin : 'org.ysb33r.terraform'
-
-            terraform {
-                variables {
-                    var 'project', '1'
-                }
-            }
-
-            terraformSourceSets {
-                main {
-                    variables {
-                        var 'sourceSet', '3'
-                    }
-                }
-            }
-
-            terraform.variables.provider(variableProvider)
-        }
-
-        Variables vars = project.tasks.tfMainPlan.terraform.allVariables
-
-        then: 'the task extension on tfPlan must make the provided values available'
-        vars.escapedVars.remote_state
-
-        and: 'the variables declared at project level'
-        vars.escapedVars.project
-
-        and: 'the variable declared at source set'
-        vars.escapedVars.sourceSet
-    }
 }

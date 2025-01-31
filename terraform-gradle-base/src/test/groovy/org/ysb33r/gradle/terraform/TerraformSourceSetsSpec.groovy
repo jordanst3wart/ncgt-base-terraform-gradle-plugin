@@ -69,7 +69,6 @@ class TerraformSourceSetsSpec extends Specification {
     void 'Items must be able resolve entities in project scope'() {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
-        project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
         project.extensions.create('testExt', TestExtension, project.providers, project)
 
         when:
@@ -81,7 +80,6 @@ class TerraformSourceSetsSpec extends Specification {
 
     void 'Items must be able resolve entities in project scope even with different order of plugins applied'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform.remotestate.s3'
         project.apply plugin: 'org.ysb33r.terraform'
         project.extensions.create('testExt', TestExtension, project.providers, project)
 
@@ -121,32 +119,47 @@ class TerraformSourceSetsSpec extends Specification {
         fooPos < foo2Pos
     }
 
+    void 'source sets'() {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform'
+        project.allprojects {
+            terraformSourceSets {
+                main {
+                    srcDir = file('foo/bar')
+                    backendText("hi")
+                    // should support backendFile...
+                    // just variables files... these can be json or tfvars
+                    variables {
+                        file 'filename.tf'
+                        file 'foo.tf'
+                    }
+                }
+                release
+            }
+        }
+
+        expect:
+        def tss = project.terraformSourceSets
+        def mainSourceSet = tss.getByName('main') as TerraformSourceDirectorySet
+        mainSourceSet.srcDir.get() == project.file('foo/bar')
+        mainSourceSet.backendPropertyText().get() == "hi"
+        Set<String> files = ["filename.tf", "foo.tf"].toSet()
+        mainSourceSet.variables.fileNames == files
+
+        def releaseSourceSet = tss.getByName( 'release')
+        releaseSourceSet.srcDir.get() == project.file('src/tf/release')
+    }
+
     void configureFourSourceSets() {
         project.allprojects {
             terraformSourceSets {
                 main {
-                    remote {
-                        s3 {
-                        }
-                    }
                 }
                 create('created') {
-                    remote {
-                        s3 {
-                        }
-                    }
                 }
                 register('registered') {
-                    remote {
-                        s3 {
-                        }
-                    }
                 }
                 groovyAutoAddStyle {
-                    remote {
-                        s3 {
-                        }
-                    }
                 }
             }
         }

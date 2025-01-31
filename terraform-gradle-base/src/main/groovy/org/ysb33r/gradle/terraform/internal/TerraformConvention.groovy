@@ -18,20 +18,16 @@ package org.ysb33r.gradle.terraform.internal
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.remotestate.TerraformRemoteStateExtension
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
-import org.ysb33r.gradle.terraform.tasks.RemoteStateConfigGenerator
+import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks
+import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
-import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.APPLY
-import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.INIT
+import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.APPLY
+import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.INIT
 import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
 /** Provide convention naming.
@@ -82,15 +78,52 @@ class TerraformConvention {
      * @param project Project to attach source set to.
      * @param sourceSetName Name of Terraform source set.
      */
+    @SuppressWarnings('InvertedIfElse')
     static void createTasksByConvention(Project project, TerraformSourceDirectorySet sourceSet) {
         if (!hasTaskRegistered(project.tasks, taskName(sourceSet.name, APPLY.command))) {
-            registerBackendConfigurationTask(sourceSet, project)
-
-            DefaultTerraformTasks.ordered().each {
+            DefaultTerraformTasks.tasks().each {
                 String newTaskName = taskName(sourceSet.name, it.command)
                 registerTask(sourceSet, project, it, newTaskName)
             }
+            registerBackendConfigurationTask(sourceSet, project)
+        } else {
+            throw new IllegalStateException("duplicate tasks creation running for sourceSet $sourceSet.name")
         }
+    }
+
+    private static void registerBackendConfigurationTask(
+        TerraformSourceDirectorySet sourceSet,
+        Project project
+    ) {
+        TaskProvider<RemoteStateTask> remoteStateTask = project.tasks.register(
+            backendTaskName(sourceSet.name),
+            RemoteStateTask,
+        ) {
+            it.group = TERRAFORM_TASK_GROUP
+            it.description = "Write partial backend configuration file for '${sourceSet.name}'"
+            it.backendText = sourceSet.backendPropertyText().map { it }
+            it.destinationDir = new File(
+                "${project.buildDir}/tfRemoteState/tf${sourceSet.name.capitalize()}BackendConfiguration")
+        }
+
+        project.tasks.named("tf${sourceSet.name.capitalize()}Init", TerraformInit).configure {
+            it.dependsOn(remoteStateTask)
+            it.backendConfigFile = remoteStateTask.get().backendConfigFile.get()
+            it.useBackendFile = remoteStateTask.get().backendFileRequired
+        }
+    }
+
+    private static void registerTask(
+        TerraformSourceDirectorySet sourceSet,
+        Project project,
+        DefaultTerraformTasks taskDetails,
+        String newTaskName
+    ) {
+        TaskProvider<AbstractTerraformTask> taskProvider = project.tasks.register(
+            newTaskName,
+            taskDetails.type
+        )
+        taskProvider.configure(taskConfigurator(sourceSet, taskDetails))
     }
 
     private static Action<AbstractTerraformTask> taskConfigurator(
@@ -109,66 +142,6 @@ class TerraformConvention {
                 }
             }
         }
-    }
-
-    private static Action<RemoteStateConfigGenerator> remoteStateConfigurator(
-        TerraformSourceDirectorySet sourceSet,
-        Provider<File> destDir
-    ) {
-        def remote = ((ExtensionAware) sourceSet).extensions.getByType(TerraformRemoteStateExtension)
-        String name = sourceSet.name
-        new Action<RemoteStateConfigGenerator>() {
-            @Override
-            void execute(RemoteStateConfigGenerator t) {
-                t.remoteState = remote
-                t.group = TERRAFORM_TASK_GROUP
-                t.description = "Write partial backend configuration file for '${name}'"
-                t.destinationDir = destDir
-            }
-        }
-    }
-
-    private static void registerBackendConfigurationTask(
-        TerraformSourceDirectorySet sourceSet,
-        Project project
-    ) {
-        String folderName = "tf${sourceSet.name.capitalize()}BackendConfiguration"
-
-        TaskProvider<RemoteStateConfigGenerator> generator = project.tasks.register(
-            backendTaskName(sourceSet.name),
-            RemoteStateConfigGenerator,
-        )
-
-        generator.configure(remoteStateConfigurator(
-            sourceSet,
-            ProjectOperations.find(project).buildDirDescendant("tfRemoteState/${folderName}")
-        ))
-
-        project.tasks.configureEach { Task t ->
-            if (t.name == taskName(sourceSet.name, INIT.command)) {
-                TerraformInit newTask = (TerraformInit) t
-                newTask.dependsOn(generator)
-                newTask.backendConfigFile = ProjectOperations.find(project)
-                    .providerTools.flatMap(generator) { it.backendConfigFile }
-                newTask.useBackendFile = generator.map {
-                    it.backendFileRequired
-                }
-            }
-        }
-    }
-
-    private static void registerTask(
-        TerraformSourceDirectorySet sourceSet,
-        Project project,
-        DefaultTerraformTasks taskDetails,
-        String newTaskName
-    ) {
-        def taskConfigurator = taskConfigurator(sourceSet, taskDetails)
-        TaskProvider<AbstractTerraformTask> taskProvider = project.tasks.register(
-            newTaskName,
-            taskDetails.type
-        )
-        taskProvider.configure(taskConfigurator)
     }
 
     private static boolean hasTaskRegistered(TaskContainer tasks, String name) {

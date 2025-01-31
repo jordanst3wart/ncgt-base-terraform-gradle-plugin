@@ -41,16 +41,6 @@ pluginBundle {
             displayName = 'Terraform Configuration (terraformrc) plugin'
             description = 'Deals specifically with the creation of terraformrc files'
         }
-        terraformS3RemoteStatePlugin {
-            id = 'org.ysb33r.terraform.remotestate.s3'
-            displayName = 'Terraform remote state in S3'
-            description = 'Simplifies the storing of Terraform remote state in S3'
-        }
-        terraformCheckPlugin {
-            id = 'org.ysb33r.terraform.check'
-            displayName = 'Terraform source checks'
-            description = 'Adds Terraform source format validation into the check lifecycle'
-        }
     }
 }
 

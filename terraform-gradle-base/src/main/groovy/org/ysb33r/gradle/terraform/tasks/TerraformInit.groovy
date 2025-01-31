@@ -24,8 +24,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
 
 import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitor
@@ -46,38 +46,11 @@ class TerraformInit extends AbstractTerraformTask {
 
     // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option
 
-    /** Whether modules should be upgraded
-     *
-     * This option can be set from the command-line with {@code --upgrade=true}.
-     */
-    @Option(option = 'upgrade', description = 'Force upgrade of modules and plugins when not offline')
-    @Internal
-    boolean upgrade = false
-
     /**
      * Skip initialisation of child modules.
      */
     @Internal
     boolean skipChildModules = false
-
-    /** Whether backend configuration should be skipped.
-     *
-     * This option can be set from the command-line with {@code --no-configure-backends}
-     *
-     * @since 0.6.0
-     */
-    @Option(option = 'no-configure-backends', description = 'Skip backend configuration')
-    @Internal
-    boolean skipConfigureBackends = false
-
-    @Option(option = 'force-copy', description = 'Automatically answer yes to any backend migration questions')
-    @Internal
-    boolean forceCopy = false
-
-    @Option(option = 'reconfigure',
-        description = 'Disregard any existing configuration and prevent migration of existing state')
-    @Internal
-    boolean reconfigure = false
 
     /**
      * The directory where terraform plgins data is written to.
@@ -102,7 +75,7 @@ class TerraformInit extends AbstractTerraformTask {
     final Provider<File> terraformInitStateFile
 
     TerraformInit() {
-        super('init', [], [])
+        super('init', [])
         supportsInputs()
         supportsColor()
 
@@ -110,11 +83,7 @@ class TerraformInit extends AbstractTerraformTask {
         this.pluginDirectory = dataDir.map { new File(it, PLUGIN_SUBDIR) }
         this.terraformStateFile = dataDir.map { new File(it, 'terraform.tfstate') }
         this.terraformInitStateFile = dataDir.map { new File(it, '.init.txt') }
-        this.useBackendConfig = project.provider { -> true }
-
-        outputs.upToDateWhen {
-            !(forceCopy || upgrade || reconfigure)
-        }
+        this.useBackendConfig = project.objects.property(Boolean)
     }
 
     /** Configuration for Terraform backend.
@@ -125,9 +94,9 @@ class TerraformInit extends AbstractTerraformTask {
      *
      * @since 0.4.0
      */
-    @InputFile
     @Optional
-    Provider<File> getBackendConfigFile() {
+    @InputFile
+    Property<File> getBackendConfigFile() {
         this.backendConfig
     }
 
@@ -137,68 +106,17 @@ class TerraformInit extends AbstractTerraformTask {
      *
      * @since 0.4.0
      */
-    void setBackendConfigFile(Object location) {
-        projectOperations.fsOperations.updateFileProperty(this.backendConfig, projectOperations.provider { ->
-            projectOperations.fsOperations.fileOrNull(location)
-        })
+    void setBackendConfigFile(File backendFile) {
+        backendConfig.set(backendFile)
     }
 
-    /**
-     * Whether a backend config file should be used.
-     *
-     * @param useBackend Provider of a decision.
-     *
-     * @since 0.12
-     */
     void setUseBackendFile(Provider<Boolean> useBackend) {
         this.useBackendConfig = useBackend
     }
 
-    /** Backend configuration files.
-     *
-     * This can be set in addition or as alternative to using a configuration file for the backend.
-     *
-     * @return Map of configuration values. Never {@code null}.
-     *
-     * @since 0.4.0
-     */
     @Input
-    Map<String, String> getBackendConfigValues() {
-        projectOperations.stringTools.stringizeValues(this.backendConfigValues)
-    }
-
-    /** Replaces any existing backend configuration values with a new set.
-     *
-     * It does not affect anything specified via a configuration file.
-     *
-     * @param backendValues Map of replacement key-value pairs.
-     *
-     * @since 0.4.0
-     */
-    void setBackendConfigValues(Map<String, Object> backendValues) {
-        this.backendConfigValues.clear()
-        this.backendConfigValues.putAll(backendValues)
-    }
-
-    /** Adds additional backend configuration values
-     *
-     * @param backendValues Map of key-value pairs.
-     *
-     * @since 0.4.0
-     */
-    void backendConfigValues(Map<String, Object> backendValues) {
-        this.backendConfigValues.putAll(backendValues)
-    }
-
-    /** Adds a single backend value.
-     *
-     * @param key Name of backend configuration
-     * @param value Value of backend configuration.
-     *
-     * @since 0.4.0
-     */
-    void backendConfigValue(String key, Object value) {
-        this.backendConfigValues.put(key, value)
+    Provider<Boolean> getUseBackendFile() {
+        this.useBackendConfig
     }
 
     @Override
@@ -219,36 +137,14 @@ class TerraformInit extends AbstractTerraformTask {
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        if (projectOperations.offline) {
-            logger.warn(
-                'Gradle is running in offline mode. ' +
-                    (upgrade ? 'Upgrade will not be attempted. ' : '') +
-                    (skipChildModules ? '' : 'Modules will not be retrieved. ')
-            )
-            execSpec.cmdArgs '-get=false'
-        } else {
-            if (upgrade) {
-                execSpec.cmdArgs('-upgrade')
-            }
-            execSpec.cmdArgs "-get=${!skipChildModules}"
+        execSpec.cmdArgs "-get=${!skipChildModules}"
+
+        if (!this.backendConfig.get().exists()) {
+            throw new MissingTerraformConfiguration("cannot location ${this.backendConfig.get().absolutePath}")
         }
 
-        execSpec.cmdArgs "-backend=${!skipConfigureBackends}"
-
-        getBackendConfigValues().each { String k, String v ->
-            execSpec.cmdArgs "-backend-config=$k=$v"
-        }
-
-        if (this.useBackendConfig.get() && this.backendConfig.present) {
+        if (this.useBackendConfig.get()) {
             execSpec.cmdArgs("-backend-config=${this.backendConfig.get().absolutePath}")
-        }
-
-        if (this.forceCopy) {
-            execSpec.cmdArgs('-force-copy')
-        }
-
-        if (this.reconfigure) {
-            execSpec.cmdArgs('-reconfigure')
         }
 
         execSpec
@@ -289,7 +185,5 @@ class TerraformInit extends AbstractTerraformTask {
 
     private Provider<Boolean> useBackendConfig
     private final Property<File> backendConfig
-    private final Map<String, Object> backendConfigValues = [:]
-
     private static final String PLUGIN_SUBDIR = 'plugins'
 }

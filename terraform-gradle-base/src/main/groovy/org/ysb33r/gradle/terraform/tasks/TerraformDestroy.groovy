@@ -37,7 +37,7 @@ class TerraformDestroy extends AbstractTerraformTask {
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformDestroy() {
-        super('destroy', [Lock, StateOptionsFull, ResourceFilter], [])
+        super('destroy', [Lock, StateOptionsFull, ResourceFilter])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()

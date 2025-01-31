@@ -20,7 +20,6 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -39,7 +38,7 @@ import javax.inject.Inject
 import java.util.concurrent.Callable
 import java.util.function.Function
 
-import static org.ysb33r.gradle.terraform.internal.DefaultTerraformTasks.OUTPUT
+import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.OUTPUT
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
 /** Describes a Terraform source set
@@ -88,6 +87,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         dataDir = objects.property(File)
         logDir = objects.property(File)
         reportsDir = objects.property(File)
+        backendText = objects.property(String)
 
         projectOperations.fsOperations.updateFileProperty(
             sourceDir,
@@ -157,6 +157,14 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         projectOperations.fsOperations.updateFileProperty(this.sourceDir, dir)
     }
 
+    void setBackendText(String backText) {
+        this.backendText.set(backText)
+    }
+
+    Property<String> backendPropertyText() {
+        backendText
+    }
+
     /** Data directory provider.
      *
      * @return File provider.
@@ -206,22 +214,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      */
     void setReportsDir(Object dir) {
         projectOperations.fsOperations.updateFileProperty(this.reportsDir, dir)
-    }
-
-    /** Returns the pattern filter.
-     *
-     * @return Terraform pattern filter.
-     */
-    PatternFilterable getFilter() {
-        this.patternSet
-    }
-
-    /** Returns terraform source tree
-     *
-     * @return Source tree as a file tree.
-     */
-    FileTree getAsFileTree() {
-        projectOperations.fileTree(sourceDir).matching(this.patternSet)
     }
 
     /**
@@ -385,6 +377,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         prop
     }
 
+    private final Property<String> backendText
     private final Property<File> sourceDir
     private final Property<File> dataDir
     private final Property<File> logDir

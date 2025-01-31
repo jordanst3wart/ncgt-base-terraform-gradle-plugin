@@ -18,31 +18,17 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.plugins.ExtensionContainer
-import org.ysb33r.gradle.terraform.config.VariablesSpec
-import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
-import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionEmbeddable
-import org.ysb33r.gradle.terraform.config.multilevel.TerraformSourceSetEmbeddable
-import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import org.ysb33r.gradle.terraform.config.multilevel.VarsFilesPair
-import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreGlobal
-import org.ysb33r.gradle.terraform.config.multilevel.ignore.IgnoreSourceSet
-import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformBaseTask
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
-
-import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
+import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironment
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -82,6 +68,22 @@ class TerraformExtension extends AbstractToolExtension {
      */
     public static final String TERRAFORM_DEFAULT = '1.8.0'
 
+    /** Constructs a new extension which is attached to the provided project.
+     *
+     * @param project Project this extension is associated with.
+     */
+    TerraformExtension(Project project) {
+        super(project)
+        executableDetails = [:]
+        if (Downloader.downloadSupported) {
+            addVersionResolver(projectOperations)
+            executable([version: TERRAFORM_DEFAULT])
+        } else {
+            executable searchPath()
+        }
+        this.env = [:]
+    }
+
     @SuppressWarnings('UnnecessaryCast')
     static Map<String, String> defaultEnvironment() {
         // tag::default-environment[]
@@ -101,47 +103,6 @@ class TerraformExtension extends AbstractToolExtension {
             ]
         }
         // end::default-environment[]
-    }
-
-    /** Constructs a new extension which is attached to the provided project.
-     *
-     * @param project Project this extension is associated with.
-     */
-    TerraformExtension(Project project) {
-        super(project)
-        executableDetails = [:]
-        if (Downloader.downloadSupported) {
-            addVersionResolver(projectOperations)
-            executable([version: TERRAFORM_DEFAULT])
-        } else {
-            executable searchPath()
-        }
-        this.env = [:]
-        addVariablesExtension()
-    }
-
-    /** Constructs a new extension which is attached to the provided task.
-     *
-     * @param project Project this extension is associated with.
-     * @param configExtensions Configuration extensions that have to be added. Has to implement
-     * {@link TerraformExtensionEmbeddable} interface.
-     */
-    TerraformExtension(AbstractTerraformBaseTask task, List<TerraformExtensionConfigTypes> configExtensions) {
-        super(task, NAME)
-        executableDetails = [:]
-        if (task instanceof AbstractTerraformTask) {
-            configExtensions.each { TerraformExtensionConfigTypes config ->
-                switch (config.type) {
-                    case Variables:
-                        addVariablesExtension((AbstractTerraformTask) task)
-                        break
-                    default:
-                        throw new TerraformConfigurationException(
-                            "${config.type.canonicalName} is not a supported extension for ${this.class.canonicalName}"
-                        )
-                }
-            }
-        }
     }
 
     /** Standard set of platforms.
@@ -169,44 +130,6 @@ class TerraformExtension extends AbstractToolExtension {
         SEARCH_PATH
     }
 
-    /** Returns all terraform variables and descriptions of variables within files within the specific context
-     *
-     * If this is a project extension only the global variable definitions are returned.
-     *
-     * If this is a task extension and globals are not ignored, then return a combination of the global variables,
-     * the source set variables and the local task extension variables.
-     *
-     * If this is a task extension and globals ignored, then return a combination of source set variables and the
-     * local task extension variables.
-     *
-     * Task extension variables overrides source set variables which in turn overrides global variables.
-     *
-     * Files containing variables are simply added to a list in order of global, source set, local.
-     *
-     * @return Terraform variables and files containing variables.
-     */
-    Variables getAllVariables() {
-        if (task) {
-            AbstractTerraformTask terraformTask = (AbstractTerraformTask) task
-            Variables variablesOnTask = (Variables) extContainer.getByType(VariablesSpec) // task.terraform.variables
-            VarsFilesPair varsFilesPair = new VarsFilesPair()
-
-            if (!secondLevelExtension(variablesOnTask, IgnoreGlobal).ignore) {
-                globalExtension.allVariables.allVars.copyTo(varsFilesPair)
-            }
-
-            if (!secondLevelExtension(variablesOnTask, IgnoreSourceSet).ignore) {
-                ((Variables) (terraformTask.sourceSet.variables)).allVars.copyTo(varsFilesPair)
-            }
-
-            variablesOnTask.allVars.copyTo(varsFilesPair)
-
-            new Variables(varsFilesPair, terraformTask.sourceDir)
-        } else {
-            (Variables) extContainer.getByType(VariablesSpec)
-        }
-    }
-
     /** Replace current environment with new one.
      * If this is called on the task extension, no project extension environment will
      * be used.
@@ -214,12 +137,8 @@ class TerraformExtension extends AbstractToolExtension {
      * @param args New environment key-value map of properties.
      */
     void setEnvironment(Map<String, ?> args) {
-        if (task) {
-            ((AbstractTerraformTask) task).environment = args
-        } else {
-            this.env.clear()
-            this.env.putAll((Map<String, Object>) args)
-        }
+        this.env.clear()
+        this.env.putAll((Map<String, Object>) args)
     }
 
     /** Environment for running the exe
@@ -229,7 +148,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @return Map of environmental variables that will be passed.
      */
     Map<String, String> getEnvironment() {
-        task ? ((AbstractTerraformTask) task).environment : projectOperations.stringTools.stringizeValues(this.env)
+        projectOperations.stringTools.stringizeValues(this.env)
     }
 
     /** Add environmental variables to be passed to the exe.
@@ -237,11 +156,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @param args Environmental variable key-value map.
      */
     void environment(Map<String, ?> args) {
-        if (task) {
-            ((AbstractTerraformTask) task).environment(args)
-        } else {
-            this.env.putAll((Map<String, Object>) args)
-        }
+        this.env.putAll((Map<String, Object>) args)
     }
 
     /** Adds AWS environmental variables to Terraform runtime environment.
@@ -250,11 +165,16 @@ class TerraformExtension extends AbstractToolExtension {
      *
      */
     void useAwsEnvironment() {
-        environment awsEnvironment()
+        environment(awsEnvironment())
     }
 
-    private TerraformExtension getGlobalExtension() {
-        (TerraformExtension) projectExtension
+    /** Adds Google environmental variables to Terraform runtime environment.
+     *
+     * @since 0.6.0
+     *
+     */
+    void useGoogleEnvironment() {
+        environment(googleEnvironment())
     }
 
     @CompileDynamic
@@ -274,57 +194,6 @@ class TerraformExtension extends AbstractToolExtension {
         resolverFactoryRegistry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
         )
-    }
-
-    private void addVariablesExtension(AbstractTerraformTask task = null) {
-        if (task) {
-            addEmbeddableConfiguration(task, VARIABLES, task.sourceDir)
-        } else {
-            addEmbeddableConfiguration(null, VARIABLES, projectOperations.provider { -> null })
-        }
-    }
-
-    private <T> void addEmbeddableConfiguration(
-        AbstractTerraformTask task,
-        TerraformExtensionConfigTypes configType,
-        Object... args
-    ) {
-        T embedded = extContainer.create(configType.publicType, configType.name, configType.type, args)
-
-        if (task) {
-            secondLevelExtContainer(embedded).create(IgnoreGlobal.NAME, IgnoreGlobal)
-
-            if (embedded instanceof TerraformSourceSetEmbeddable) {
-                secondLevelExtContainer(embedded).create(IgnoreSourceSet.NAME, IgnoreSourceSet)
-            }
-        }
-    }
-
-    /** Get the terraform extension's own extension container
-     *
-     * @return
-     */
-    private ExtensionContainer getExtContainer() {
-        ((ExtensionAware) this).extensions
-    }
-
-    /** Get the extension container of an extension that has been added to the terraform extension.
-     *
-     * @param embeddable
-     * @return Extension container
-     */
-    private ExtensionContainer secondLevelExtContainer(Object embedded) {
-        ((ExtensionAware) embedded).extensions
-    }
-
-    /** Get the extension of an extension that has been added to the terraform extension.
-     *
-     * @param embeddedType Type that was embedded in the terraform extension
-     * @param secondLevelEmbeddedType Type that was embedded in the {@code embeddedType} as an extension.
-     * @return Instance of the extension.
-     */
-    private <T> T secondLevelExtension(TerraformExtensionEmbeddable embedded, Class<T> secondLevelEmbeddedType) {
-        secondLevelExtContainer(embedded).getByType(secondLevelEmbeddedType)
     }
 
     @SuppressWarnings('UnnecessaryCast')

@@ -25,7 +25,6 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
-import org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
@@ -41,6 +40,18 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
  */
 @CompileStatic
 abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension> {
+
+    protected AbstractTerraformBaseTask(
+        String cmd,
+        List<Class> configExtensions
+    ) {
+        this.projectOperations = ProjectOperations.find(project)
+        this.projectTerraform = project.extensions.getByType(TerraformExtension)
+        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+        this.command = cmd
+        withConfigExtensions(configExtensions)
+        environment(TerraformExtension.defaultEnvironment())
+    }
 
     /** Replace current environment with new one.
      *
@@ -116,11 +127,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
     }
 
     @Internal
-    protected TerraformExtension getTerraformExtension() {
-        this.terraformExtension
-    }
-
-    @Internal
     protected List<Provider<List<String>>> getCommandLineProviders() {
         this.commandLineProviders
     }
@@ -143,28 +149,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         this.projectOperations
     }
 
-    protected AbstractTerraformBaseTask(
-        String cmd,
-        List<Class> configExtensions,
-        List<TerraformExtensionConfigTypes> terraformConfigExtensions
-    ) {
-        this.projectOperations = ProjectOperations.find(project)
-        this.projectTerraform = project.extensions.getByType(TerraformExtension)
-        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
-        this.command = cmd
-
-        terraformExtension = extensions.create(
-            TerraformExtension.NAME,
-            TerraformExtension,
-            this,
-            terraformConfigExtensions
-        )
-
-        withConfigExtensions(configExtensions)
-        withTerraformConfigExtensions(terraformConfigExtensions)
-        environment(TerraformExtension.defaultEnvironment())
-    }
-
     @Input
     abstract protected Map<String, String> getTerraformEnvironment()
 
@@ -179,12 +163,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         this.stdoutCapture = output
     }
 
-    @Override
-    @Internal
-    protected TerraformExtension getToolExtension() {
-        this.terraformExtension
-    }
-
     protected TerraformExecSpec buildExecSpec() {
         TerraformExecSpec execSpec = createExecSpec()
         addExecutableToExecSpec(execSpec)
@@ -197,7 +175,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
      */
     @Override
     protected TerraformExecSpec createExecSpec() {
-        new TerraformExecSpec(projectOperations, toolExtension.resolver)
+        new TerraformExecSpec(projectOperations, projectTerraform.resolver)
     }
 
     /** Returns the {@code terraform} command this task is implementing.
@@ -255,6 +233,12 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         execSpec
     }
 
+    @Override
+    @Internal
+    protected TerraformExtension getToolExtension() {
+        projectTerraform
+    }
+
     /** Adds a command-line provider.
      *
      * @param provider
@@ -279,29 +263,10 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         }
     }
 
-    private void withTerraformConfigExtensions(
-        List<TerraformExtensionConfigTypes> configExtensions
-    ) {
-        configExtensions.eachWithIndex { TerraformExtensionConfigTypes cfgType, Integer idx ->
-            inputs.property "${TerraformExtension.NAME}-extension-${idx}", {
-                -> cfgType.accessor.apply(terraformExtension).toString()
-            }
-
-            commandLineProviders.add(project.provider { ->
-                cfgType.accessor.apply(terraformExtension).commandLineArgs
-            })
-
-            tfVarProviders.add(project.provider { ->
-                cfgType.accessor.apply(terraformExtension).tfVars
-            })
-        }
-    }
-
     private final String command
     private final ProjectOperations projectOperations
     private final TerraformExtension projectTerraform
     private final TerraformRCExtension terraformrc
-    private final TerraformExtension terraformExtension
     private final List<Provider<List<String>>> commandLineProviders = []
     private final List<Provider<List<String>>> tfVarProviders = []
     private final List<String> defaultCommandParameters = []

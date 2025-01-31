@@ -30,8 +30,6 @@ import org.ysb33r.gradle.terraform.config.StateOptionsFull
 import javax.inject.Inject
 import java.util.concurrent.Callable
 
-import static org.ysb33r.gradle.terraform.config.multilevel.TerraformExtensionConfigTypes.VARIABLES
-
 /** Equivalent of {@code terraform plan}.
  *
  * @since 0.1
@@ -43,8 +41,7 @@ class TerraformPlan extends AbstractTerraformTask {
     TerraformPlan() {
         super(
             'plan',
-            [Lock, StateOptionsFull, ResourceFilter],
-            [VARIABLES]
+            [Lock, StateOptionsFull, ResourceFilter]
         )
         supportsInputs()
         supportsColor()

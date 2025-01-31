@@ -35,7 +35,7 @@ class TerraformShowState extends AbstractTerraformTask {
 
     @Inject
     TerraformShowState() {
-        super('show', [], [])
+        super('show', [])
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->

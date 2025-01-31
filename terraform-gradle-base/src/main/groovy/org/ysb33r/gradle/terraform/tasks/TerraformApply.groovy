@@ -45,7 +45,7 @@ class TerraformApply extends AbstractTerraformTask {
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformApply() {
-        super('apply', [Lock, StateOptionsFull, ResourceFilter], [])
+        super('apply', [Lock, StateOptionsFull, ResourceFilter])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()

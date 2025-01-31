@@ -35,6 +35,14 @@ class TerraformUtils {
         System.getenv().findAll { k, v -> k.startsWith('AWS_') }
     }
 
+    /** Get all Google-related environmental variables.
+     *
+     * @return Map of environmental variables.
+     */
+    static Map<String, String> googleEnvironment() {
+        System.getenv().findAll { k, v -> k.startsWith('GOOGLE_') }
+    }
+
     /** Obtain the required terraform execution environmental variables
      *
      * @param terraformrc {@link TerraformRCExtension}.
@@ -72,23 +80,6 @@ class TerraformUtils {
      */
     static File terraformLogFile(String name, Provider<File> logDir) {
         new File(logDir.get(), "${name}.log").absoluteFile
-    }
-
-    /**
-     * Escape HCL variables in a form suitable for using in a variables or backend configuration file.
-     *
-     * @param vars Variables map to escape
-     * @param escapeInnerLevel Whether inner level string variables should be escaped.
-     * @return Escaped map.
-     *
-     * @sinec 0.13
-     */
-    static Map<String, String> escapeHclVars(Map<String, Object> vars, boolean escapeInnerLevel) {
-        Map<String, String> hclMap = [:]
-        for (String key in vars.keySet()) {
-            hclMap[key] = escapeOneItem(vars[key], escapeInnerLevel)
-        }
-        hclMap
     }
 
     /**
