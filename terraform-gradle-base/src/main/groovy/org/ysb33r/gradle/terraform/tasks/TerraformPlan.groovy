@@ -46,6 +46,7 @@ class TerraformPlan extends AbstractTerraformTask {
         supportsInputs()
         supportsColor()
         inputs.files(taskProvider('init'))
+        addCommandLineProvider(sourceSetVariables())
     }
 
     /** Where the plan file will be written to.
@@ -64,17 +65,6 @@ class TerraformPlan extends AbstractTerraformTask {
     @OutputFile
     File getPlanReportOutputFile() {
         new File(reportsDir.get(), "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-    }
-
-    /** This is the location of an internal tracker file used to keep state between apply & destroy cycles.
-     *
-     * @return Location of tracker file.
-     */
-    @Internal
-    Provider<File> getInternalTrackerFile() {
-        project.provider({ ->
-            new File(dataDir.get(), '.tracker')
-        } as Callable<File>)
     }
 
     /** This is the location of an variables file used to keep anything provided via the build script.

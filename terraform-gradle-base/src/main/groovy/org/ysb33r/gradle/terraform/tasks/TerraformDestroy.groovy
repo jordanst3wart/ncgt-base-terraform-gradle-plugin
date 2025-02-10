@@ -43,6 +43,7 @@ class TerraformDestroy extends AbstractTerraformTask {
         supportsColor()
         inputs.files(taskProvider('destroyPlan'))
         mustRunAfter(taskProvider('destroyPlan'))
+        addCommandLineProvider(sourceSetVariables())
     }
 
     @Option(option = 'target', description = 'List of resources to target')

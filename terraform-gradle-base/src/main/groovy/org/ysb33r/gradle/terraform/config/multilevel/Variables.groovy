@@ -35,7 +35,7 @@ import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
  */
 @CompileStatic
 class Variables implements TerraformTaskConfigExtension,
-    VariablesSpec, TerraformSourceSetEmbeddable {
+    VariablesSpec {
 
     final String name = 'variables'
 

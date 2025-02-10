@@ -28,6 +28,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 
@@ -195,6 +196,14 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     @Internal
     protected FileCollection getSourceFiles() {
         this.sourceFiles
+    }
+
+    protected Provider<List<String>> sourceSetVariables() {
+        project.provider {
+            def variables = this.sourceSet.variables
+            def configExtension = variables as TerraformTaskConfigExtension
+            configExtension.commandLineArgs
+        }
     }
 
     /**

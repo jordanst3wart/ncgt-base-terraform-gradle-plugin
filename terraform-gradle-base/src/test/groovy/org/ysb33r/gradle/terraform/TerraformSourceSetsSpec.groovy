@@ -98,8 +98,8 @@ class TerraformSourceSetsSpec extends Specification {
             terraformSourceSets {
                 main {
                     variables {
-                        file 'foo.tfvars'
-                        file 'foo2.tfvars'
+                        file( 'foo.tfvars')
+                        file( 'foo2.tfvars')
                     }
                 }
             }
