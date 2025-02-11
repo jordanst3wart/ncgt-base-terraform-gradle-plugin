@@ -55,7 +55,6 @@ class TerraformApply extends AbstractTerraformTask {
         } as Callable<File>)
         inputs.files(taskProvider('plan'))
         mustRunAfter(taskProvider('plan'))
-        addCommandLineProvider(sourceSetVariables())
     }
 
     /** Select specific resources.

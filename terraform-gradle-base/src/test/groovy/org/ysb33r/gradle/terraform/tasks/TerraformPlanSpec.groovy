@@ -19,11 +19,11 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
-class TerraformApplySpec extends Specification {
+class TerraformPlanSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    void 'commands for terraform apply'() {
+    void 'commands for terraform plan'() {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
 
@@ -41,15 +41,15 @@ class TerraformApplySpec extends Specification {
         }
 
         then:
-        def applyTask = project.tasks.named('tfMainApply').get()
-        applyTask instanceof TerraformApply
+        def task = project.tasks.named('tfMainPlan').get()
+        task instanceof TerraformPlan
         // applyTask.setTargets(["someResource"]) // bug
-        applyTask.setJson(true)
-        def spec = applyTask.buildExecSpec()
+        task.setJson(true)
+        def spec = task.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll(['-auto-approve', '-input=false', '-lock=true', '-lock-timeout=0s', '-parallelism=10', '-refresh=true', '-json'])
-        spec.getCmdArgs().size() == 8
+        spec.getCmdArgs().containsAll(['-input=false', '-lock=true', '-lock-timeout=0s', '-parallelism=10', '-refresh=true', '-json'])
+        spec.getCmdArgs().size() == 9
         def planfile = false
         spec.getCmdArgs().forEach{ it ->
             if(it.contains(".tf.plan")) {
@@ -63,7 +63,7 @@ class TerraformApplySpec extends Specification {
             }
         }
         planfile == true
-        varsFile == false
+        varsFile == true
         // print(spec.getCommandLine())
     }
 }
