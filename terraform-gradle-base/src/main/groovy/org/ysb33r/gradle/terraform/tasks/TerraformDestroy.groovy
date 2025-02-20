@@ -16,6 +16,8 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
@@ -23,6 +25,7 @@ import org.ysb33r.gradle.terraform.config.ResourceFilter
 import org.ysb33r.gradle.terraform.config.StateOptionsFull
 
 import javax.inject.Inject
+import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform destroy}.
  *  Note: DOES NOT USE A PLAN FILE
@@ -31,6 +34,12 @@ import javax.inject.Inject
  */
 @CompileStatic
 class TerraformDestroy extends AbstractTerraformTask {
+    @Internal
+    Provider<File> getVariablesFile() {
+        project.provider({ ->
+            new File(dataDir.get(), '__.tfvars')
+        } as Callable<File>)
+    }
 
     private boolean json = false
 
@@ -60,6 +69,11 @@ class TerraformDestroy extends AbstractTerraformTask {
     void setJson(boolean state) {
         this.json = state
     }
+    @Override
+    void exec() {
+        createVarsFile()
+        super.exec()
+    }
 
     /** Add specific command-line options for the command.
      * If {@code --refresh-dependencies} was specified on the command-line the {@code -upgrade} will be passed
@@ -75,6 +89,12 @@ class TerraformDestroy extends AbstractTerraformTask {
         }
 
         super.addCommandSpecificsToExecSpec(execSpec)
+        execSpec.cmdArgs("-var-file=${variablesFile.get().absolutePath}")
         execSpec
+    }
+    private void createVarsFile() {
+        variablesFile.get().withWriter { writer ->
+            tfVarProviders*.get().flatten().each { writer.println(it) }
+        }
     }
 }

@@ -33,6 +33,9 @@ class TerraformDestroySpec extends Specification {
             terraformSourceSets {
                 main {
                     srcDir = file('foo/bar')
+                    variables {
+                        file('auto.tfvars.json')
+                    }
                 }
             }
         }
@@ -45,8 +48,24 @@ class TerraformDestroySpec extends Specification {
         def spec = task.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll(['-auto-approve', '-input=false', '-lock=true', '-lock-timeout=0s', '-parallelism=10', '-refresh=true', '-json'])
-        spec.getCmdArgs().size() == 7
+        spec.getCmdArgs().containsAll([
+            '-auto-approve',
+            '-input=false',
+            '-lock=true',
+            '-lock-timeout=0s',
+            '-parallelism=10',
+            '-refresh=true',
+            '-json'
+        ])
+        spec.getCmdArgs().size() == 9
+
+        def varsFile = false
+        spec.getCmdArgs().forEach{ it ->
+            if(it.contains("auto.tfvars.json")) {
+                varsFile = true
+            }
+        }
+        varsFile == true
         // NOTE can't use a plan file
         /*
         def planfile = false
