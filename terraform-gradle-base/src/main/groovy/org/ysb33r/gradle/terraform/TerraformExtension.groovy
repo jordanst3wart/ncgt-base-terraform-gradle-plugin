@@ -84,27 +84,6 @@ class TerraformExtension extends AbstractToolExtension {
         this.env = [:]
     }
 
-    @SuppressWarnings('UnnecessaryCast')
-    static Map<String, String> defaultEnvironment() {
-        // tag::default-environment[]
-        if (OS.windows) {
-            [
-                TEMP        : System.getenv('TEMP'),
-                TMP         : System.getenv('TMP'),
-                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
-                HOMEPATH    : System.getenv('HOMEPATH'),
-                USERPROFILE : System.getenv('USERPROFILE'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ]
-        } else {
-            [
-                HOME        : System.getProperty('user.home'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ]
-        }
-        // end::default-environment[]
-    }
-
     /** Standard set of platforms.
      *
      * @return The set of provider platforms supported at the time the plugin was released.

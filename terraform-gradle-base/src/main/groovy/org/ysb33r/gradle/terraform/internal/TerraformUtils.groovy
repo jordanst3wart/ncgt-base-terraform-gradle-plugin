@@ -20,6 +20,12 @@ import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grashicorp.StringUtils
 
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+
 /** General utilities for Terraform.
  *
  * @since 0.2
@@ -54,19 +60,42 @@ class TerraformUtils {
      *
      * @since 0.10.0
      */
-    static Map terraformEnvironment(
+    static Map<String, String> terraformEnvironment(
         TerraformRCExtension terraformrc,
         String name,
         Provider<File> dataDir,
         Provider<File> logDir,
         String logLevel
     ) {
-        [
+        def environment = [
             TF_DATA_DIR         : dataDir.get().absolutePath,
             TF_CLI_CONFIG_FILE  : TerraformConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
             TF_LOG_PATH         : terraformLogFile(name, logDir).absolutePath,
             TF_LOG              : logLevel ?: '',
         ]
+        environment.putAll(defaultEnvironment())
+        return environment
+    }
+
+    @SuppressWarnings('UnnecessaryCast')
+    private static Map<String, String> defaultEnvironment() {
+        // tag::default-environment[]
+        if (OS.windows) {
+            [
+                TEMP        : System.getenv('TEMP'),
+                TMP         : System.getenv('TMP'),
+                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
+                HOMEPATH    : System.getenv('HOMEPATH'),
+                USERPROFILE : System.getenv('USERPROFILE'),
+                (OS.pathVar): System.getenv(OS.pathVar)
+            ]
+        } else {
+            [
+                HOME        : System.getProperty('user.home'),
+                (OS.pathVar): System.getenv(OS.pathVar)
+            ]
+        }
+        // end::default-environment[]
     }
 
     /**

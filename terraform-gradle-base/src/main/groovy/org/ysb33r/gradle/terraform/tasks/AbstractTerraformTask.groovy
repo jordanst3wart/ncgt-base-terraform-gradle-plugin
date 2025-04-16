@@ -108,14 +108,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         this.terraformLogLevel = state ? 'TRACE' : null
     }
 
-    /** Adds AWS environmental variables to Terraform runtime environment.
-     *
-     * @since 0.6.0
-     */
-    void useAwsEnvironment() {
-        environment awsEnvironment()
-    }
-
     @Override
     void exec() {
         if (terraformLogLevel) {

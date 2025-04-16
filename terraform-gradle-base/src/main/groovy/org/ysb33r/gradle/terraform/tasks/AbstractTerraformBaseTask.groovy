@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -27,6 +28,7 @@ import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
+import org.ysb33r.grolifant.api.v4.exec.AbstractExecSpec
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
@@ -38,8 +40,9 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
  *
  * @since 0.10
  */
+// abstract class AbstractExecWrapperTask<T extends AbstractExecSpec, E extends AbstractToolExtension> extends DefaultTask {
 @CompileStatic
-abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension> {
+abstract class AbstractTerraformBaseTask /*extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension>*/ extends DefaultTask {
 
     protected AbstractTerraformBaseTask(
         String cmd,
@@ -50,7 +53,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
         this.command = cmd
         withConfigExtensions(configExtensions)
-        environment(TerraformExtension.defaultEnvironment())
     }
 
     /** Replace current environment with new one.
@@ -59,11 +61,9 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
      *
      * @param args New environment key-value map of properties.
      */
-    @Override
+    // @Override
     void setEnvironment(Map<String, ?> args) {
-        noProjectEnvironment = true
-        super.setEnvironment(TerraformExtension.defaultEnvironment())
-        environment(args)
+        this.env.putAll((Map<String, Object>) args)
     }
 
     /** Environment for running the exe
@@ -72,16 +72,12 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
      *
      * @return Map of environmental variables that will be passed.
      */
-    @Override
+    // @Override
     Map<String, String> getEnvironment() {
-        if (noProjectEnvironment) {
-            super.environment
-        } else {
-            Map<String, String> combinedEnv = [:]
-            combinedEnv.putAll(projectTerraform.environment)
-            combinedEnv.putAll(super.environment)
-            combinedEnv
-        }
+        /*Map<String, String> combinedEnv = [:]
+        combinedEnv.putAll(projectTerraform.environment)
+        combinedEnv */
+        return this.env as Map<String, String>
     }
 
     /**
@@ -98,7 +94,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         this.tfVarProviders
     }
 
-    @Override
+    // @Override
     void exec() {
         TerraformExecSpec execSpec = buildExecSpec()
         createPluginCacheDir(terraformrc)
@@ -149,6 +145,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         this.projectOperations
     }
 
+    // this method should be collapsed into the getTerraformEnvironment method
     @Input
     abstract protected Map<String, String> getTerraformEnvironment()
 
@@ -173,7 +170,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
      *
      * @return {@link TerraformExecSpec}. Never {@code null}.
      */
-    @Override
+    // @Override
     protected TerraformExecSpec createExecSpec() {
         new TerraformExecSpec(projectOperations, projectTerraform.resolver)
     }
@@ -192,7 +189,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
      * @param execSpec Specification to be configured
      * @return Configured specification
      */
-    @Override
+    // @Override
     protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
         configureExecSpecForCmd(execSpec, terraformCommand, defaultCommandParameters)
         addCommandSpecificsToExecSpec(execSpec)
@@ -233,7 +230,7 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         execSpec
     }
 
-    @Override
+    // @Override
     @Internal
     protected TerraformExtension getToolExtension() {
         projectTerraform
@@ -263,6 +260,11 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
         }
     }
 
+    protected <T extends AbstractExecSpec> T addExecutableToExecSpec(final T execSpec) {
+        execSpec.executable(toolExtension.resolvableExecutable.executable.absolutePath)
+        return execSpec
+    }
+
     private final String command
     private final ProjectOperations projectOperations
     private final TerraformExtension projectTerraform
@@ -270,6 +272,6 @@ abstract class AbstractTerraformBaseTask extends AbstractExecWrapperTask<Terrafo
     private final List<Provider<List<String>>> commandLineProviders = []
     private final List<Provider<List<String>>> tfVarProviders = []
     private final List<String> defaultCommandParameters = []
-    private boolean noProjectEnvironment = false
     private Provider<File> stdoutCapture
+    private final Map<String, Object> env = [:]
 }

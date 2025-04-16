@@ -31,6 +31,7 @@ import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
  *
  * @since 0.10
  */
+// TODO this task should be removed
 @CompileStatic
 abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
 
@@ -91,6 +92,7 @@ abstract class AbstractTerraformCustomFmt extends AbstractTerraformBaseTask {
         execSpec
     }
 
+    // this logic is duplicated in AbstractTerraformTask
     @Override
     protected Map<String, String> getTerraformEnvironment() {
         [
