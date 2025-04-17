@@ -55,12 +55,6 @@ class VarsFilesPair {
      */
     final List<Action<VariablesSpec>> additionalVariables = []
 
-    void clear() {
-        this.vars.clear()
-        this.files.clear()
-        this.additionalVariables.clear()
-    }
-
     /**
      * Copy these settings to another instance.
      *
@@ -90,38 +84,6 @@ class VarsFilesPair {
         varList
     }
 
-    /**
-     * Gets all variables in a Terraform file format.
-     *
-     * @return List of pairings.
-     *
-     * @since 0.13
-     */
-    List<String> getVarsInTfFormat() {
-        getEscapedVars(true).collect { String k, String v ->
-            "$k = $v".toString()
-        }
-    }
-
-    /** Evaluate all provided and local variables and convert them to Terraform-compliant strings, ready to be
-     * passed to command-line.
-     *
-     * Provided variables will be evaluated first, so that any local definitions can override them.
-     *
-     * <p> Calling this will resolve all lazy-evaluated entries.
-     *
-     * @param escapeInnerLevel Whether to escape inner level string. Default is {@code false}
-     * @return Map where each key is the name of a variable. Each value is correctly formatted according to
-     *   the kind of variable.
-     *
-     * @since 0.12
-     */
-    Map<String, String> getEscapedVars(boolean escapeInnerLevel = false) {
-        Map<String, String> hclMap = escapeProvidedVars(escapeInnerLevel)
-        hclMap.putAll(escapeLocalVars(escapeInnerLevel))
-        hclMap
-    }
-
     /** List of file names containing Terraform variables.
      *
      * Filenames can contain relative paths.
@@ -144,22 +106,6 @@ class VarsFilesPair {
         "vars=${vars}, files=${files}, additionalsCount=${additionalVariables.size()}"
     }
 
-    private Map<String, String> escapeProvidedVars(boolean escapeInnerLevel) {
-        def vars = new IntermediateVariableSpec(new VarsFilesPair())
-        for (Action<VariablesSpec> additional : this.additionalVariables) {
-            additional.execute(vars)
-        }
-        vars.vfp.escapeLocalVars(escapeInnerLevel)
-    }
-
-    private Map<String, String> escapeLocalVars(boolean escapeInnerLevel) {
-        Map<String, String> hclMap = [:]
-        for (String key in this.vars.keySet()) {
-            hclMap[key] = escapeObject(this.vars[key], escapeInnerLevel)
-        }
-        hclMap
-    }
-
     private String escapeObject(Object variable, boolean escapeInnerLevel) {
         switch (variable) {
             case Provider:
@@ -170,49 +116,6 @@ class VarsFilesPair {
                 return escapedList((Iterable) variable, escapeInnerLevel)
             default:
                 return escapeOneItem(variable, escapeInnerLevel)
-        }
-    }
-
-    private static class IntermediateVariableSpec implements VariablesSpec {
-        final VarsFilesPair vfp
-
-        IntermediateVariableSpec(VarsFilesPair vfp) {
-            this.vfp = vfp
-        }
-
-        @Override
-        void var(String name, Object value) {
-            vfp.vars.put(name, value)
-        }
-
-        @Override
-        void map(Map<String, ?> map, String name) {
-            vfp.vars.put(name, map)
-        }
-
-        @Override
-        void map(String name, Provider<Map<String, ?>> mapProvider) {
-            vfp.vars.put(name, mapProvider)
-        }
-
-        @Override
-        void list(String name, Object val1, Object... vals) {
-            vfp.vars.put(name, [val1] + vals.toList())
-        }
-
-        @Override
-        void list(String name, Iterable<?> vals) {
-            vfp.vars.put(name, vals)
-        }
-
-        @Override
-        void file(Object fileName) {
-            vfp.files.add(fileName)
-        }
-
-        @Override
-        void provider(Action<VariablesSpec> additionalVariables) {
-            vfp.additionalVariables.add(additionalVariables)
         }
     }
 }

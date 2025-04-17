@@ -143,27 +143,6 @@ class Variables implements TerraformTaskConfigExtension,
         varsFilesPair.files.add fileName
     }
 
-    /** Removes all existing variables and file references.
-     *
-     */
-    void clear() {
-        varsFilesPair.clear()
-    }
-
-    /** Evaluate all provided and local variables and convert them to Terraform-compliant strings, ready to be
-     * passed to command-line.
-     *
-     * Provided variables will be evaluated first, so that any local definitions can override them.
-     *
-     * <p> Calling this will resolve all lazy-evaluated entries.
-     *
-     * @return Map where each key is the name of a variable. Each value is correctly formatted according to
-     *   the kind of variable.
-     */
-    Map<String, String> getEscapedVars() {
-        this.varsFilesPair.getEscapedVars(false)
-    }
-
     /** List of file names containing Terraform variables.
      *
      * Filenames can contain relative paths.
@@ -197,11 +176,6 @@ class Variables implements TerraformTaskConfigExtension,
         }
 
         this.varsFilesPair.commandLineArgs(root)
-    }
-
-    @Override
-    List<String> getTfVars() {
-        this.varsFilesPair.varsInTfFormat
     }
 
     @Override

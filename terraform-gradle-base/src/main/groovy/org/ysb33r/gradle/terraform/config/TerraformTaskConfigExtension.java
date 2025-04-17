@@ -51,15 +51,4 @@ public interface TerraformTaskConfigExtension {
      * @return List of arguments to be added. Can be empty, but never {@code null}
      */
     List<String> getCommandLineArgs();
-
-    /**
-     * Returns the list of Terraform variables in the form name=value
-     *
-     * @return Terraform variables
-     *
-     * @since 0.13
-     */
-    default List<String> getTfVars() {
-        return Collections.EMPTY_LIST;
-    }
 }
