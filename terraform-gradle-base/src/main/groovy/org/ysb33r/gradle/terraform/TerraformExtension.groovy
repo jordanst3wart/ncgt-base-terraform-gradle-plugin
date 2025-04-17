@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
@@ -73,12 +74,13 @@ class TerraformExtension extends AbstractToolExtension {
      */
     TerraformExtension(Project project) {
         super(project)
-        executableDetails = [:]
         if (Downloader.downloadSupported) {
             addVersionResolver(projectOperations)
             executable([version: TERRAFORM_DEFAULT])
         } else {
-            executable searchPath()
+            throw new TerraformExecutionException(
+                "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
+            )
         }
         this.env = [:]
     }
@@ -96,16 +98,6 @@ class TerraformExtension extends AbstractToolExtension {
     @Override
     void executable(Map<String, ?> opts) {
         super.executable(opts)
-        executableDetails.clear()
-        executableDetails.putAll(opts)
-    }
-
-    /** Use this to configure a system path search for {@code Terraform}.
-     *
-     * @return Returns a special option to be used in {@link #executable}
-     */
-    static Map<String, Object> searchPath() {
-        SEARCH_PATH
     }
 
     /** Replace current environment with new one.
@@ -174,8 +166,6 @@ class TerraformExtension extends AbstractToolExtension {
         )
     }
 
-    @SuppressWarnings('UnnecessaryCast')
-    private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
     private static final Set<String> PLATFORMS = [
         'darwin_amd64', 'darwin_arm64',
         'windows_amd64', 'windows_386',
@@ -184,6 +174,5 @@ class TerraformExtension extends AbstractToolExtension {
     ].toSet()
 
     private final Map<String, Object> env
-    private final Map<String, Object> executableDetails
 }
 
