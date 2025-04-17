@@ -35,17 +35,6 @@ public interface TerraformTaskConfigExtension {
     String getName();
 
     /**
-     * Returns a list of closures which can be used to determine an input property for the purposes of
-     * up to date calculations.
-     * <p>
-     * Closures should return objects that are serializable.
-     *
-     * @return Property closures. Can be empty (but never {@code null}) which means that the extension holds no
-     * properties that should be used fot up to date calculations.
-     */
-    List<Closure> getInputProperties();
-
-    /**
      * Returns the list of Terraform command-line arguments.
      *
      * @return List of arguments to be added. Can be empty, but never {@code null}

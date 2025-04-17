@@ -249,9 +249,6 @@ abstract class AbstractTerraformBaseTask extends DefaultTask {
         for (it in configExtensions) {
             TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension) project.objects.newInstance(it)
             extensions.add(cex.name, cex)
-            cex.inputProperties.eachWithIndex { Closure eval, Integer idx ->
-                inputs.property "config-extension-${cex.name}-${idx}", eval
-            }
             commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
         }
     }

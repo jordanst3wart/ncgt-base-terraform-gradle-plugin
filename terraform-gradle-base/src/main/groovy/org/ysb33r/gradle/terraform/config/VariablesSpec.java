@@ -47,17 +47,7 @@ public interface VariablesSpec {
      *             Anything resolvable via {@link org.ysb33r.grolifant.api.v4.MapUtils#stringizeValues}
      *             is accepted.
      */
-    void map(Map<String, ?> map, final String name);
-
-    /**
-     * Adds a map provider as a variable.
-     *
-     * <p> This will replace any previous map by the same name.
-     *
-     * @param name        Name of map
-     * @param mapProvider Provider to map
-     */
-    void map(final String name, Provider<Map<String, ?>> mapProvider);
+    void map(final String name, Map<String, ?> map);
 
     /**
      * Adds a list as a variable.
@@ -90,12 +80,4 @@ public interface VariablesSpec {
      *                 the appropriate {@link TerraformSourceDirectorySet}.
      */
     void file(final Object fileName);
-
-    /**
-     * Adds additional actions which can add variables. These will be called first when evaluating a final escaped
-     * variable map.
-     *
-     * @param additionalVariables Action that can be called to provide additional variables.
-     */
-    void provider(Action<VariablesSpec> additionalVariables);
 }

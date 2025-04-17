@@ -32,11 +32,6 @@ class Lock implements TerraformTaskConfigExtension {
     Integer timeout = 0
 
     @Override
-    List<Closure> getInputProperties() {
-        []
-    }
-
-    @Override
     @SuppressWarnings('UnnecessaryCast')
     List<String> getCommandLineArgs() {
         ["-lock=${enabled}", "-lock-timeout=${timeout}s"] as List<String>

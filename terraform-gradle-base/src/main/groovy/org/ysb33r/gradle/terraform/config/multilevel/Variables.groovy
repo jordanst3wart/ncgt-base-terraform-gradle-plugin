@@ -16,14 +16,9 @@
 package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Action
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
-import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
-
-import javax.inject.Inject
 import java.nio.file.Path
 
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
@@ -34,8 +29,7 @@ import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
  * @since 0.1
  */
 @CompileStatic
-class Variables implements TerraformTaskConfigExtension,
-    VariablesSpec {
+class Variables implements VariablesSpec {
 
     final String name = 'variables'
 
@@ -46,18 +40,6 @@ class Variables implements TerraformTaskConfigExtension,
      * @since 0.2
      */
     Variables(Provider<File> rootFileResolver) {
-        this.rootDirResolver = rootFileResolver
-    }
-
-    /** Constructs instance from definition of files and variables
-     *
-     * @param vfp Definition of files and variables
-     * @param rootFileResolver Root file resolver for file that are referenced.
-     *
-     * @since 0.2
-     */
-    Variables(VarsFilesPair vfp, Provider<File> rootFileResolver) {
-        vfp.copyTo(this.varsFilesPair)
         this.rootDirResolver = rootFileResolver
     }
 
@@ -86,21 +68,8 @@ class Variables implements TerraformTaskConfigExtension,
      * is accepted.
      */
     @Override
-    void map(Map<String, ?> map, final String name) {
+    void map(final String name, Map<String, ?> map) {
         varsFilesPair.vars.put(name, map)
-    }
-
-    /**
-     * Adds a map provider as a variable.
-     *
-     * <p> This will replace any previous map by the same name.
-     *
-     * @param name Name of map
-     * @param mapProvider Provider to map
-     */
-    @Override
-    void map(String name, Provider<Map<String, ?>> mapProvider) {
-        varsFilesPair.vars.put(name, mapProvider)
     }
 
     /** Adds a list as a variable.
@@ -153,20 +122,6 @@ class Variables implements TerraformTaskConfigExtension,
         this.varsFilesPair.fileNames
     }
 
-    @Override
-    @SuppressWarnings('UnnecessaryCast')
-    List<Closure> getInputProperties() {
-        [
-            { Map m ->
-                stringizeValues(m)
-            }.curry(this.varsFilesPair.vars),
-            { ->
-                fileNames
-            }
-        ] as List<Closure>
-    }
-
-    @Override
     List<String> getCommandLineArgs() {
         Path root = rootDirResolver.orNull?.toPath()
         if (root == null) {
@@ -193,22 +148,6 @@ class Variables implements TerraformTaskConfigExtension,
         this.varsFilesPair
     }
 
-    /**
-     * Adds additional actions which can add variables. These will be called first when evaluating a final escaped
-     * variable map.
-     *
-     * @param additionalVariables Action that can be called to provide additional variables.
-     *
-     * @since 0.12
-     */
-    @Override
-    void provider(Action<VariablesSpec> additionalVariables) {
-        this.varsFilesPair.additionalVariables.add(additionalVariables)
-    }
-
     private final VarsFilesPair varsFilesPair = new VarsFilesPair()
     private final Provider<File> rootDirResolver
-
-    @Inject
-    Project project
 }

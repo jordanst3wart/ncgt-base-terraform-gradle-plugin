@@ -32,12 +32,6 @@ class TerraformSourceSetsSpec extends Specification {
     void 'Variable definitions in source set should not create new source sets'() {
         setup:
         project.apply plugin: 'org.ysb33r.terraform'
-        def varAction = new Action<VariablesSpec>() {
-            @Override
-            void execute(VariablesSpec vs) {
-                vs.var 'foo2', 'bar2'
-            }
-        }
 
         when:
         project.allprojects {
@@ -50,8 +44,6 @@ class TerraformSourceSetsSpec extends Specification {
                     variables {
                         var 'foo1', myStr1
                     }
-
-                    variables varAction
                 }
             }
         }
@@ -62,7 +54,36 @@ class TerraformSourceSetsSpec extends Specification {
         then:
         verifyAll {
             allVars.vars.foo1 == 'bar1'
-            allVars.vars.foo2 == 'bar2'
+        }
+    }
+
+    @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/1')
+    void 'test different variables supported'() {
+        setup:
+        project.apply plugin: 'org.ysb33r.terraform'
+
+        when:
+        Map<String, ?> myMap = [name: 'John', age: 30, city: 'New York']
+        project.allprojects {
+            terraformSourceSets {
+                main {
+                    variables {
+                        var 'abc', 'abcde'
+                        // TODO support
+                        //map 'someMap' myMap
+                        //list 'list' listOf('bar1', 'bar2')
+                    }
+                }
+            }
+        }
+
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
+        def allVars = ((Variables) tss.getByName('main').variables).allVars
+
+        then:
+        verifyAll {
+            allVars.vars.abc == 'abcde'
+            //allVars.vars.someMap.name == 'John'
         }
     }
 
