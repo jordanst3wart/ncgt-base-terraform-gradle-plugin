@@ -29,7 +29,6 @@ import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractExecSpec
-import org.ysb33r.grolifant.api.v4.exec.AbstractExecWrapperTask
 
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 
@@ -42,7 +41,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
  */
 // abstract class AbstractExecWrapperTask<T extends AbstractExecSpec, E extends AbstractToolExtension> extends DefaultTask {
 @CompileStatic
-abstract class AbstractTerraformBaseTask /*extends AbstractExecWrapperTask<TerraformExecSpec, TerraformExtension>*/ extends DefaultTask {
+abstract class AbstractTerraformBaseTask extends DefaultTask {
 
     protected AbstractTerraformBaseTask(
         String cmd,
@@ -74,9 +73,6 @@ abstract class AbstractTerraformBaseTask /*extends AbstractExecWrapperTask<Terra
      */
     // @Override
     Map<String, String> getEnvironment() {
-        /*Map<String, String> combinedEnv = [:]
-        combinedEnv.putAll(projectTerraform.environment)
-        combinedEnv */
         return this.env as Map<String, String>
     }
 
@@ -260,7 +256,7 @@ abstract class AbstractTerraformBaseTask /*extends AbstractExecWrapperTask<Terra
         }
     }
 
-    protected <T extends AbstractExecSpec> T addExecutableToExecSpec(final T execSpec) {
+    protected TerraformExecSpec addExecutableToExecSpec(final TerraformExecSpec execSpec) {
         execSpec.executable(toolExtension.resolvableExecutable.executable.absolutePath)
         return execSpec
     }

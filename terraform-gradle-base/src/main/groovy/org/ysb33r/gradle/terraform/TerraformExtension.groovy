@@ -26,7 +26,6 @@ import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironment
 
