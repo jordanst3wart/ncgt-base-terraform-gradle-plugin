@@ -26,7 +26,11 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
+import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable
+import org.ysb33r.grolifant.api.v4.exec.ResolvableExecutable
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
+import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
+
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironment
 
@@ -56,7 +60,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironm
  * @since 0.1
  */
 @CompileStatic
-class TerraformExtension extends AbstractToolExtension {
+class TerraformExtension /*extends AbstractToolExtension*/ {
 
     /** The standard extension name.
      *
@@ -73,7 +77,9 @@ class TerraformExtension extends AbstractToolExtension {
      * @param project Project this extension is associated with.
      */
     TerraformExtension(Project project) {
-        super(project)
+        this.project = project
+        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
+        this.registry = new ResolverFactoryRegistry(project)
         if (Downloader.downloadSupported) {
             addVersionResolver(projectOperations)
             executable([version: TERRAFORM_DEFAULT])
@@ -95,9 +101,21 @@ class TerraformExtension extends AbstractToolExtension {
         PLATFORMS.asImmutable()
     }
 
-    @Override
+    // @Override
+    ExternalExecutable getResolver() {
+        this.registry
+    }
+
+    // @Override
+    protected ResolverFactoryRegistry getResolverFactoryRegistry() {
+        // should not be null
+        this.registry
+    }
+
+    // @Override
     void executable(Map<String, ?> opts) {
-        super.executable(opts)
+        this.resolvableExecutable = resolver.getResolvableExecutable((Map<String, Object>) opts)
+        //super.executable(opts)
     }
 
     /** Replace current environment with new one.
@@ -173,6 +191,11 @@ class TerraformExtension extends AbstractToolExtension {
         'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
     ].toSet()
 
+
     private final Map<String, Object> env
+    private final ResolverFactoryRegistry registry
+    private ResolvableExecutable resolvableExecutable
+    private final ProjectOperations projectOperations
+    private final Project project
 }
 
