@@ -60,7 +60,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironm
  * @since 0.1
  */
 @CompileStatic
-class TerraformExtension /*extends AbstractToolExtension*/ {
+class TerraformExtension {
 
     /** The standard extension name.
      *
@@ -72,12 +72,15 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
      */
     public static final String TERRAFORM_DEFAULT = '1.8.0'
 
+    public ResolvableExecutable resolvableExecutable
+
     /** Constructs a new extension which is attached to the provided project.
      *
      * @param project Project this extension is associated with.
      */
     TerraformExtension(Project project) {
         this.project = project
+        this.env = [:]
         this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.registry = new ResolverFactoryRegistry(project)
         if (Downloader.downloadSupported) {
@@ -88,7 +91,6 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
                 "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
             )
         }
-        this.env = [:]
     }
 
     /** Standard set of platforms.
@@ -101,21 +103,12 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
         PLATFORMS.asImmutable()
     }
 
-    // @Override
     ExternalExecutable getResolver() {
         this.registry
     }
 
-    // @Override
-    protected ResolverFactoryRegistry getResolverFactoryRegistry() {
-        // should not be null
-        this.registry
-    }
-
-    // @Override
     void executable(Map<String, ?> opts) {
-        this.resolvableExecutable = resolver.getResolvableExecutable((Map<String, Object>) opts)
-        //super.executable(opts)
+        this.resolvableExecutable = this.registry.getResolvableExecutable(opts)
     }
 
     /** Replace current environment with new one.
@@ -125,7 +118,7 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
      * @param args New environment key-value map of properties.
      */
     void setEnvironment(Map<String, ?> args) {
-        this.env.clear()
+        this.env.clear() // TODO might not need to clear
         this.env.putAll((Map<String, Object>) args)
     }
 
@@ -179,7 +172,7 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
 
         DownloadedExecutable resolver = { DownloaderBinary installer -> installer.terraformExecutablePath() }
 
-        resolverFactoryRegistry.registerExecutableKeyActions(
+        this.registry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
         )
     }
@@ -194,7 +187,6 @@ class TerraformExtension /*extends AbstractToolExtension*/ {
 
     private final Map<String, Object> env
     private final ResolverFactoryRegistry registry
-    private ResolvableExecutable resolvableExecutable
     private final ProjectOperations projectOperations
     private final Project project
 }
