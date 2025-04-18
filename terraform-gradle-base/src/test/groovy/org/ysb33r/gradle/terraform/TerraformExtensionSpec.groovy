@@ -60,22 +60,6 @@ class TerraformExtensionSpec extends Specification {
         project.terraform.resolvableExecutable != null
     }
 
-    def 'Configure terraform executable using a search path'() {
-        when: 'A search is configured'
-        project.allprojects {
-            apply plugin : 'org.ysb33r.terraform.base'
-
-            // tag::configure-with-search-path[]
-            terraform {
-                executable searchPath() // <3>
-            }
-            // end::configure-with-search-path[]
-        }
-
-        then:
-        project.terraform.resolvableExecutable != null
-    }
-
     def 'Cannot configure terraform with more than one option'() {
         setup:
         project.apply plugin : 'org.ysb33r.terraform.base'

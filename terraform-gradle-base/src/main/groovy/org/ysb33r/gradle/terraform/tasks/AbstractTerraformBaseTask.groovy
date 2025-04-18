@@ -39,7 +39,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
  *
  * @since 0.10
  */
-// abstract class AbstractExecWrapperTask<T extends AbstractExecSpec, E extends AbstractToolExtension> extends DefaultTask {
 @CompileStatic
 abstract class AbstractTerraformBaseTask extends DefaultTask {
 
@@ -73,7 +72,7 @@ abstract class AbstractTerraformBaseTask extends DefaultTask {
      */
     // @Override
     Map<String, String> getEnvironment() {
-        return this.env as Map<String, String>
+        this.env as Map<String, String>
     }
 
     /**

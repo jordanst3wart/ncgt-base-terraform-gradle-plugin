@@ -23,7 +23,6 @@ import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
 import org.ysb33r.grolifant.api.core.ProjectOperations
-import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
 import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable

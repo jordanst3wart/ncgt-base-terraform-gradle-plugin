@@ -19,11 +19,6 @@ import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.grashicorp.StringUtils
-
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 
 /** General utilities for Terraform.
@@ -74,7 +69,7 @@ class TerraformUtils {
             TF_LOG              : logLevel ?: '',
         ]
         environment.putAll(defaultEnvironment())
-        return environment
+        environment
     }
 
     @SuppressWarnings('UnnecessaryCast')
