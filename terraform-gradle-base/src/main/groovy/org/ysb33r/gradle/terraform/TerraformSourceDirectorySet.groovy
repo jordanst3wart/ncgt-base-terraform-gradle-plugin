@@ -15,31 +15,20 @@
  */
 package org.ysb33r.gradle.terraform
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.TypeChecked
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.file.FileTreeElement
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
-import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariablesSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import org.ysb33r.gradle.terraform.internal.output.OutputVariablesCache
-import org.ysb33r.gradle.terraform.tasks.TerraformOutput
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import javax.inject.Inject
-import java.util.concurrent.Callable
-import java.util.function.Function
-
-import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.OUTPUT
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 
 /** Describes a Terraform source set
  *
@@ -70,24 +59,20 @@ class TerraformSourceDirectorySet implements PatternFilterable {
     @Inject
     @SuppressWarnings(['ParameterCount', 'MethodSize'])
     TerraformSourceDirectorySet(
-        Project tempProjectReference,
-        ObjectFactory objects,
-        TaskContainer tasks,
-        TerraformRCExtension terraformRc,
+        Project project,
         String name,
         String displayName
     ) {
-        this.projectOperations = ProjectOperations.create(tempProjectReference)
-        this.objectFactory = tempProjectReference.objects
+        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.name = name
         this.displayName = displayName
         this.patternSet.include('**/*.tf', '**/*.tfvars', '*.tfstate')
 
-        sourceDir = objects.property(File)
-        dataDir = objects.property(File)
-        logDir = objects.property(File)
-        reportsDir = objects.property(File)
-        backendText = objects.property(String)
+        sourceDir = project.objects.property(File)
+        dataDir = project.objects.property(File)
+        logDir = project.objects.property(File)
+        reportsDir = project.objects.property(File)
+        backendText = project.objects.property(String)
 
         projectOperations.fsOperations.updateFileProperty(
             sourceDir,
@@ -109,22 +94,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
             projectOperations.buildDirDescendant("reports/tf/${name}")
         )
 
-        outputVariablesProvider = createOutputVariablesProvider(
-            terraformRc,
-            projectOperations,
-            objectFactory,
-            tasks,
-            name
-        )
-
         vars = new Variables(this.sourceDir)
-
-        this.closureCleaner = { Project project, Object varsContainer, Closure cfg ->
-            Closure cleaned = ((Closure) cfg.clone()).dehydrate().rehydrate(varsContainer, project, project)
-            cleaned.resolveStrategy = Closure.DELEGATE_FIRST
-            cleaned
-        }.curry(tempProjectReference, this.vars) as Function<Closure, Closure>
-
         this.secondarySources = []
         this.secondarySourcesProvider = projectOperations.provider({ List<Object> files ->
             projectOperations.fsOperations.files(files).toList()
@@ -247,17 +217,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Sets Terraform variables that are applicable to this source set.
      *
-     * @param cfg Closure that configures a {@link VariablesSpec}.
-     *
-     * @since 0.2
-     */
-    void variables(@DelegatesTo(VariablesSpec) Closure cfg) {
-        Closure runner = closureCleaner.apply(cfg)
-        runner()
-    }
-
-    /** Sets Terraform variables that are applicable to this source set.
-     *
      * @param cfg Configurating action.
      *
      * @since 0.2
@@ -338,56 +297,14 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         patternSet.include(closure)
     }
 
-    @SuppressWarnings('ParameterCount')
-    private static Provider<Map<String, ?>> createOutputVariablesProvider(
-        TerraformRCExtension terraformrc,
-        ProjectOperations projectOperations,
-        ObjectFactory objectFactory1,
-        TaskContainer tasks,
-        String sourceSetName
-    ) {
-        String outputTaskName = taskName(sourceSetName, OUTPUT.command)
-
-        def outputTaskProvider = projectOperations.provider {
-            (TerraformOutput) tasks.named(outputTaskName)
-        }
-
-        def cache = new OutputVariablesCache(
-            projectOperations,
-            terraformrc,
-            outputTaskProvider
-        )
-
-        createProperty(
-            objectFactory1,
-            projectOperations.provider({ ->
-                cache.map
-            } as Callable<Map<String, ?>>)) as Provider<Map<String, ?>>
-    }
-
-    @CompileDynamic
-    @TypeChecked
-    private static Provider<Map<String, Object>> createProperty(
-        ObjectFactory objectFactory1,
-        Provider<Map<String, ?>> lambda
-    ) {
-        def prop = objectFactory1.mapProperty(String, Object)
-        prop.disallowUnsafeRead()
-        prop.set(lambda)
-        prop
-    }
-
     private final Property<String> backendText
     private final Property<File> sourceDir
     private final Property<File> dataDir
     private final Property<File> logDir
     private final Property<File> reportsDir
     private final ProjectOperations projectOperations
-    private final ObjectFactory objectFactory
     private final Variables vars
-    private final Provider<Map<String, ?>> outputVariablesProvider
     private final PatternSet patternSet = new PatternSet()
-    private final Function<Closure, Closure> closureCleaner
     private final List<Object> secondarySources
     private final Provider<List<File>> secondarySourcesProvider
 }

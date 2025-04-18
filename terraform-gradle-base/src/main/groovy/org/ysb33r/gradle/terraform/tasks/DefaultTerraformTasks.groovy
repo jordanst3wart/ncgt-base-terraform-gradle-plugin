@@ -27,19 +27,12 @@ import groovy.transform.CompileStatic
 @SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
     INIT('init', TerraformInit, 'Initialises Terraform'),
-    IMPORT('import', TerraformImport, 'Imports a resource'),
     SHOW('showState', TerraformShowState, 'Generates a report on the current state'),
-    OUTPUT('output', TerraformOutput, 'Generates a file of output variables'),
     PLAN('plan', TerraformPlan, 'Generates Terraform execution plan'),
     APPLY('apply', TerraformApply, 'Builds or changes infrastructure'),
     DESTROY_PLAN('destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),
     DESTROY('destroy', TerraformDestroy, 'Destroys infrastructure'),
     VALIDATE('validate', TerraformValidate, 'Validates the Terraform configuration'),
-    STATE_MV('stateMv', TerraformStateMv, 'Moves a resource from one area to another'),
-    STATE_PUSH('statePush', TerraformStatePush, 'Pushes local state file to remote'),
-    STATE_PULL('statePull', TerraformStatePull, 'Pulls remote state local to local file'),
-    STATE_RM('stateRm', TerraformStateRm, 'Removes a resource from state'),
-    UNTAINT('untaint', TerraformUntaint, 'Remove tainted status from resource'),
     FMT_CHECK('fmtCheck', TerraformFmtCheck, 'Checks whether files are correctly formatted'),
     FMT_APPLY('fmtApply', TerraformFmtApply, 'Formats source files in source set')
 

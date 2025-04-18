@@ -25,8 +25,6 @@ import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
 import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.grolifant.api.core.ProjectOperations
-
-import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCExtension
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
 
@@ -61,21 +59,16 @@ class TerraformBasePlugin implements Plugin<Project> {
     private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(
         Project project
     ) {
-        def objectFactory = project.objects
-        def terraformRc = locateTerraformRCExtension(project)
         NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
-            objectFactory.newInstance(
+            project.objects.newInstance(
                 TerraformSourceDirectorySet,
                 project,
-                project.objects,
-                project.tasks,
-                terraformRc,
                 name,
                 sourceSetDisplayName(name)
             )
         }
         NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer =
-            objectFactory.domainObjectContainer(TerraformSourceDirectorySet, factory)
+            project.objects.domainObjectContainer(TerraformSourceDirectorySet, factory)
         project.extensions.add(TERRAFORM_SOURCESETS, sourceSetContainer)
         sourceSetContainer
     }
