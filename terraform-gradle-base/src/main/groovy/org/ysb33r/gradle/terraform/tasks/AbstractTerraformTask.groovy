@@ -118,12 +118,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
         super.exec()
     }
 
-    @Override
-    protected TerraformExecSpec buildExecSpec() {
-        TerraformExecSpec spec = super.buildExecSpec()
-        spec
-    }
-
     /** Command-line parameter for no colour.
      *
      */

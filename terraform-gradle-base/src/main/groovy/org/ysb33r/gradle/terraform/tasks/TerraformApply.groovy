@@ -49,7 +49,6 @@ class TerraformApply extends AbstractTerraformTask {
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        planFile = getPlanFile()
         planFile = project.provider({ ->
             new File(dataDir.get(), "${sourceSet.name}.tf.plan")
         } as Callable<File>)
@@ -87,12 +86,6 @@ class TerraformApply extends AbstractTerraformTask {
     @Option(option = 'json', description = 'Output progress in JSON')
     void setJson(boolean state) {
         this.json = state
-    }
-
-    Provider<File> getPlanFile() {
-        project.provider({ ->
-            new File(dataDir.get(), "${sourceSet.name}.tf.plan")
-        } as Callable<File>)
     }
 
     @Override
