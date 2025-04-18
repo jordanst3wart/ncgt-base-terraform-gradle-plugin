@@ -24,8 +24,6 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtApply
-import org.ysb33r.gradle.terraform.tasks.TerraformCustomFmtCheck
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
@@ -41,30 +39,16 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
-    public static final String CUSTOM_FMT_CHECK = 'tfFmtCheckCustomDirectories'
-    public static final String CUSTOM_FMT_APPLY = 'tfFmtApplyCustomDirectories'
     public static final String FORMAT_ALL = 'tfFormatAll'
 
     void apply(Project project) {
         project.apply plugin: TerraformBasePlugin
-
-        def checkProvider = project.tasks.register(CUSTOM_FMT_CHECK, TerraformCustomFmtCheck)
-        checkProvider.configure {
-            it.group = TERRAFORM_TASK_GROUP
-        }
-        def fmtApplyProvider = project.tasks.register(CUSTOM_FMT_APPLY, TerraformCustomFmtApply, checkProvider)
-        fmtApplyProvider.configure {
-            it.group = TERRAFORM_TASK_GROUP
-        }
         def formatAll = project.tasks.register(FORMAT_ALL)
         formatAll.configure {
             it.group = TERRAFORM_TASK_GROUP
             it.description = 'Formats all terraform source'
-            it.dependsOn fmtApplyProvider
-            it.dependsOn()
         }
         terraformSourceSetConventionTaskRules(project, formatAll)
-
         configureCheck(project)
     }
 
@@ -73,7 +57,6 @@ class TerraformPlugin implements Plugin<Project> {
         def check = project.tasks.named(CHECK_TASK_NAME)
         check.configure {
             it.dependsOn(project.tasks.withType(TerraformFmtCheck))
-            it.dependsOn(project.tasks.withType(TerraformCustomFmtCheck))
         }
     }
 

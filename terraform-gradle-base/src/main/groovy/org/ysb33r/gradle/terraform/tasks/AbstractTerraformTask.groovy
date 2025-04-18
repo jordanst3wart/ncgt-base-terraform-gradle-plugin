@@ -168,7 +168,6 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
 
         this.sourceFiles = project.fileTree(sourceDirProvider)
         this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate', '.terraform.tfstate.lock*')
-        this.projectName = project.name
 
         projectOperations.tasks.ignoreEmptyDirectories(inputs, this.sourceFiles)
     }
@@ -294,5 +293,4 @@ abstract class AbstractTerraformTask extends AbstractTerraformBaseTask {
     private final Provider<File> reportsDirProvider
     private final ConfigurableFileTree sourceFiles
     private final Provider<List<File>> secondarySources
-    private final String projectName
 }
