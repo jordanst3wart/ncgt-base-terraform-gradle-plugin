@@ -26,12 +26,6 @@ import org.ysb33r.gradle.terraform.internal.Transform
 class ResourceFilter implements TerraformTaskConfigExtension {
     final String name = 'resources'
 
-    @Override
-    @SuppressWarnings('UnnecessaryCast')
-    List<Closure> getInputProperties() {
-        [{ -> this.targets }] as List<Closure>
-    }
-
     void setTargets(Iterable<String> targets) {
         this.targets.clear()
         this.targets.addAll(targets)

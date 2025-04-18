@@ -28,11 +28,6 @@ class StateOptionsConcurrency implements TerraformTaskConfigExtension {
     Integer maxParallel = 10
 
     @Override
-    List<Closure> getInputProperties() {
-        []
-    }
-
-    @Override
     List<String> getCommandLineArgs() {
         [
             "-parallelism=${maxParallel}".toString(),

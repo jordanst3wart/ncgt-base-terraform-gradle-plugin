@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
@@ -25,8 +26,11 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.v4.exec.AbstractToolExtension
 import org.ysb33r.grolifant.api.v4.exec.DownloadedExecutable
 import org.ysb33r.grolifant.api.v4.exec.DownloaderFactory
+import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable
+import org.ysb33r.grolifant.api.v4.exec.ResolvableExecutable
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
-import static org.ysb33r.gradle.terraform.internal.Downloader.OS
+import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
+
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
 import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironment
 
@@ -56,7 +60,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironm
  * @since 0.1
  */
 @CompileStatic
-class TerraformExtension extends AbstractToolExtension {
+class TerraformExtension {
 
     /** The standard extension name.
      *
@@ -68,41 +72,25 @@ class TerraformExtension extends AbstractToolExtension {
      */
     public static final String TERRAFORM_DEFAULT = '1.8.0'
 
+    public ResolvableExecutable resolvableExecutable
+
     /** Constructs a new extension which is attached to the provided project.
      *
      * @param project Project this extension is associated with.
      */
     TerraformExtension(Project project) {
-        super(project)
-        executableDetails = [:]
+        this.project = project
+        this.env = [:]
+        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
+        this.registry = new ResolverFactoryRegistry(project)
         if (Downloader.downloadSupported) {
             addVersionResolver(projectOperations)
             executable([version: TERRAFORM_DEFAULT])
         } else {
-            executable searchPath()
+            throw new TerraformExecutionException(
+                "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
+            )
         }
-        this.env = [:]
-    }
-
-    @SuppressWarnings('UnnecessaryCast')
-    static Map<String, String> defaultEnvironment() {
-        // tag::default-environment[]
-        if (OS.windows) {
-            [
-                TEMP        : System.getenv('TEMP'),
-                TMP         : System.getenv('TMP'),
-                HOMEDRIVE   : System.getenv('HOMEDRIVE'),
-                HOMEPATH    : System.getenv('HOMEPATH'),
-                USERPROFILE : System.getenv('USERPROFILE'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ]
-        } else {
-            [
-                HOME        : System.getProperty('user.home'),
-                (OS.pathVar): System.getenv(OS.pathVar)
-            ]
-        }
-        // end::default-environment[]
     }
 
     /** Standard set of platforms.
@@ -115,19 +103,12 @@ class TerraformExtension extends AbstractToolExtension {
         PLATFORMS.asImmutable()
     }
 
-    @Override
-    void executable(Map<String, ?> opts) {
-        super.executable(opts)
-        executableDetails.clear()
-        executableDetails.putAll(opts)
+    ExternalExecutable getResolver() {
+        this.registry
     }
 
-    /** Use this to configure a system path search for {@code Terraform}.
-     *
-     * @return Returns a special option to be used in {@link #executable}
-     */
-    static Map<String, Object> searchPath() {
-        SEARCH_PATH
+    void executable(Map<String, ?> opts) {
+        this.resolvableExecutable = this.registry.getResolvableExecutable(opts)
     }
 
     /** Replace current environment with new one.
@@ -137,7 +118,7 @@ class TerraformExtension extends AbstractToolExtension {
      * @param args New environment key-value map of properties.
      */
     void setEnvironment(Map<String, ?> args) {
-        this.env.clear()
+        this.env.clear() // TODO might not need to clear
         this.env.putAll((Map<String, Object>) args)
     }
 
@@ -191,13 +172,11 @@ class TerraformExtension extends AbstractToolExtension {
 
         DownloadedExecutable resolver = { DownloaderBinary installer -> installer.terraformExecutablePath() }
 
-        resolverFactoryRegistry.registerExecutableKeyActions(
+        this.registry.registerExecutableKeyActions(
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
         )
     }
 
-    @SuppressWarnings('UnnecessaryCast')
-    private static final Map<String, Object> SEARCH_PATH = [search: NAME] as Map<String, Object>
     private static final Set<String> PLATFORMS = [
         'darwin_amd64', 'darwin_arm64',
         'windows_amd64', 'windows_386',
@@ -205,7 +184,10 @@ class TerraformExtension extends AbstractToolExtension {
         'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
     ].toSet()
 
+
     private final Map<String, Object> env
-    private final Map<String, Object> executableDetails
+    private final ResolverFactoryRegistry registry
+    private final ProjectOperations projectOperations
+    private final Project project
 }
 
