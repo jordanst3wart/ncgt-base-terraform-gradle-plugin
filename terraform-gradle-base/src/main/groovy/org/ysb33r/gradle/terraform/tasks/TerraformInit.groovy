@@ -44,8 +44,6 @@ import static java.nio.file.Files.readSymbolicLink
 @CompileStatic
 class TerraformInit extends AbstractTerraformTask {
 
-    // TODO: Implement -from-module=MODULE-SOURCE as Gradle @Option
-
     /**
      * Skip initialisation of child modules.
      */
@@ -80,9 +78,14 @@ class TerraformInit extends AbstractTerraformTask {
         supportsColor()
 
         this.backendConfig = project.objects.property(File)
-        this.pluginDirectory = dataDir.map { new File(it, PLUGIN_SUBDIR) }
-        this.terraformStateFile = dataDir.map { new File(it, 'terraform.tfstate') }
-        this.terraformInitStateFile = dataDir.map { new File(it, '.init.txt') }
+        // TODO I think this is wrong it should use the cached plugins...
+        // might not need the second map
+        this.pluginDirectory = sourceSet.map{ sourceSet ->
+            sourceSet.dataDir.map { new File(it, PLUGIN_SUBDIR) }} as Provider<File>
+        this.terraformStateFile = sourceSet.map{ sourceSet ->
+            sourceSet.dataDir.map { new File(it, 'terraform.tfstate') } } as Provider<File>
+        this.terraformInitStateFile = sourceSet.map{sourceSet ->
+            sourceSet.dataDir.map { new File(it as File, '.init.txt') }} as Provider<File>
         this.useBackendConfig = project.objects.property(Boolean)
     }
 
@@ -151,7 +154,8 @@ class TerraformInit extends AbstractTerraformTask {
     }
 
     private void removeDanglingSymlinks() {
-        Path pluginDir = new File(dataDir.get(), PLUGIN_SUBDIR).toPath()
+        // TODO check this function... I don't know what it does
+        Path pluginDir = new File(sourceSet.get().dataDir.get(), PLUGIN_SUBDIR).toPath()
         Files.walkFileTree(
             pluginDir,
             new FileVisitor<Path>() {

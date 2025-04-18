@@ -50,7 +50,7 @@ class TerraformApply extends AbstractTerraformTask {
         supportsInputs()
         supportsColor()
         planFile = project.provider({ ->
-            new File(dataDir.get(), "${sourceSet.name}.tf.plan")
+            new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
         } as Callable<File>)
         inputs.files(taskProvider('plan'))
         mustRunAfter(taskProvider('plan'))

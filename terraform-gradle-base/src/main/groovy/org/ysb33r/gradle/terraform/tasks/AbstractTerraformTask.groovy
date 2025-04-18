@@ -19,10 +19,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Transformer
-import org.gradle.api.file.ConfigurableFileTree
-import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
@@ -54,43 +51,24 @@ abstract class AbstractTerraformTask extends DefaultTask {
     /**
      *
      */
-    void setSourceSet(TerraformSourceDirectorySet source) {
-        this.sourceSetProxy = source
+    void setSourceSet(TerraformSourceDirectorySet sourceSet) {
+        this.sourceSet = project.providers.provider { sourceSet }
     }
 
     @Internal
-    TerraformSourceDirectorySet getSourceSet() {
-        switch (this.sourceSetProxy) {
+    Provider<TerraformSourceDirectorySet> getSourceSet() {
+        this.sourceSet
+        /*switch (this.sourceSet) {
             case null:
                 return null
             case TerraformSourceDirectorySet:
-                return (TerraformSourceDirectorySet) this.sourceSetProxy
+                return (TerraformSourceDirectorySet) this.sourceSet
             default:
                 project.extensions.getByType(
                     NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(
-                    projectOperations.stringTools.stringize(this.sourceSetProxy)
+                    projectOperations.stringTools.stringize(this.sourceSet)
                 )
-        }
-    }
-
-    @Internal
-    Provider<File> getSourceDir() {
-        this.sourceDirProvider
-    }
-
-    @Internal
-    Provider<File> getDataDir() {
-        this.dataDirProvider
-    }
-
-    @Internal
-    Provider<File> getLogDir() {
-        this.logDirProvider
-    }
-
-    @Internal
-    Provider<File> getReportsDir() {
-        this.reportsDirProvider
+        }*/
     }
 
     /** The level at which Terraform should log to a file.
@@ -103,7 +81,7 @@ abstract class AbstractTerraformTask extends DefaultTask {
     }
 
     /**
-     * Whether to log progress to the directory specified in {@link #getLogDir}.
+     * Whether to log progress to the directory specified in.
      *
      * @param state {@code true} to log progress
      *
@@ -115,10 +93,10 @@ abstract class AbstractTerraformTask extends DefaultTask {
 
     void exec() {
         if (terraformLogLevel) {
-            logDir.get().mkdirs()
+            sourceSet.get().logDir.get().mkdirs()
         }
 
-        TerraformUtils.terraformLogFile(name, logDir).delete()
+        TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
         createPluginCacheDir(terraformrc)
 
@@ -164,32 +142,9 @@ abstract class AbstractTerraformTask extends DefaultTask {
         this.projectTerraform = project.extensions.getByType(TerraformExtension)
         this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
         this.command = cmd
+        // not defined at setup time
+        this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
         withConfigExtensions(configExtensions)
-
-        sourceDirProvider = project.provider {
-            sourceSet.srcDir.get()
-        }
-
-        dataDirProvider = project.provider {
-            sourceSet.dataDir.get()
-        }
-
-        logDirProvider = project.provider {
-            sourceSet.logDir.get()
-        }
-
-        reportsDirProvider = project.provider {
-            sourceSet.reportsDir.get()
-        }
-
-        secondarySources = project.provider { ->
-            sourceSet.secondarySources.get()
-        }
-
-        this.sourceFiles = project.fileTree(sourceDirProvider)
-        this.sourceFiles.exclude('.terraform.lock.hcl', 'terraform.tfstate', '.terraform.tfstate.lock*')
-
-        projectOperations.tasks.ignoreEmptyDirectories(inputs, this.sourceFiles)
     }
 
     /** Replace current environment with new one.
@@ -229,11 +184,6 @@ abstract class AbstractTerraformTask extends DefaultTask {
     }
 
     @Internal
-    protected TerraformRCExtension getTerraformrc() {
-        this.terraformrc
-    }
-
-    @Internal
     protected List<Provider<List<String>>> getCommandLineProviders() {
         this.commandLineProviders
     }
@@ -256,25 +206,9 @@ abstract class AbstractTerraformTask extends DefaultTask {
         this.projectOperations
     }
 
-    protected Provider<File> getWorkingDirForCommand() {
-        sourceDir
-    }
-
-    /**
-     * Files in the source directory that act as input files to determine up to date status.
-     *
-     * @return File collection
-     *
-     * @since 0.10.0
-     */
-    @Internal
-    protected FileCollection getSourceFiles() {
-        this.sourceFiles
-    }
-
     protected Provider<List<String>> sourceSetVariables() {
         project.provider {
-            def variables = this.sourceSet.variables
+            def variables = this.sourceSet.get().variables
             def configExtension = variables as TerraformTaskConfigExtension
             configExtension.commandLineArgs
         }
@@ -291,7 +225,7 @@ abstract class AbstractTerraformTask extends DefaultTask {
     @CompileDynamic
     protected Provider<AbstractTerraformTask> taskProvider(String command) {
         Provider<String> taskName = projectOperations.provider { ->
-            TerraformConvention.taskName(sourceSet.name, command)
+            TerraformConvention.taskName(sourceSet.get().name, command)
         }
 
         taskName.flatMap({ String it ->
@@ -345,8 +279,8 @@ abstract class AbstractTerraformTask extends DefaultTask {
         TerraformUtils.terraformEnvironment(
             terraformrc,
             name,
-            dataDir,
-            logDir,
+            sourceSet.get().dataDir,
+            sourceSet.get().logDir,
             terraformLogLevel
         )
     }
@@ -418,7 +352,7 @@ abstract class AbstractTerraformTask extends DefaultTask {
         Map<String, String> tfEnv = terraformEnvironment
         execSpec.identity {
             command tfcmd
-            workingDir workingDirForCommand
+            workingDir sourceSet.get().srcDir
             environment tfEnv
             cmdArgs cmdParams
         }
@@ -476,14 +410,8 @@ abstract class AbstractTerraformTask extends DefaultTask {
         execSpec
     }
 
-    private TerraformSourceDirectorySet sourceSetProxy
+    private Provider<TerraformSourceDirectorySet> sourceSet
     private String terraformLogLevel = 'TRACE'
-    private final Provider<File> sourceDirProvider
-    private final Provider<File> dataDirProvider
-    private final Provider<File> logDirProvider
-    private final Provider<File> reportsDirProvider
-    private final ConfigurableFileTree sourceFiles
-    private final Provider<List<File>> secondarySources
 
     // new vars
     private final String command

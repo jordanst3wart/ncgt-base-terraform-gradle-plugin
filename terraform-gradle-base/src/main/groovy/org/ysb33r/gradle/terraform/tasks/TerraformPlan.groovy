@@ -55,7 +55,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     File getPlanOutputFile() {
-        new File(dataDir.get(), "${sourceSet.name}.tf.plan")
+        new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
     }
 
     /** Where the textual representation of the plan will be written to.
@@ -64,7 +64,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     File getPlanReportOutputFile() {
-        new File(reportsDir.get(), "${sourceSet.name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
+        new File(sourceSet.get().reportsDir.get(), "${sourceSet.get().name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     /** This is the location of an variables file used to keep anything provided via the build script.
@@ -76,7 +76,7 @@ class TerraformPlan extends AbstractTerraformTask {
     @Internal
     Provider<File> getVariablesFile() {
         project.provider({ ->
-            new File(dataDir.get(), '__.tfvars')
+            new File(sourceSet.get().dataDir.get(), '__.tfvars')
         } as Callable<File>)
     }
 
@@ -157,6 +157,7 @@ class TerraformPlan extends AbstractTerraformTask {
     }
 
     private Action<ExecSpec> configureShowCommand(File planFile, OutputStream reportStream) {
+        // what does this do?
         final List<String> cmdParams = [NO_COLOR]
 
         if (jsonReport) {

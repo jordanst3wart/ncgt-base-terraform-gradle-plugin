@@ -37,7 +37,7 @@ class TerraformDestroy extends AbstractTerraformTask {
     @Internal
     Provider<File> getVariablesFile() {
         project.provider({ ->
-            new File(dataDir.get(), '__.tfvars')
+            new File(sourceSet.get().dataDir.get(), '__.tfvars')
         } as Callable<File>)
     }
 

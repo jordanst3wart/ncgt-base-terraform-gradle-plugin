@@ -39,7 +39,7 @@ class TerraformShowState extends AbstractTerraformTask {
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->
-                new File(reportsDir.get(), "${sourceSet.name}.status.${json ? 'tf.json' : 'tf'}")
+                new File(sourceSet.get().reportsDir.get(), "${sourceSet.get().name}.status.${json ? 'tf.json' : 'tf'}")
             } as Callable<File>))
 
         supportsColor(false)

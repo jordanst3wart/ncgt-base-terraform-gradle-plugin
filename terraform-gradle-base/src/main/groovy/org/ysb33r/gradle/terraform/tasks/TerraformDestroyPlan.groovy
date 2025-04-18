@@ -29,12 +29,12 @@ class TerraformDestroyPlan extends TerraformPlan {
 
     @Override
     File getPlanOutputFile() {
-        new File(dataDir.get(), "${sourceSet.name}.tf.destroy.plan")
+        new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.destroy.plan")
     }
 
     @Override
     File getPlanReportOutputFile() {
-        new File(reportsDir.get(), "${sourceSet.name}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
+        new File(sourceSet.get().reportsDir.get(), "${sourceSet.get().name}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     @Override
