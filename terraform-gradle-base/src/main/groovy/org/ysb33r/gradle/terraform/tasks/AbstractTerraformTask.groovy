@@ -48,9 +48,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
 @SuppressWarnings('MethodCount')
 abstract class AbstractTerraformTask extends DefaultTask {
 
-    /**
-     *
-     */
     void setSourceSet(TerraformSourceDirectorySet sourceSet) {
         this.sourceSet = project.providers.provider { sourceSet }
     }
@@ -58,17 +55,6 @@ abstract class AbstractTerraformTask extends DefaultTask {
     @Internal
     Provider<TerraformSourceDirectorySet> getSourceSet() {
         this.sourceSet
-        /*switch (this.sourceSet) {
-            case null:
-                return null
-            case TerraformSourceDirectorySet:
-                return (TerraformSourceDirectorySet) this.sourceSet
-            default:
-                project.extensions.getByType(
-                    NamedDomainObjectContainer<TerraformSourceDirectorySet>).getByName(
-                    projectOperations.stringTools.stringize(this.sourceSet)
-                )
-        }*/
     }
 
     /** The level at which Terraform should log to a file.
