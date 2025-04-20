@@ -1,5 +1,6 @@
 plugins {
-//    id 'org.ysb33r.terraform'
+    id 'org.ysb33r.terraform' version '1.5.4' // apply false
+//    id 'plugin'
 }
 
 
