@@ -80,11 +80,11 @@ class TerraformInit extends AbstractTerraformTask {
         this.backendConfig = project.objects.property(File)
         // TODO I think this is wrong it should use the cached plugins...
         // might not need the second map
-        this.pluginDirectory = sourceSet.map{ sourceSet ->
-            sourceSet.dataDir.map {new File(it, PLUGIN_SUBDIR) } } as Provider<File>
-        this.terraformStateFile = sourceSet.map{ sourceSet ->
+        this.pluginDirectory = sourceSet.map { sourceSet ->
+            sourceSet.dataDir.map { new File(it, PLUGIN_SUBDIR) } } as Provider<File>
+        this.terraformStateFile = sourceSet.map { sourceSet ->
             sourceSet.dataDir.map { new File(it, 'terraform.tfstate') } } as Provider<File>
-        this.terraformInitStateFile = sourceSet.map{sourceSet ->
+        this.terraformInitStateFile = sourceSet.map { sourceSet ->
             sourceSet.dataDir.map { new File(it as File, '.init.txt') } } as Provider<File>
         this.useBackendConfig = project.objects.property(Boolean)
     }

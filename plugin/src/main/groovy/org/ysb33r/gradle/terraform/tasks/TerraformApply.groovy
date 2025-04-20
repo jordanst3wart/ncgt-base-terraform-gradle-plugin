@@ -38,8 +38,7 @@ import java.util.concurrent.Callable
 class TerraformApply extends AbstractTerraformTask {
 
     @InputFile
-    @SuppressWarnings('PrivateFieldCouldBeFinal')
-    private Provider<File> planFile
+    private final Provider<File> planFile
     private boolean json = false
 
     @Inject
@@ -59,19 +58,19 @@ class TerraformApply extends AbstractTerraformTask {
     /** Select specific resources.
      *
      * @param resourceNames List of resources to target.
-     *
-     * @since 0.10.0
      */
     @Option(option = 'target', description = 'List of resources to target')
     void setTargets(List<String> resourceNames) {
         extensions.getByType(ResourceFilter).target(resourceNames)
     }
 
+    Provider<File> getPlanFile() {
+        planFile
+    }
+
     /** Mark resources to be replaced.
      *
      * @param resourceNames List of resources to target.
-     *
-     * @since 0.10.0
      */
     @Option(option = 'replace', description = 'List of resources to replace')
     void setReplacements(List<String> resourceNames) {

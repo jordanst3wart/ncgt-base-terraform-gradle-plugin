@@ -60,17 +60,11 @@ import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironm
  */
 @CompileStatic
 class TerraformExtension {
-
-    /** The standard extension name.
-     *
-     */
     public static final String NAME = 'terraform'
-
-    /** The default version of Terraform that will be used on
-     * a supported platform if nothing else is configured.
-     */
     public static final String TERRAFORM_DEFAULT = '1.8.0'
 
+    @SuppressWarnings('NonFinalPublicField')
+    @SuppressWarnings('PublicInstanceField')
     public ResolvableExecutable resolvableExecutable
 
     /** Constructs a new extension which is attached to the provided project.
@@ -82,14 +76,13 @@ class TerraformExtension {
         this.env = [:]
         this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.registry = new ResolverFactoryRegistry(project)
-        if (Downloader.downloadSupported) {
-            addVersionResolver(projectOperations)
-            executable([version: TERRAFORM_DEFAULT])
-        } else {
+        if (!Downloader.downloadSupported) {
             throw new TerraformExecutionException(
                 "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
             )
         }
+        addVersionResolver(projectOperations)
+        executable([version: TERRAFORM_DEFAULT])
     }
 
     /** Standard set of platforms.
@@ -182,7 +175,6 @@ class TerraformExtension {
         'linux_386', 'linux_amd64', 'linux_arm', 'linux_arm64',
         'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
     ].toSet()
-
 
     private final Map<String, Object> env
     private final ResolverFactoryRegistry registry

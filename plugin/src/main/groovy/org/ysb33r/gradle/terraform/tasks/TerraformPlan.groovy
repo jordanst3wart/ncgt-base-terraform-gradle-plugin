@@ -64,7 +64,8 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @OutputFile
     File getPlanReportOutputFile() {
-        new File(sourceSet.get().reportsDir.get(), "${sourceSet.get().name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
+        new File(sourceSet.get().reportsDir.get(),
+            "${sourceSet.get().name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
     }
 
     /** This is the location of an variables file used to keep anything provided via the build script.

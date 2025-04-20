@@ -133,36 +133,12 @@ class AbstractTerraformTask extends DefaultTask {
         withConfigExtensions(configExtensions)
     }
 
-    /** Replace current environment with new one.
-     *
-     * Calling this will also remove any project extension environment from this task.
-     *
-     * @param args New environment key-value map of properties.
-     */
-    // @Override
-    void setEnvironment(Map<String, ?> args) {
-        this.env.putAll((Map<String, Object>) args)
-    }
-
-    /** Environment for running the exe
-     *
-     * <p> Calling this will resolve all lazy-values in the variable map.
-     *
-     * @return Map of environmental variables that will be passed.
-     */
-    // @Override
-    Map<String, String> getEnvironment() {
-        this.env as Map<String, String>
-    }
-
     /**
      * Obtain a list of associated variables, should if be a valid condition for the task.
      *
      * In most cases this will be empty.
      *
      * @return Associated variables in terraform format.
-     *
-     * @since 0.13
      */
     @Internal
     List<Provider<List<String>>> getTfVarProviders() {
@@ -303,7 +279,7 @@ class AbstractTerraformTask extends DefaultTask {
 
     protected TerraformExecSpec addExecutableToExecSpec(final TerraformExecSpec execSpec) {
         execSpec.executable(toolExtension.resolvableExecutable.executable.absolutePath)
-        return execSpec
+        execSpec
     }
 
     @Internal
@@ -316,7 +292,6 @@ class AbstractTerraformTask extends DefaultTask {
      * @param execSpec Specification to be configured
      * @return Configured specification
      */
-    // @Override
     protected TerraformExecSpec configureExecSpec(TerraformExecSpec execSpec) {
         configureExecSpecForCmd(execSpec, terraformCommand, defaultCommandParameters)
         addCommandSpecificsToExecSpec(execSpec)
@@ -342,8 +317,6 @@ class AbstractTerraformTask extends DefaultTask {
             environment tfEnv
             cmdArgs cmdParams
         }
-
-        execSpec.environment(environment)
         execSpec
     }
 
@@ -351,7 +324,6 @@ class AbstractTerraformTask extends DefaultTask {
      *
      * @return {@link TerraformExecSpec}. Never {@code null}.
      */
-    // @Override
     protected TerraformExecSpec createExecSpec() {
         new TerraformExecSpec(projectOperations, projectTerraform.resolver)
     }
@@ -398,8 +370,6 @@ class AbstractTerraformTask extends DefaultTask {
 
     private Provider<TerraformSourceDirectorySet> sourceSet
     private String terraformLogLevel = 'TRACE'
-
-    // new vars
     private final String command
     private final ProjectOperations projectOperations
     private final TerraformExtension projectTerraform
@@ -408,5 +378,4 @@ class AbstractTerraformTask extends DefaultTask {
     private final List<Provider<List<String>>> tfVarProviders = []
     private final List<String> defaultCommandParameters = []
     private Provider<File> stdoutCapture
-    private final Map<String, Object> env = [:]
 }
