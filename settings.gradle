@@ -1,4 +1,3 @@
 rootProject.name = 'gradle-terraform-plugin'
 include('plugin')
-include(":sample")
-
+include(":example")

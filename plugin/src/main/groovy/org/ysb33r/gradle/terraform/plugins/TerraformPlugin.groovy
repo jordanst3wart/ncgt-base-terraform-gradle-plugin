@@ -34,8 +34,6 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
- *
- * @since 0.1
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {

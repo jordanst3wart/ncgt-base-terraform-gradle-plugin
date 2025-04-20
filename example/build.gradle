@@ -1,8 +1,14 @@
 plugins {
-    id 'org.ysb33r.terraform'
+//    id 'org.ysb33r.terraform'
 }
 
 
+/*terraform {
+ version '1.8.1'
+}
 
-
-//
+terraformSourceSets {
+    main {
+        srcDir 'src/main/tf'
+    }
+}*/
