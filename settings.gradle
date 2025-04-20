@@ -1,5 +1,4 @@
-rootProject.name = 'terraform-gradle-plugin'
-include 'terraform-gradle-base'
-include 'docs'
-
+rootProject.name = 'gradle-terraform-plugin'
+include('plugin')
+include(":sample")
 
