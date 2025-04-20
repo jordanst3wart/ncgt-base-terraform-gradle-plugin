@@ -103,17 +103,6 @@ class TerraformExtension {
         this.resolvableExecutable = this.registry.getResolvableExecutable(opts)
     }
 
-    /** Replace current environment with new one.
-     * If this is called on the task extension, no project extension environment will
-     * be used.
-     *
-     * @param args New environment key-value map of properties.
-     */
-    void setEnvironment(Map<String, ?> args) {
-        this.env.clear() // TODO might not need to clear
-        this.env.putAll((Map<String, Object>) args)
-    }
-
     /** Environment for running the exe
      *
      * <p> Calling this will resolve all lazy-values in the variable map.
@@ -121,30 +110,24 @@ class TerraformExtension {
      * @return Map of environmental variables that will be passed.
      */
     Map<String, String> getEnvironment() {
-        projectOperations.stringTools.stringizeValues(this.env)
+        this.env
     }
 
     /** Add environmental variables to be passed to the exe.
      *
      * @param args Environmental variable key-value map.
      */
-    void environment(Map<String, ?> args) {
-        this.env.putAll((Map<String, Object>) args)
+    void environment(Map<String, String> args) {
+        this.env.putAll(args)
     }
 
     /** Adds AWS environmental variables to Terraform runtime environment.
-     *
-     * @since 0.6.0
-     *
      */
     void useAwsEnvironment() {
         environment(awsEnvironment())
     }
 
     /** Adds Google environmental variables to Terraform runtime environment.
-     *
-     * @since 0.6.0
-     *
      */
     void useGoogleEnvironment() {
         environment(googleEnvironment())
@@ -176,7 +159,7 @@ class TerraformExtension {
         'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
     ].toSet()
 
-    private final Map<String, Object> env
+    private final Map<String, String> env
     private final ResolverFactoryRegistry registry
     private final ProjectOperations projectOperations
     private final Project project

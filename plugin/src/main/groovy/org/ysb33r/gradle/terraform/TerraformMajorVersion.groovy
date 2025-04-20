@@ -22,8 +22,6 @@ import org.ysb33r.grolifant.api.core.Version
  * Major version groupings for Terraform
  *
  * @author Schalk W. Cronjé
- *
- * @since 0.10.0
  */
 @CompileStatic
 enum TerraformMajorVersion {

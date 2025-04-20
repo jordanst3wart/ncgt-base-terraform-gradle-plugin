@@ -15,14 +15,11 @@
  */
 package org.ysb33r.gradle.terraform.config;
 
-import org.gradle.api.Action;
-import org.gradle.api.provider.Provider;
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet;
-
 import java.util.Map;
 
 /**
- * @since 0.2
+ * A specification for adding variables to a Terraform command.
  */
 public interface VariablesSpec {
     /**

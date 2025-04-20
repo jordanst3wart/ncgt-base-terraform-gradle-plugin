@@ -40,9 +40,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
 
 /** A base class for performing a {@code terraform} execution.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.1
  */
 @CompileStatic
 @SuppressWarnings('MethodCount')
@@ -70,8 +67,6 @@ class AbstractTerraformTask extends DefaultTask {
      * Whether to log progress to the directory specified in.
      *
      * @param state {@code true} to log progress
-     *
-     * @since 0.10.0
      */
     void setLogProgress(boolean state) {
         this.terraformLogLevel = state ? 'TRACE' : null
@@ -92,7 +87,7 @@ class AbstractTerraformTask extends DefaultTask {
                 execSpec.copyToExecSpec(spec)
             }
         }
-        logger.info "Using Terraform environment: ${terraformEnvironment}"
+        logger.info "Using Terraform environment: ${terraformSourcesetEnvironment}"
         logger.debug "Terraform executable will be launched with environment: ${execSpec.environment}"
         if (this.stdoutCapture) {
             this.stdoutCapture.get().withOutputStream { strm ->
@@ -181,8 +176,6 @@ class AbstractTerraformTask extends DefaultTask {
      *
      * @param command Terraform command.
      * @return Task provider.
-     *
-     * @since 0.10
      */
     @CompileDynamic
     protected Provider<AbstractTerraformTask> taskProvider(String command) {
@@ -199,8 +192,6 @@ class AbstractTerraformTask extends DefaultTask {
      * Marks task to always be out of date.
      *
      * Calls this from the constructor of Terraform task types that should always be out of date.
-     *
-     * @since 0.10.
      */
     protected void alwaysOutOfDate() {
         inputs.property('always-out-of-date', UUID.randomUUID().toString())
@@ -237,7 +228,7 @@ class AbstractTerraformTask extends DefaultTask {
     }
 
     @Input
-    protected Map<String, String> getTerraformEnvironment() {
+    protected Map<String, String> getTerraformSourcesetEnvironment() {
         TerraformUtils.terraformEnvironment(
             terraformrc,
             name,
@@ -310,7 +301,9 @@ class AbstractTerraformTask extends DefaultTask {
         String tfcmd,
         List<String> cmdParams
     ) {
-        Map<String, String> tfEnv = terraformEnvironment
+        Map<String, String> tfSourcesetEnv = terraformSourcesetEnvironment
+        Map<String, String> tfEnv = projectTerraform.getEnvironment()
+        tfEnv.putAll(tfSourcesetEnv)
         execSpec.identity {
             command tfcmd
             workingDir sourceSet.get().srcDir

@@ -1,8 +1,3 @@
 = Terraform plugin for Gradle
 
-I wrote this as I was not content with the existing https://www.terraform.io/[Terraform] offerings for Gradle. These plugins have a strong focus on flexibility in order to meet a variety of project needs.
-
-You need at least Gradle 6 to use this plugin.
-
-Please see the https://ysb33rOrg.gitlab.io/terraform-gradle-plugin[plugin & API documentation].
-
+Scaling Terraform plan, and apply actions
