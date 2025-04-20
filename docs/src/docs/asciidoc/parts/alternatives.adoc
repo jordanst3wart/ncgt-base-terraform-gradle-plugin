@@ -1,9 +1,0 @@
-== Alternative Plugins
-
-This documentation would not be complete without a description of the alternatives.
-
-org.curioswitch.gradle-terraform-plugin:: This plugin from https://github.com/curioswitch/curiostack[Curiostack] apprantly has support for Yaml configuration. Not much documentation is available, so it is difficult to comment on how useful it is.
-
-
-tanvd.kosogor.terraform:: https://github.com/TanVD/kosogor[Vladislav Tankov's plugin] focuses on a better Kotlin DSL. It apprantly also has support for publishing Terrform modules.
-
