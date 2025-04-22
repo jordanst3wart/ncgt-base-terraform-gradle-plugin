@@ -2,8 +2,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    `groovy`
-    `codenarc`
+    groovy
+    codenarc
     `java-gradle-plugin`
     `maven-publish`
     alias(libs.plugins.grgit)

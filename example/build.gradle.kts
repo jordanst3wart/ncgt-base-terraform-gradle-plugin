@@ -1,17 +1,17 @@
 
 
 plugins {
-    //id("foo.bar.terraform") version("2.0.0")
+    id("foo.bar.terraform") version("CLEAN-UP-SNAPSHOT")
     // id("com.newscorp.gt.gradle.terraform")
 }
 
 // /Users/stewartj/.m2/repository/com/newscorp/gt/gradle/terraform
 // com.newscorp.gt.gradle.terraform.gradle.plugin
-/*terraform {
-    executable version : '1.11.1'
+terraform {
+    executable(mapOf("version" to "1.11.1"))
 }
 
-terraformSourceSets {
+/*terraformSourceSets {
     main {
         srcDir = file('main/tf')
         backendText("hi") // backend file...
