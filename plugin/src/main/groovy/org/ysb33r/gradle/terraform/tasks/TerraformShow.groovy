@@ -26,9 +26,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import javax.inject.Inject
 import java.util.concurrent.Callable
 
-/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
- *
- * @since 0.3
+/** Equivalent of {@code terraform show /path/to/terraform.plan}.
  */
 @CompileStatic
 class TerraformShow extends AbstractTerraformTask {
@@ -64,16 +62,6 @@ class TerraformShow extends AbstractTerraformTask {
     @OutputFile
     Provider<File> getReportOutputFile() {
         this.outputFile
-    }
-
-    /** Where the textual representation of the plan will be written to.
-     *
-     * @return Location of text file.
-     */
-    @OutputFile
-    File getPlanReportOutputFile() {
-        new File(sourceSet.get().reportsDir.get(),
-            "${sourceSet.get().name}.tf.plan.${json ? 'json' : 'txt'}")
     }
 
     @Override
