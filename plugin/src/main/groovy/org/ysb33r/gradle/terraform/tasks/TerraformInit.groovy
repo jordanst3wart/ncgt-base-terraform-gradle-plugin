@@ -49,6 +49,7 @@ class TerraformInit extends AbstractTerraformTask {
         // new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
     }
 
+    // TODO not having these assumes you are using a remote backend...
     /**
      * The location of {@code terraform.tfstate}.
      */
@@ -65,14 +66,7 @@ class TerraformInit extends AbstractTerraformTask {
         super('init', [])
         supportsInputs()
         supportsColor()
-
         this.backendConfig = project.objects.property(File)
-
-        // might not need the second map
-        // TODO fix this...
-        // this.pluginDirectory =
-        //this.terraformInitStateFile = sourceSet.map { source ->
-//            source.dataDir.map { new File(it as File, '.init.txt') } } as Provider<File>
         this.useBackendConfig = project.objects.property(Boolean)
     }
 
