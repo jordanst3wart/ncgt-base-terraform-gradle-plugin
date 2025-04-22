@@ -55,10 +55,10 @@ class TerraformPluginSpec extends Specification {
         def backendTask = project.tasks.named('createBackendConfigurationMain').get() as RemoteStateTask
         backendTask.name == 'createBackendConfigurationMain'
         backendTask.backendFileRequired.get() == true
-        backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
+        backendTask.backendConfigFile.get() == new File(project.buildDir, "main/tf/remoteState/backend-config.tf")
 
         def task = project.tasks.named('initMain').get() as TerraformInit
-        task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
+        task.backendConfigFile.get() == new File(project.buildDir, "main/tf/remoteState/backend-config.tf")
         task.useBackendFile.get() == true // should be true
         try {
             project.tasks.named('createBackendConfigurationRelease').get()
@@ -72,9 +72,9 @@ class TerraformPluginSpec extends Specification {
         def remoteStateTask = project.tasks.withType(RemoteStateTask)
         remoteStateTask.size() == 2
         File main = project.tasks.createBackendConfigurationMain.backendConfigFile.get()
-        main.name == 'terraform-backend-config.tf'
-        main.parentFile.name == 'tfMainBackendConfiguration'
-        main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
+        main.name == 'backend-config.tf'
+        main.parentFile.name == 'remoteState'
+        main.parentFile.parentFile == new File(project.buildDir, 'main/tf')
         project.tasks.createBackendConfigurationMain.getDestinationDir().get() == main.parentFile
     }
 

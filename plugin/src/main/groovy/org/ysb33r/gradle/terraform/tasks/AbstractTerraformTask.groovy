@@ -23,8 +23,8 @@ import org.gradle.api.Transformer
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
@@ -77,11 +77,11 @@ class AbstractTerraformTask extends DefaultTask {
         this.terraformLogLevel = state ? 'TRACE' : null
     }
 
+    @TaskAction
     void exec() {
         if (terraformLogLevel) {
             sourceSet.get().logDir.get().mkdirs()
         }
-        logger.error('hi')
 
         TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
@@ -101,13 +101,11 @@ class AbstractTerraformTask extends DefaultTask {
             // runs for just show task
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
-                projectOperations.exec(runner).assertNormalExitValue()
+                project.exec(runner).assertNormalExitValue()
             }
         } else {
             // runs for everything else
-            // ???
-            project.exec { runner }.assertNormalExitValue()
-            // projectOperations.exec(runner).assertNormalExitValue()
+            project.exec(runner).assertNormalExitValue()
         }
     }
 
@@ -179,6 +177,7 @@ class AbstractTerraformTask extends DefaultTask {
         project.provider {
             def variables = this.sourceSet.get().variables
             def configExtension = variables as TerraformTaskConfigExtension
+            // TODO this shouldn't work
             configExtension.commandLineArgs
         }
     }

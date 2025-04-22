@@ -103,7 +103,7 @@ class TerraformConvention {
             it.description = "Write partial backend configuration file for '${sourceSet.name}'"
             it.backendText = sourceSet.backendPropertyText().map { it }
             it.destinationDir = new File(
-                "${project.buildDir}/tfRemoteState/tf${sourceSet.name.capitalize()}BackendConfiguration")
+                "${project.buildDir}/${sourceSet.name}/tf/remoteState")
         }
 
         project.tasks.named(taskName(sourceSet.name, 'init'), TerraformInit).configure {

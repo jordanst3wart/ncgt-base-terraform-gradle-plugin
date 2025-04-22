@@ -49,7 +49,7 @@ class RemoteStateTask extends DefaultTask {
             project.providers.provider(new Callable<File>() {
                 @Override
                 File call() throws Exception {
-                    new File(destinationDir.get(), 'terraform-backend-config.tf')
+                    new File(destinationDir.get(), 'backend-config.tf')
                 }
             })
         )

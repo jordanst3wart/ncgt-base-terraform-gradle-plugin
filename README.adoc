@@ -6,3 +6,9 @@ You need at least Gradle 6 to use this plugin.
 
 Please see the https://ysb33rOrg.gitlab.io/terraform-gradle-plugin[plugin & API documentation].
 
+restricted to gradle 8.6 otherwise:
+```
+Caused by: java.lang.NoClassDefFoundError: org/gradle/wrapper/ExclusiveFileAccessManager
+	at org.ysb33r.grolifant.api.core.ExclusiveFileAccess.$getStaticMetaClass(ExclusiveFileAccess.groovy)
+	at org.ysb33r.grolifant.api.core.ExclusiveFileAccess.<init>(ExclusiveFileAccess.groovy)
+```
