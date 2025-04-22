@@ -57,16 +57,6 @@ class TerraformPlan extends AbstractTerraformTask {
         new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
     }
 
-    /** Where the textual representation of the plan will be written to.
-     *
-     * @return Location of text file.
-     */
-    @OutputFile
-    File getPlanReportOutputFile() {
-        new File(sourceSet.get().reportsDir.get(),
-            "${sourceSet.get().name}.tf.plan.${jsonReport ? 'json' : 'txt'}")
-    }
-
     /** This is the location of an variables file used to keep anything provided via the build script.
      *
      * @return Location of variables file.
@@ -86,7 +76,7 @@ class TerraformPlan extends AbstractTerraformTask {
      */
     @Option(option = 'json', description = 'Output readable plan in JSON')
     void setJson(boolean state) {
-        this.jsonReport = state
+        this.jsonPlan = state
     }
 
     @Override
@@ -95,17 +85,10 @@ class TerraformPlan extends AbstractTerraformTask {
         super.exec()
 
         File planOut = planOutputFile
-        File textOut = planReportOutputFile
-
-        textOut.withOutputStream { OutputStream report ->
-            Action<ExecSpec> showExecSpec = configureShowCommand(planOut, report)
-            projectOperations.exec(showExecSpec).assertNormalExitValue()
-        }
 
         logger.lifecycle(
             "The plan file has been generated into ${planOut.toURI()}"
         )
-        logger.lifecycle("The textual representation of the plan file has been generated into ${textOut.toURI()}")
     }
 
     /** Add specific command-line options for the command.
@@ -122,7 +105,7 @@ class TerraformPlan extends AbstractTerraformTask {
             extensions.getByType(Refresh).refresh = false
         }
         super.addCommandSpecificsToExecSpec(execSpec)
-        if (jsonReport) {
+        if (jsonPlan) {
             execSpec.cmdArgs(JSON_FORMAT)
         }
         execSpec.identity {
@@ -138,31 +121,5 @@ class TerraformPlan extends AbstractTerraformTask {
         }
     }
 
-    private Action<ExecSpec> configureShowCommand(File planFile, OutputStream reportStream) {
-        // what does this do?
-        final List<String> cmdParams = [NO_COLOR]
-
-        if (jsonReport) {
-            cmdParams.add(JSON_FORMAT)
-        }
-
-        cmdParams.add(planFile.absolutePath)
-        TerraformExecSpec execSpec = createExecSpec()
-        execSpec.standardOutput(reportStream)
-        addExecutableToExecSpec(execSpec)
-        configureExecSpecForCmd(
-            execSpec,
-            'show',
-            cmdParams
-        )
-
-        new Action<ExecSpec>() {
-            @Override
-            void execute(ExecSpec spec) {
-                execSpec.copyToExecSpec(spec)
-            }
-        }
-    }
-
-    protected boolean jsonReport = false
+    protected boolean jsonPlan = false
 }

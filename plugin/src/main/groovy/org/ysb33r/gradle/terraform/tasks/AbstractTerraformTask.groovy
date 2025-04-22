@@ -30,11 +30,15 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
 import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
 import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
+
+import java.util.concurrent.Callable
 
 /** A base class for performing a {@code terraform} execution.
  *
@@ -208,6 +212,13 @@ class AbstractTerraformTask extends DefaultTask {
         inputs.property('always-out-of-date', UUID.randomUUID().toString())
     }
 
+    @Internal
+    protected Provider<File> getPlanFile() {
+        project.provider({ ->
+            new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+        } as Callable<File>)
+    }
+
     /**
      * To be called from tasks where the command supports {@code input}.
      */
@@ -337,7 +348,14 @@ class AbstractTerraformTask extends DefaultTask {
      */
     private void withConfigExtensions(List<Class> configExtensions) {
         for (it in configExtensions) {
-            TerraformTaskConfigExtension cex = (TerraformTaskConfigExtension) project.objects.newInstance(it)
+            TerraformTaskConfigExtension cex
+            if (it == Lock) {
+                cex = projectTerraform.getLock()
+            } else if (it == Parallel) {
+                cex = projectTerraform.getParallel()
+            } else {
+                cex = (TerraformTaskConfigExtension) project.objects.newInstance(it)
+            }
             extensions.add(cex.name, cex)
             commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
         }

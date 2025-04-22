@@ -21,17 +21,15 @@ import groovy.transform.CompileStatic
  *
  */
 
-// TODO make one instance of... ie. you set the lock for all plan, and apply tasks
 @CompileStatic
 class Lock implements TerraformTaskConfigExtension {
     final String name = 'lock'
 
     boolean enabled = true
-    Integer timeout = 0
+    Integer timeout = 30
 
     @Override
-    @SuppressWarnings('UnnecessaryCast')
     List<String> getCommandLineArgs() {
-        ["-lock=${enabled}", "-lock-timeout=${timeout}s"] as List<String>
+        ["-lock=${enabled}".toString(), "-lock-timeout=${timeout}s".toString()]
     }
 }

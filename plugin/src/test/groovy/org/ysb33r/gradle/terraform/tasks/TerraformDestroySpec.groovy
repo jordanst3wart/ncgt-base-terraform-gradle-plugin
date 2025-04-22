@@ -23,7 +23,7 @@ class TerraformDestroySpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    void 'commands for terraform apply'() {
+    void 'commands for terraform destroy'() {
         setup:
         project.apply plugin: 'foo.bar.terraform'
 
@@ -52,7 +52,7 @@ class TerraformDestroySpec extends Specification {
             '-auto-approve',
             '-input=false',
             '-lock=true',
-            '-lock-timeout=0s',
+            '-lock-timeout=30s',
             '-parallelism=10',
             '-refresh=true',
             '-json'

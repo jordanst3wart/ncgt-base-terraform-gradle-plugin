@@ -22,6 +22,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
@@ -40,8 +42,12 @@ class TerraformInit extends AbstractTerraformTask {
     /**
      * The directory where terraform plgins data is written to.
      */
-    //@OutputDirectory
-    //final Provider<File> pluginDirectory
+    @OutputDirectory
+    Provider<File> getPluginDirectory() {
+        sourceSet.map { source ->
+            source.dataDir.map { new File(it as File, 'providers') } } as Provider<File>
+        // new File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+    }
 
     /**
      * The location of {@code terraform.tfstate}.
@@ -59,14 +65,12 @@ class TerraformInit extends AbstractTerraformTask {
         super('init', [])
         supportsInputs()
         supportsColor()
-        println('TerraformInit initialised')
 
         this.backendConfig = project.objects.property(File)
 
         // might not need the second map
         // TODO fix this...
-        //this.terraformStateFile = sourceSet.map { source ->
-//            source.dataDir.map { new File(it as File, 'terraform.tfstate') } } as Provider<File>
+        // this.pluginDirectory =
         //this.terraformInitStateFile = sourceSet.map { source ->
 //            source.dataDir.map { new File(it as File, '.init.txt') } } as Provider<File>
         this.useBackendConfig = project.objects.property(Boolean)
@@ -105,7 +109,6 @@ class TerraformInit extends AbstractTerraformTask {
     void exec() {
         createPluginCacheDir(this.terraformrc)
         super.exec()
-        // terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
     /** Add specific command-line options for the command.

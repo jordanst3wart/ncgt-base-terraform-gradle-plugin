@@ -18,6 +18,8 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.ysb33r.gradle.terraform.config.Lock
+import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
@@ -132,22 +134,29 @@ class TerraformExtension {
         this.env.putAll((Map<String, Object>) args)
     }
 
-    /** Adds AWS environmental variables to Terraform runtime environment.
-     *
-     * @since 0.6.0
-     *
-     */
     void useAwsEnvironment() {
         environment(awsEnvironment())
     }
 
-    /** Adds Google environmental variables to Terraform runtime environment.
-     *
-     * @since 0.6.0
-     *
-     */
     void useGoogleEnvironment() {
         environment(googleEnvironment())
+    }
+
+    void setLockTimeout(int timeout) {
+        this.lock.timeout = timeout
+        this.lock.enabled = true
+    }
+
+    Lock getLock() {
+        this.lock
+    }
+
+    void setParallel(int parallel) {
+        this.parallel.maxParallel = parallel
+    }
+
+    Parallel getParallel() {
+        this.parallel
     }
 
     @CompileDynamic
@@ -180,5 +189,7 @@ class TerraformExtension {
     private final ResolverFactoryRegistry registry
     private final ProjectOperations projectOperations
     private final Project project
+    private final Lock lock = new Lock()
+    private final Parallel parallel = new Parallel()
 }
 
