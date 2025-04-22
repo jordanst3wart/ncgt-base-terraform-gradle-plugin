@@ -44,7 +44,6 @@ class TerraformDestroySpec extends Specification {
         def task = project.tasks.named('destroyMain').get()
         task instanceof TerraformDestroy
         // task.setTargets(["someResource"]) // bug
-        task.setJson(true)
         def spec = task.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
@@ -55,9 +54,8 @@ class TerraformDestroySpec extends Specification {
             '-lock-timeout=30s',
             '-parallelism=10',
             '-refresh=true',
-            '-json'
         ])
-        spec.getCmdArgs().size() == 9
+        spec.getCmdArgs().size() == 8
 
         def varsFile = false
         spec.getCmdArgs().forEach{ it ->

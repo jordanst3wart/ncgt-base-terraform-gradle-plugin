@@ -23,6 +23,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.Refresh
@@ -40,7 +41,7 @@ class TerraformPlan extends AbstractTerraformTask {
     TerraformPlan() {
         super(
             'plan',
-            [Lock, Refresh, Parallel]
+            [Lock, Refresh, Parallel, Json]
         )
         supportsInputs()
         supportsColor()
@@ -70,15 +71,6 @@ class TerraformPlan extends AbstractTerraformTask {
         } as Callable<File>)
     }
 
-    /** Where to write the report in human-readable or JSON format.
-     *
-     * @param state Set to {@code true} to output in JSON.
-     */
-    @Option(option = 'json', description = 'Output readable plan in JSON')
-    void setJson(boolean state) {
-        this.jsonPlan = state
-    }
-
     @Override
     void exec() {
         createVarsFile()
@@ -105,9 +97,6 @@ class TerraformPlan extends AbstractTerraformTask {
             extensions.getByType(Refresh).refresh = false
         }
         super.addCommandSpecificsToExecSpec(execSpec)
-        if (jsonPlan) {
-            execSpec.cmdArgs(JSON_FORMAT)
-        }
         execSpec.identity {
             cmdArgs "-out=${planOutputFile}"
             cmdArgs "-var-file=${variablesFile.get().absolutePath}"
@@ -120,6 +109,4 @@ class TerraformPlan extends AbstractTerraformTask {
             tfVarProviders*.get().flatten().each { writer.println(it) }
         }
     }
-
-    protected boolean jsonPlan = false
 }

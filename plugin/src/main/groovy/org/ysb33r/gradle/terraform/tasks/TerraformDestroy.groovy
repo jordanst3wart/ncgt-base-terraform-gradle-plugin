@@ -20,6 +20,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.Refresh
@@ -41,28 +42,16 @@ class TerraformDestroy extends AbstractTerraformTask {
         } as Callable<File>)
     }
 
-    private boolean json = false
-
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformDestroy() {
-        super('destroy', [Lock, Refresh, Parallel])
+        super('destroy', [Lock, Refresh, Parallel, Json])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
         inputs.files(taskProvider('destroyPlan'))
         mustRunAfter(taskProvider('destroyPlan'))
         addCommandLineProvider(sourceSetVariables())
-    }
-
-    /**
-     * Output progress in json as per https://www.terraform.io/docs/internals/machine-readable-ui.html
-     *
-     * @param state Set to {@code true} to output in JSON.
-     */
-    @Option(option = 'json', description = 'Output progress in JSON')
-    void setJson(boolean state) {
-        this.json = state
     }
 
     @Override
@@ -80,10 +69,6 @@ class TerraformDestroy extends AbstractTerraformTask {
      */
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
-        if (json) {
-            execSpec.cmdArgs(JSON_FORMAT)
-        }
-
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.cmdArgs("-var-file=${variablesFile.get().absolutePath}")
         execSpec

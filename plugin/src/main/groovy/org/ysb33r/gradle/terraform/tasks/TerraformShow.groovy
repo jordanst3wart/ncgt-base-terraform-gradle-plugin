@@ -51,6 +51,7 @@ class TerraformShow extends AbstractTerraformTask {
      *
      * This option can be set from the command-line with {@code --json}.
      */
+    // only task where json is true
     @Option(option = 'json', description = 'Force output to be in JSON format')
     @Internal
     boolean json = true

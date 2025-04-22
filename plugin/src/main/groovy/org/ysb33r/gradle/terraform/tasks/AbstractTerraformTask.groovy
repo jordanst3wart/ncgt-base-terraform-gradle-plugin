@@ -30,6 +30,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
@@ -353,6 +354,8 @@ class AbstractTerraformTask extends DefaultTask {
                 cex = projectTerraform.getLock()
             } else if (it == Parallel) {
                 cex = projectTerraform.getParallel()
+            } else if (it == Json) {
+                cex = projectTerraform.getJson()
             } else {
                 cex = (TerraformTaskConfigExtension) project.objects.newInstance(it)
             }

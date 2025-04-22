@@ -18,6 +18,7 @@ package org.ysb33r.gradle.terraform
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
@@ -159,6 +160,14 @@ class TerraformExtension {
         this.parallel
     }
 
+    void setJson(boolean enabled) {
+        this.json.enabled = enabled
+    }
+
+    Json getJson() {
+        this.json
+    }
+
     @CompileDynamic
     private void addVersionResolver(ProjectOperations projectOperations) {
         def tofu = project.rootProject.properties.getOrDefault('opentofu', false)
@@ -191,5 +200,6 @@ class TerraformExtension {
     private final Project project
     private final Lock lock = new Lock()
     private final Parallel parallel = new Parallel()
+    private final Json json = new Json()
 }
 

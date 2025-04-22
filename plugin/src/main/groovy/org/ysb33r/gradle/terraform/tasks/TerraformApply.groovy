@@ -20,6 +20,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.Refresh
@@ -39,12 +40,11 @@ class TerraformApply extends AbstractTerraformTask {
 
     @InputFile
     private final Provider<File> planFile
-    private boolean json = false
 
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformApply() {
-        super('apply', [Lock, Refresh, Parallel])
+        super('apply', [Lock, Refresh, Parallel, Json])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
@@ -53,24 +53,9 @@ class TerraformApply extends AbstractTerraformTask {
         mustRunAfter(taskProvider('plan'))
     }
 
-    /**
-     * Output progress in json as per https://www.terraform.io/docs/internals/machine-readable-ui.html
-     *
-     * @param state Set to {@code true} to output in JSON.
-     */
-    @Option(option = 'json', description = 'Output progress in JSON')
-    void setJson(boolean state) {
-        this.json = state
-    }
-
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-
-        if (json) {
-            execSpec.cmdArgs(JSON_FORMAT)
-        }
-
         execSpec.cmdArgs(planFile.get().absolutePath)
         execSpec
     }
