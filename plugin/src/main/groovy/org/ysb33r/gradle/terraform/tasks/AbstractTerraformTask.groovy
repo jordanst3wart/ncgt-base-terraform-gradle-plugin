@@ -36,8 +36,6 @@ import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
-import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
-
 /** A base class for performing a {@code terraform} execution.
  *
  * @author Schalk W. Cronjé
@@ -372,7 +370,8 @@ class AbstractTerraformTask extends DefaultTask {
         execSpec
     }
 
-    protected getTerraformrc(){
+    @Internal
+    protected TerraformRCExtension getTerraformrc() {
         terraformrc
     }
 

@@ -20,10 +20,6 @@ resource "local_file" "foo" {
   filename = "${path.module}/foo.bar"
 }
 
-data "local_file" "foo" {
-  filename = "${path.module}/foo.bar"
-}
-
 output "example_output" {
   value = provider::local::direxists("${path.module}/example-directory")
 }

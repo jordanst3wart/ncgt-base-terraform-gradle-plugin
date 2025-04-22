@@ -25,18 +25,3 @@ terraformSourceSets {
         setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
     }
 }
-
-tasks.register("LogInfo") {
-    doLast {
-        println("Terraform source sets: ${terraformSourceSets.named("main").get().srcDir.get()}")
-    }
-}
-// logger.info()
-    /*main {
-        srcDir = file('main/tf')
-        backendText("hi") // backend file...
-        variables {
-            file('vars.tfvars')
-        }
-    }*/
-//

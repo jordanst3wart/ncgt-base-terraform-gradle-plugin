@@ -91,7 +91,7 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         projectOperations.fsOperations.updateFileProperty(
             reportsDir,
-            projectOperations.buildDirDescendant("${name}/reports/tf/")
+            projectOperations.buildDirDescendant("${name}/tf/reports")
         )
 
         this.vars = new Variables(this.sourceDir)
