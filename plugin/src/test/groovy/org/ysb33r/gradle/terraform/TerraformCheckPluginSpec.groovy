@@ -25,7 +25,7 @@ class TerraformCheckPluginSpec extends Specification {
 
     void 'The check task depends on tf*FmtCheck tasks'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
         when:
         project.allprojects {

@@ -81,7 +81,7 @@ class AbstractTerraformTask extends DefaultTask {
         if (terraformLogLevel) {
             sourceSet.get().logDir.get().mkdirs()
         }
-        logger.error("hi")
+        logger.error('hi')
 
         TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
@@ -95,13 +95,19 @@ class AbstractTerraformTask extends DefaultTask {
         }
         logger.info("Using Terraform environment: ${terraformEnvironment}")
         logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
+        // TODO logger.lifecycle...???
+        // TODO remove stdoutCapture
         if (this.stdoutCapture) {
+            // runs for just show task
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
                 projectOperations.exec(runner).assertNormalExitValue()
             }
         } else {
-            projectOperations.exec(runner).assertNormalExitValue()
+            // runs for everything else
+            // ???
+            project.exec { runner }.assertNormalExitValue()
+            // projectOperations.exec(runner).assertNormalExitValue()
         }
     }
 

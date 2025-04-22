@@ -28,7 +28,7 @@ class TerraformPluginSpec extends Specification {
     Project project = ProjectBuilder.builder().build()
 
     void setup() {
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
         project.allprojects {
             terraformSourceSets {
                 main {
@@ -50,42 +50,42 @@ class TerraformPluginSpec extends Specification {
         project.tasks.named('applyRelease').get() instanceof TerraformApply
     }
 
-    /*void 'Plugin is applied'() {
+    void 'Plugin is applied'() {
         expect: 'Backend tasks are not created if no backend text set'
-        def backendTask = project.tasks.named('createTfFooBackendConfiguration').get() as RemoteStateTask
-        backendTask.name == 'createTfFooBackendConfiguration'
+        def backendTask = project.tasks.named('createBackendConfigurationMain').get() as RemoteStateTask
+        backendTask.name == 'createBackendConfigurationMain'
         backendTask.backendFileRequired.get() == true
-        backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfFooBackendConfiguration/terraform-backend-config.tf")
+        backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
 
-        def task = project.tasks.named('initFoo').get() as TerraformInit
-        task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfFooBackendConfiguration/terraform-backend-config.tf")
+        def task = project.tasks.named('initMain').get() as TerraformInit
+        task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
         task.useBackendFile.get() == true // should be true
         try {
-            project.tasks.named('createTfReleaseBackendConfiguration').get()
+            project.tasks.named('createBackendConfigurationRelease').get()
             false == true
         } catch (org.gradle.api.UnknownTaskException e) {
         }
-    }*/
+    }
 
-    /*void 'The default destination directory is based upon the source set name'() {
+    void 'The default destination directory is based upon the source set name'() {
         expect:
         def remoteStateTask = project.tasks.withType(RemoteStateTask)
         remoteStateTask.size() == 2
-        File main = project.tasks.createTfMainBackendConfiguration.backendConfigFile.get()
+        File main = project.tasks.createBackendConfigurationMain.backendConfigFile.get()
         main.name == 'terraform-backend-config.tf'
         main.parentFile.name == 'tfMainBackendConfiguration'
         main.parentFile.parentFile == new File(project.buildDir, 'tfRemoteState')
-        project.tasks.createTfMainBackendConfiguration.getDestinationDir().get() == main.parentFile
+        project.tasks.createBackendConfigurationMain.getDestinationDir().get() == main.parentFile
     }
 
     void 'terraformInit has configuration file correctly setup'() {
         expect:
-        project.tasks.initMain.backendConfigFile.get() == project.tasks.createTfMainBackendConfiguration.backendConfigFile.get()
+        project.tasks.initMain.backendConfigFile.get() == project.tasks.createBackendConfigurationMain.backendConfigFile.get()
 
         try {
-            project.tasks.initRelease.backendConfigFile.get() == project.tasks.createTfReleaseBackendConfiguration.backendConfigFile.get()
+            project.tasks.initRelease.backendConfigFile.get() == project.tasks.createBackendConfigurationRelease.backendConfigFile.get()
             false == true
         } catch (groovy.lang.MissingPropertyException e) {
         }
-    }*/
+    }
 }

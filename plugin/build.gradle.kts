@@ -56,26 +56,6 @@ gradlePlugin {
             // website = property("WEBSITE").toString()
             // vcsUrl = property("VCS_URL").toString()
         }
-        /*
-                terraformBasePlugin {
-            id = 'foo.bar.terraform.base'
-            displayName = 'Terraform Base plugin'
-            description = 'Provides Terraform extension and tasks. No need to have terraform installed as plugin will take care of caching and installation in a similar fashion as to have Gradle distributions are cached'
-            group = 'foo.bar.gradle.terraform'
-        }
-        terraformPlugin {
-            id = 'foo.bar.terraform'
-            displayName = 'Terraform conventions plugin'
-            description = 'Provides Terraform conventions, source sets and predefined tasks'
-            group = 'foo.bar.gradle.terraform'
-        }
-        terraformRCPlugin {
-            id = 'foo.bar.terraform.rc'
-            displayName = 'Terraform Configuration (terraformrc) plugin'
-            description = 'Deals specifically with the creation of terraformrc files'
-            group = 'foo.bar.gradle.terraform'
-        }
-         */
     }
 }
 
