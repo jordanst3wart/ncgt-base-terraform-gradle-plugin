@@ -58,7 +58,7 @@ class TerraformRCExtension {
      *
      * When set to {@code true} use global Terraform configuration rather than a project configuration.
      *
-     * Default is {@code false}.
+     * Default is {@code true}.
      */
     boolean useGlobalConfig = false
 

@@ -46,7 +46,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
     public static final String FORMAT_ALL = 'fmtAll'
-    // TODO terraformrc should be a root object, might be a bug with sub-projects
     public static final String TERRAFORM_RC_EXT = 'terraformrc'
     public static final String TERRAFORM_RC_TASK = 'generateTerraformConfig'
     public static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'

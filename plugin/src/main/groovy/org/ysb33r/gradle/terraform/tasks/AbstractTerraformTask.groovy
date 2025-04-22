@@ -85,8 +85,6 @@ class AbstractTerraformTask extends DefaultTask {
 
         TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
-        createPluginCacheDir(terraformrc)
-
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
             void execute(ExecSpec spec) {
@@ -372,6 +370,10 @@ class AbstractTerraformTask extends DefaultTask {
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         execSpec.cmdArgs(commandLineProviders*.get().flatten())
         execSpec
+    }
+
+    protected getTerraformrc(){
+        terraformrc
     }
 
     private Provider<TerraformSourceDirectorySet> sourceSet

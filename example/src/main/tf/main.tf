@@ -10,6 +10,11 @@ terraform {
   required_version = ">= 1.8.0"
 }
 
+# TODO change
+terraform {
+  backend "local" {}
+}
+
 resource "local_file" "foo" {
   content  = "foo!"
   filename = "${path.module}/foo.bar"

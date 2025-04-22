@@ -22,21 +22,9 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
-
-import java.nio.file.FileVisitResult
-import java.nio.file.FileVisitor
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
-import java.time.LocalDateTime
-
-import static java.nio.file.FileVisitResult.CONTINUE
-import static java.nio.file.Files.readSymbolicLink
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
 
 /** Equivalent of {@code terraform init}.
  */
@@ -52,20 +40,20 @@ class TerraformInit extends AbstractTerraformTask {
     /**
      * The directory where terraform plgins data is written to.
      */
-    @OutputDirectory
-    final Provider<File> pluginDirectory
+    //@OutputDirectory
+    //final Provider<File> pluginDirectory
 
     /**
      * The location of {@code terraform.tfstate}.
      */
-    @OutputFile
-    final Provider<File> terraformStateFile
+    //@OutputFile
+    //final Provider<File> terraformStateFile
 
     /**
      * The location of the file that provides details about the last run of this task.
      */
-    @OutputFile
-    final Provider<File> terraformInitStateFile
+    //@OutputFile
+    //final Provider<File> terraformInitStateFile
 
     TerraformInit() {
         super('init', [])
@@ -76,12 +64,12 @@ class TerraformInit extends AbstractTerraformTask {
         this.backendConfig = project.objects.property(File)
         // TODO I think this is wrong it should use the cached plugins...
         // might not need the second map
-        this.pluginDirectory = sourceSet.map { sourceSet ->
-            sourceSet.dataDir.map { new File(it, PLUGIN_SUBDIR) } } as Provider<File>
-        this.terraformStateFile = sourceSet.map { sourceSet ->
-            sourceSet.dataDir.map { new File(it as File, 'terraform.tfstate') } } as Provider<File>
-        this.terraformInitStateFile = sourceSet.map { sourceSet ->
-            sourceSet.dataDir.map { new File(it as File, '.init.txt') } } as Provider<File>
+        //this.pluginDirectory = sourceSet.map { source ->
+//            source.dataDir.map { new File(it, PLUGIN_SUBDIR) } } as Provider<File>
+        //this.terraformStateFile = sourceSet.map { source ->
+//            source.dataDir.map { new File(it as File, 'terraform.tfstate') } } as Provider<File>
+        //this.terraformInitStateFile = sourceSet.map { source ->
+//            source.dataDir.map { new File(it as File, '.init.txt') } } as Provider<File>
         this.useBackendConfig = project.objects.property(Boolean)
     }
 
@@ -116,10 +104,9 @@ class TerraformInit extends AbstractTerraformTask {
 
     @Override
     void exec() {
-        println('TerraformInit exec')
-        removeDanglingSymlinks()
+        createPluginCacheDir(this.terraformrc)
         super.exec()
-        terraformInitStateFile.get().text = "${LocalDateTime.now()}"
+        // terraformInitStateFile.get().text = "${LocalDateTime.now()}"
     }
 
     /** Add specific command-line options for the command.
@@ -146,41 +133,6 @@ class TerraformInit extends AbstractTerraformTask {
         execSpec
     }
 
-    private void removeDanglingSymlinks() {
-        // TODO check this function... I don't know what it does
-        Path pluginDir = new File(sourceSet.get().dataDir.get(), PLUGIN_SUBDIR).toPath()
-        Files.walkFileTree(
-            pluginDir,
-            new FileVisitor<Path>() {
-                @Override
-                FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (attrs.symbolicLink && !Files.exists(readSymbolicLink(file))) {
-                        logger.debug("Removing dangling plugin symbolic link ${file}")
-                        Files.delete(file)
-                    }
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                    logger.debug("Failed to visit: ${file}, because ${exc.message}")
-                    CONTINUE
-                }
-
-                @Override
-                FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    CONTINUE
-                }
-            }
-        )
-    }
-
     private Provider<Boolean> useBackendConfig
     private final Property<File> backendConfig
-    private static final String PLUGIN_SUBDIR = 'plugins'
 }

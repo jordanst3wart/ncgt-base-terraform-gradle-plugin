@@ -15,14 +15,14 @@ terraform {
 }
 
 // terraformRCExtension define extensions...
-/*terraformrc {
-
-}*/
+project.rootProject.extensions.getByType<TerraformRCExtension>().apply {
+    pluginCacheMayBreakDependencyLockFile = true
+}
 
 terraformSourceSets {
     create("main") {
         setSrcDir("src/main/tf")
-        setBackendText("foo = bar") // TODO needs to be defined...
+        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
     }
 }
 
