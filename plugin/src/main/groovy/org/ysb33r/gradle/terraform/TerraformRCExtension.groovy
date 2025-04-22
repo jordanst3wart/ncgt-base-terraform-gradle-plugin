@@ -26,7 +26,7 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
 
-import static org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin.TERRAFORM_RC_TASK
+import static org.ysb33r.gradle.terraform.plugins.TerraformPlugin.TERRAFORM_RC_TASK
 import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
 /** Extension that describes a {@code terraformrc} file.

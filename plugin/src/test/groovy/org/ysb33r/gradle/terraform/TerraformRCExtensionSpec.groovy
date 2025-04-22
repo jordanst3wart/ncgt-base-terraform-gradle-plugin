@@ -32,7 +32,7 @@ class TerraformRCExtensionSpec extends Specification {
 
         when: 'A version is configured'
         project.allprojects {
-            apply plugin: 'org.ysb33r.terraform.rc'
+            apply plugin: 'org.ysb33r.terraform'
 
             // tag::configure-with-tag[]
             terraformrc {

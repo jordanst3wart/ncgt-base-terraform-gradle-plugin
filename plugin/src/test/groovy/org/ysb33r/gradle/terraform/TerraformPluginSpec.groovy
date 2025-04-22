@@ -44,10 +44,10 @@ class TerraformPluginSpec extends Specification {
         expect:
         def tss = project.terraformSourceSets
         tss.getByName('main').srcDir.get() == project.file('foo/bar')
-        tss.getByName( 'release').srcDir.get() == project.file('src/tf/release')
-        project.tasks.named('tfReleaseInit').get() instanceof TerraformInit
-        project.tasks.named('tfReleasePlan').get() instanceof TerraformPlan
-        project.tasks.named('tfReleaseApply').get() instanceof TerraformApply
+        tss.getByName( 'release').srcDir.get() == project.file('src/release/tf')
+        project.tasks.named('initRelease').get() instanceof TerraformInit
+        project.tasks.named('planRelease').get() instanceof TerraformPlan
+        project.tasks.named('applyRelease').get() instanceof TerraformApply
     }
 
     void 'Plugin is applied'() {
@@ -57,7 +57,7 @@ class TerraformPluginSpec extends Specification {
         backendTask.backendFileRequired.get() == true
         backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
 
-        def task = project.tasks.named('tfMainInit').get() as TerraformInit
+        def task = project.tasks.named('initMain').get() as TerraformInit
         task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
         task.useBackendFile.get() == true // should be true
         try {
@@ -80,10 +80,10 @@ class TerraformPluginSpec extends Specification {
 
     void 'terraformInit has configuration file correctly setup'() {
         expect:
-        project.tasks.tfMainInit.backendConfigFile.get() == project.tasks.createTfMainBackendConfiguration.backendConfigFile.get()
+        project.tasks.initMain.backendConfigFile.get() == project.tasks.createTfMainBackendConfiguration.backendConfigFile.get()
 
         try {
-            project.tasks.tfReleaseInit.backendConfigFile.get() == project.tasks.createTfReleaseBackendConfiguration.backendConfigFile.get()
+            project.tasks.initRelease.backendConfigFile.get() == project.tasks.createTfReleaseBackendConfiguration.backendConfigFile.get()
             false == true
         } catch (groovy.lang.MissingPropertyException e) {
         }

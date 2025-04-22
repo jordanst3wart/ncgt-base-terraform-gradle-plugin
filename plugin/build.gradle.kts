@@ -46,32 +46,12 @@ fun createVersion(): String {
 // create a gradle plugin uploading to gradle plugins website
 gradlePlugin {
     plugins {
-        create("terraformBasePlugin") {
-            id = "foo.bar.terraform.base" // property("ID").toString()
-            implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin" // property("IMPLEMENTATION_CLASS").toString()
-            version = createVersion()
-            displayName = "Terraform Base Plugin"
-            description = "Provides Terraform extension and tasks. No need to have terraform installed as plugin will take care of caching and installation in a similar fashion as to have Gradle distributions are cached"
-            tags = listOf("terraform")
-            // website = property("WEBSITE").toString()
-            // vcsUrl = property("VCS_URL").toString()
-        }
         create("terraformPlugin") {
             id = "foo.bar.terraform" // property("ID").toString()
             implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformPlugin" // property("IMPLEMENTATION_CLASS").toString()
             version = createVersion()
             displayName = "Terraform Plugin"
             description = "Provides Terraform extension and tasks. No need to have terraform installed as plugin will take care of caching and installation in a similar fashion as to have Gradle distributions are cached"
-            tags = listOf("terraform")
-            // website = property("WEBSITE").toString()
-            // vcsUrl = property("VCS_URL").toString()
-        }
-        create("terraformRCPlugin") {
-            id = "foo.bar.terraform.rc" // property("ID").toString()
-            implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin" // property("IMPLEMENTATION_CLASS").toString()
-            version = createVersion()
-            displayName = "Terraform RC Plugin"
-            description = "Deals specifically with the creation of terraformrc files"
             tags = listOf("terraform")
             // website = property("WEBSITE").toString()
             // vcsUrl = property("VCS_URL").toString()

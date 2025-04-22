@@ -41,7 +41,7 @@ class TerraformPlanSpec extends Specification {
         }
 
         then:
-        def task = project.tasks.named('tfMainPlan').get()
+        def task = project.tasks.named('planMain').get()
         task instanceof TerraformPlan
         // applyTask.setTargets(["someResource"]) // bug
         task.setJson(true)

@@ -28,7 +28,7 @@ import org.ysb33r.gradle.terraform.tasks.TerraformInit
 
 import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.APPLY
 import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.INIT
-import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
+import static org.ysb33r.gradle.terraform.plugins.TerraformPlugin.TERRAFORM_TASK_GROUP
 
 /** Provide convention naming.
  *
@@ -45,7 +45,7 @@ class TerraformConvention {
      * @since 0.10
      */
     static String taskName(String sourceSetName, String commandType) {
-        "tf${sourceSetName.capitalize()}${commandType.capitalize()}"
+        "${commandType}${sourceSetName.capitalize()}"
     }
 
     /**
@@ -106,7 +106,7 @@ class TerraformConvention {
                 "${project.buildDir}/tfRemoteState/tf${sourceSet.name.capitalize()}BackendConfiguration")
         }
 
-        project.tasks.named("tf${sourceSet.name.capitalize()}Init", TerraformInit).configure {
+        project.tasks.named(taskName(sourceSet.name, 'init'), TerraformInit).configure {
             it.dependsOn(remoteStateTask)
             it.backendConfigFile = remoteStateTask.get().backendConfigFile.get()
             it.useBackendFile = remoteStateTask.get().backendFileRequired

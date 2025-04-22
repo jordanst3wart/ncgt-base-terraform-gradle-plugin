@@ -41,7 +41,7 @@ class TerraformDestroySpec extends Specification {
         }
 
         then:
-        def task = project.tasks.named('tfMainDestroy').get()
+        def task = project.tasks.named('destroyMain').get()
         task instanceof TerraformDestroy
         // task.setTargets(["someResource"]) // bug
         task.setJson(true)

@@ -1,3 +1,4 @@
+import org.ysb33r.gradle.terraform.TerraformRCExtension
 
 
 plugins {
@@ -8,16 +9,27 @@ plugins {
 // /Users/stewartj/.m2/repository/com/newscorp/gt/gradle/terraform
 // com.newscorp.gt.gradle.terraform.gradle.plugin
 terraform {
+    useAwsEnvironment()
+    useGoogleEnvironment()
     executable(mapOf("version" to "1.11.1"))
 }
 
-/*terraformSourceSets {
-    main {
+// terraformRCExtension
+/*terraformrc {
+
+}*/
+
+terraformSourceSets {
+    create("main") {
+        //srcDir("src/main")
+
+    }
+}
+    /*main {
         srcDir = file('main/tf')
         backendText("hi") // backend file...
         variables {
             file('vars.tfvars')
         }
-    }
-}*/
+    }*/
 //
