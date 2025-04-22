@@ -11,20 +11,27 @@ plugins {
 terraform {
     useAwsEnvironment()
     useGoogleEnvironment()
-    executable(mapOf("version" to "1.11.1"))
+    executable(mapOf("version" to "1.10.1"))
 }
 
-// terraformRCExtension
+// terraformRCExtension define extensions...
 /*terraformrc {
 
 }*/
 
 terraformSourceSets {
     create("main") {
-        //srcDir("src/main")
-
+        setSrcDir("src/main/tf")
+        setBackendText("foo = bar") // TODO needs to be defined...
     }
 }
+
+tasks.register("LogInfo") {
+    doLast {
+        println("Terraform source sets: ${terraformSourceSets.named("main").get().srcDir.get()}")
+    }
+}
+// logger.info()
     /*main {
         srcDir = file('main/tf')
         backendText("hi") // backend file...

@@ -41,7 +41,7 @@ class TerraformApplySpec extends Specification {
         }
 
         then:
-        def applyTask = project.tasks.named('tfMainApply').get()
+        def applyTask = project.tasks.named('applyMain').get()
         applyTask instanceof TerraformApply
         // applyTask.setTargets(["someResource"]) // bug
         applyTask.setJson(true)

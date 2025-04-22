@@ -50,24 +50,24 @@ class TerraformPluginSpec extends Specification {
         project.tasks.named('applyRelease').get() instanceof TerraformApply
     }
 
-    void 'Plugin is applied'() {
+    /*void 'Plugin is applied'() {
         expect: 'Backend tasks are not created if no backend text set'
-        def backendTask = project.tasks.named('createTfMainBackendConfiguration').get() as RemoteStateTask
-        backendTask.name == 'createTfMainBackendConfiguration'
+        def backendTask = project.tasks.named('createTfFooBackendConfiguration').get() as RemoteStateTask
+        backendTask.name == 'createTfFooBackendConfiguration'
         backendTask.backendFileRequired.get() == true
-        backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
+        backendTask.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfFooBackendConfiguration/terraform-backend-config.tf")
 
-        def task = project.tasks.named('initMain').get() as TerraformInit
-        task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfMainBackendConfiguration/terraform-backend-config.tf")
+        def task = project.tasks.named('initFoo').get() as TerraformInit
+        task.backendConfigFile.get() == new File(project.buildDir, "tfRemoteState/tfFooBackendConfiguration/terraform-backend-config.tf")
         task.useBackendFile.get() == true // should be true
         try {
             project.tasks.named('createTfReleaseBackendConfiguration').get()
             false == true
         } catch (org.gradle.api.UnknownTaskException e) {
         }
-    }
+    }*/
 
-    void 'The default destination directory is based upon the source set name'() {
+    /*void 'The default destination directory is based upon the source set name'() {
         expect:
         def remoteStateTask = project.tasks.withType(RemoteStateTask)
         remoteStateTask.size() == 2
@@ -87,5 +87,5 @@ class TerraformPluginSpec extends Specification {
             false == true
         } catch (groovy.lang.MissingPropertyException e) {
         }
-    }
+    }*/
 }

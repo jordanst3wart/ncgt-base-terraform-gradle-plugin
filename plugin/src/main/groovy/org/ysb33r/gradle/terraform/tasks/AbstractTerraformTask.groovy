@@ -81,6 +81,7 @@ class AbstractTerraformTask extends DefaultTask {
         if (terraformLogLevel) {
             sourceSet.get().logDir.get().mkdirs()
         }
+        logger.error("hi")
 
         TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
@@ -92,8 +93,8 @@ class AbstractTerraformTask extends DefaultTask {
                 execSpec.copyToExecSpec(spec)
             }
         }
-        logger.info "Using Terraform environment: ${terraformEnvironment}"
-        logger.debug "Terraform executable will be launched with environment: ${execSpec.environment}"
+        logger.info("Using Terraform environment: ${terraformEnvironment}")
+        logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
         if (this.stdoutCapture) {
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
@@ -266,10 +267,10 @@ class AbstractTerraformTask extends DefaultTask {
      *
      * @since 0.10
      */
-    @InputFiles
+    /*@InputFiles
     protected Provider<List<File>> getSecondarySources() {
         this.secondarySources
-    }
+    }*/
 
     protected TerraformExecSpec buildExecSpec() {
         TerraformExecSpec execSpec = createExecSpec()

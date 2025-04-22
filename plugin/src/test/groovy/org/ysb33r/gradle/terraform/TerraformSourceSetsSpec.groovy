@@ -134,7 +134,7 @@ class TerraformSourceSetsSpec extends Specification {
 
         then:
         vars.fileNames.contains('foo.tfvars')
-        cmdline.contains("-var-file=${project.file('src/tf/main/foo.tfvars')}".toString())
+        cmdline.contains("-var-file=${project.file('src/main/tf/foo.tfvars')}".toString())
 
         and:
         fooPos < foo2Pos
@@ -168,7 +168,7 @@ class TerraformSourceSetsSpec extends Specification {
         mainSourceSet.variables.fileNames == files
 
         def releaseSourceSet = tss.getByName( 'release')
-        releaseSourceSet.srcDir.get() == project.file('src/tf/release')
+        releaseSourceSet.srcDir.get() == project.file('src/release/tf')
     }
 
     void configureFourSourceSets() {

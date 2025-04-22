@@ -54,7 +54,7 @@ class TerraformPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         ProjectOperations.maybeCreateExtension(project)
-        configureTerraformRC(project)
+        configureTerraformRC(project.getRootProject())
 
         project.tasks.withType(RemoteStateTask).configureEach { RemoteStateTask t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
@@ -76,9 +76,11 @@ class TerraformPlugin implements Plugin<Project> {
         configureCheck(project)
     }
 
-    private static void configureTerraformRC(Project project) {
-        TerraformRCExtension terraformRcExt = project.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, project)
-        project.tasks.register(TERRAFORM_RC_TASK) { it ->
+    private static void configureTerraformRC(Project rootProject) {
+        // create projections for root rootProject
+        ProjectOperations.maybeCreateExtension(rootProject)
+        TerraformRCExtension terraformRcExt = rootProject.extensions.create(TERRAFORM_RC_EXT, TerraformRCExtension, rootProject)
+        rootProject.tasks.register(TERRAFORM_RC_TASK) { it ->
             it.group = TERRAFORM_TASK_GROUP
             it.description = 'Generates Terraform configuration file'
             it.onlyIf { !terraformRcExt.useGlobalConfig }
