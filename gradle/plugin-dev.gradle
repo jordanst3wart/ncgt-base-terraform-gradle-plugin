@@ -18,33 +18,4 @@ dependencies {
     testImplementation "org.ysb33r.gradle:grolifant-herd:${grolifantVer}"
 }
 
-license {
-    header = rootProject.file('gradle/license/HEADER')
-    strictCheck = true
-    ignoreFailures = false
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-        groovy = 'SLASHSTAR_STYLE'
-    }
-    ext.year = '2017-2022'
-    excludes([
-        '**/*.adoc', '**/*.md',
-        '**/*.properties',
-        '**/*dsl.*Spec.groovy',
-        '**/*.json',
-        '**/*.tf'
-    ])
-}
-
-pluginBundle {
-    mavenCoordinates {
-        groupId = project.group
-    }
-}
-
-publishPlugins {
-    onlyIf notSnapshot
-    mustRunAfter check, ':docs:installDocs'
-}
-
 apply from: rootProject.file('gradle/integration-tests.gradle')

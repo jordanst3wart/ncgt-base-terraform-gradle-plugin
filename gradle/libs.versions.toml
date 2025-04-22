@@ -1,0 +1,13 @@
+[versions]
+kotlin = "2.0.10"
+ktlintGradle = "12.1.1"
+versionCheck = "0.51.0"
+terraform = "1.9.8"
+grgitVersion = "5.2.2"
+
+[plugins]
+versionCheck = { id = "com.github.ben-manes.versions", version.ref = "versionCheck"}
+grgit = { id = "org.ajoberstar.grgit", version.ref = "grgitVersion"}
+
+[libraries]
+jgit = "org.eclipse.jgit:org.eclipse.jgit:6.9.0.202403050737-r"

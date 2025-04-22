@@ -1,10 +1,7 @@
 plugins {
     id 'idea'
     id 'org.ysb33r.os' version '1.0.0'
-    id 'org.asciidoctor.jvm.convert' version '3.2.0' apply false
-    id 'org.asciidoctor.editorconfig' version '3.2.0' apply false
     id 'com.gradle.plugin-publish' version '0.15.0' apply false
-    id 'com.github.hierynomus.license' version '0.16.1' apply false
     id 'org.ajoberstar.git-publish' version '3.0.1' apply false
 }
 
@@ -16,13 +13,7 @@ allprojects {
     }
 
     repositories {
-        mavenCentral() {
-            content {
-                excludeGroup 'terraform'
-                excludeGroup 'terraform-provider'
-            }
-        }
-
+        mavenCentral()
         if (!notSnapshot()) {
             mavenLocal()
         }
