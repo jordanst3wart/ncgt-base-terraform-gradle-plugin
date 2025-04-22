@@ -21,8 +21,8 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
-import org.ysb33r.gradle.terraform.config.ResourceFilter
-import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.config.Parallel
+import org.ysb33r.gradle.terraform.config.Refresh
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -44,7 +44,7 @@ class TerraformApply extends AbstractTerraformTask {
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformApply() {
-        super('apply', [Lock, StateOptionsFull, ResourceFilter])
+        super('apply', [Lock, Refresh, Parallel])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
@@ -55,26 +55,8 @@ class TerraformApply extends AbstractTerraformTask {
         mustRunAfter(taskProvider('plan'))
     }
 
-    /** Select specific resources.
-     *
-     * @param resourceNames List of resources to target.
-     */
-    @Option(option = 'target', description = 'List of resources to target')
-    void setTargets(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).target(resourceNames)
-    }
-
     Provider<File> getPlanFile() {
         planFile
-    }
-
-    /** Mark resources to be replaced.
-     *
-     * @param resourceNames List of resources to target.
-     */
-    @Option(option = 'replace', description = 'List of resources to replace')
-    void setReplacements(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
     /**

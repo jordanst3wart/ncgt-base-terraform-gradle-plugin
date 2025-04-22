@@ -19,9 +19,6 @@ import groovy.transform.CompileStatic
 
 /** Allows for lock configurations on a task.
  *
- * On Terraform v0.15+ anything set here is ignored if used with
- *   {@link org.ysb33r.gradle.terraform.tasks.TerraformInit}.
- *
  */
 
 // TODO make one instance of... ie. you set the lock for all plan, and apply tasks

@@ -19,16 +19,14 @@ import groovy.transform.CompileStatic
 
 /** Allows for options related to walking the state tree.
  *
- * @since 0.1
  */
 @CompileStatic
-class StateOptionsFull extends StateOptionsConcurrency {
+class Refresh implements TerraformTaskConfigExtension {
+    final String name = 'refresh'
     boolean refresh = true
 
     @Override
     List<String> getCommandLineArgs() {
-        List<String> args = super.commandLineArgs
-        args.add "-refresh=${refresh}".toString()
-        args
+        ["-refresh=${refresh}".toString()]
     }
 }

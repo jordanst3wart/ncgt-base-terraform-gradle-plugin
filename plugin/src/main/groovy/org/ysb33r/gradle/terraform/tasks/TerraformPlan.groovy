@@ -24,15 +24,14 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.process.ExecSpec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
-import org.ysb33r.gradle.terraform.config.ResourceFilter
-import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.config.Parallel
+import org.ysb33r.gradle.terraform.config.Refresh
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform plan}.
  *
- * @since 0.1
  */
 @CompileStatic
 class TerraformPlan extends AbstractTerraformTask {
@@ -41,7 +40,7 @@ class TerraformPlan extends AbstractTerraformTask {
     TerraformPlan() {
         super(
             'plan',
-            [Lock, StateOptionsFull, ResourceFilter]
+            [Lock, Refresh, Parallel]
         )
         supportsInputs()
         supportsColor()
@@ -79,24 +78,6 @@ class TerraformPlan extends AbstractTerraformTask {
         project.provider({ ->
             new File(sourceSet.get().dataDir.get(), '__.tfvars')
         } as Callable<File>)
-    }
-
-    /** Select specific resources.
-     *
-     * @param resourceNames List of resources to target.
-     */
-    @Option(option = 'target', description = 'List of resources to target')
-    void setTargets(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).target(resourceNames)
-    }
-
-    /** Mark resources to be replaces.
-     *
-     * @param resourceNames List of resources to target.
-     */
-    @Option(option = 'replace', description = 'List of resources to replace')
-    void setReplacements(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).replace(resourceNames)
     }
 
     /** Where to write the report in human-readable or JSON format.
@@ -138,7 +119,7 @@ class TerraformPlan extends AbstractTerraformTask {
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         if (project.hasProperty('tf.plan.refresh')) {
             logger.lifecycle('tf.plan.refresh property found setting refresh to false')
-            extensions.getByType(StateOptionsFull).refresh = false
+            extensions.getByType(Refresh).refresh = false
         }
         super.addCommandSpecificsToExecSpec(execSpec)
         if (jsonReport) {

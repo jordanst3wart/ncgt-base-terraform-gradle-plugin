@@ -21,8 +21,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Lock
-import org.ysb33r.gradle.terraform.config.ResourceFilter
-import org.ysb33r.gradle.terraform.config.StateOptionsFull
+import org.ysb33r.gradle.terraform.config.Parallel
+import org.ysb33r.gradle.terraform.config.Refresh
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -46,18 +46,13 @@ class TerraformDestroy extends AbstractTerraformTask {
     @Inject
     @SuppressWarnings('DuplicateStringLiteral')
     TerraformDestroy() {
-        super('destroy', [Lock, StateOptionsFull, ResourceFilter])
+        super('destroy', [Lock, Refresh, Parallel])
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
         inputs.files(taskProvider('destroyPlan'))
         mustRunAfter(taskProvider('destroyPlan'))
         addCommandLineProvider(sourceSetVariables())
-    }
-
-    @Option(option = 'target', description = 'List of resources to target')
-    void setTargets(List<String> resourceNames) {
-        extensions.getByType(ResourceFilter).targets = resourceNames
     }
 
     /**

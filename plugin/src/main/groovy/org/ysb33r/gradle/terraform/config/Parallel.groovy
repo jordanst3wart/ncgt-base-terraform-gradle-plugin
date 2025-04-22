@@ -22,8 +22,8 @@ import groovy.transform.CompileStatic
  * @since 0.1
  */
 @CompileStatic
-class StateOptionsConcurrency implements TerraformTaskConfigExtension {
-    final String name = 'stateOptions'
+class Parallel implements TerraformTaskConfigExtension {
+    final String name = 'parallel'
 
     Integer maxParallel = 10
 
