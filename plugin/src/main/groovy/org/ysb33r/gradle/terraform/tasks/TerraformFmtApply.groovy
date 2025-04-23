@@ -26,7 +26,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
  * @since 0.10.0
  */
 @CompileStatic
-class TerraformFmtApply extends AbstractTerraformTask {
+abstract class TerraformFmtApply extends TerraformTask {
 
     TerraformFmtApply() {
         super('fmt', [])

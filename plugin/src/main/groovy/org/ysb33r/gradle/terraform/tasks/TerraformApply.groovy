@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
@@ -26,7 +25,6 @@ import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.Refresh
 
 import javax.inject.Inject
-import java.util.concurrent.Callable
 
 /** Equivalent of {@code terraform apply}.
  *
@@ -36,7 +34,7 @@ import java.util.concurrent.Callable
  * @since 0.1
  */
 @CompileStatic
-class TerraformApply extends AbstractTerraformTask {
+abstract class TerraformApply extends TerraformTask {
 
     @InputFile
     private final Provider<File> planFile

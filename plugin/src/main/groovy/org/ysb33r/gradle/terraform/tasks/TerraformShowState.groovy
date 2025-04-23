@@ -22,7 +22,6 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.config.Json
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
@@ -30,7 +29,7 @@ import java.util.concurrent.Callable
 /** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
  */
 @CompileStatic
-class TerraformShowState extends AbstractTerraformTask {
+abstract class TerraformShowState extends TerraformTask {
 
     @Inject
     TerraformShowState() {

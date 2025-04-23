@@ -23,7 +23,6 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFile
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
 import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
@@ -31,7 +30,7 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPl
 /** Equivalent of {@code terraform init}.
  */
 @CompileStatic
-class TerraformInit extends AbstractTerraformTask {
+abstract class TerraformInit extends TerraformTask {
 
     /**
      * Skip initialisation of child modules.

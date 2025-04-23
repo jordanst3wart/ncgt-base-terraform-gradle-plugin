@@ -29,7 +29,7 @@ import java.util.concurrent.Callable
 /** Equivalent of {@code terraform show /path/to/terraform.plan}.
  */
 @CompileStatic
-class TerraformShow extends AbstractTerraformTask {
+abstract class TerraformShow extends TerraformTask {
 
     @Inject
     TerraformShow() {
