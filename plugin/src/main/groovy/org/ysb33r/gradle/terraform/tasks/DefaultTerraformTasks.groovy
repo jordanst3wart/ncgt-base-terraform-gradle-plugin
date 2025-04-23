@@ -19,12 +19,8 @@ import groovy.transform.CompileStatic
 
 /** Maps terraform tasks to conventions.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.8.0
  */
 @CompileStatic
-@SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
     INIT('init', TerraformInit, 'Initialises Terraform'),
     SHOW_STATE('showState', TerraformShowState, 'Generates a report on the current state'),

@@ -20,10 +20,6 @@ import org.gradle.api.tasks.Input
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
 /** The {@code terraform fmt -write=true} command.
- *
- * @author Schalk W. Cronjé
- *
- * @since 0.10.0
  */
 @CompileStatic
 abstract class TerraformFmtApply extends TerraformTask {

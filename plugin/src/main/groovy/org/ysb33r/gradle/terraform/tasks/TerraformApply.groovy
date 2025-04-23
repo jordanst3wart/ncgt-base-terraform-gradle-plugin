@@ -30,8 +30,6 @@ import javax.inject.Inject
  *
  * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
  * in order to retrieve most of its configuration.
- *
- * @since 0.1
  */
 @CompileStatic
 abstract class TerraformApply extends TerraformTask {

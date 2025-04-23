@@ -46,9 +46,6 @@ import java.util.concurrent.Callable
 
 /** A base class for performing a {@code terraform} execution.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.1
  */
 @CompileStatic
 @SuppressWarnings('MethodCount')
