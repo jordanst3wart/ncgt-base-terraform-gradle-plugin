@@ -6,5 +6,5 @@ interface VariableSpec {
     fun list(name: String, val1: Any, vararg vals: Any)
     fun list(name: String, vals: Iterable<*>)
     fun file(fileName: String)
-    val commandLineArgs: List<String>
+    fun getCommandLineArgs(): List<String>
 }
