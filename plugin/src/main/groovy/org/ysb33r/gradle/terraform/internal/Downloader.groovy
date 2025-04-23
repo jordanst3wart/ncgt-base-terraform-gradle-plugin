@@ -69,7 +69,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
      */
     @Override
     URI uriFromVersion(final String ver) {
-        final String osArch = OS.getNativePrefix() + '_' + System.getProperty("os.arch");
+        final String osArch = HashicorpUtils.osArch(OS)
         osArch ? "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
     }
 

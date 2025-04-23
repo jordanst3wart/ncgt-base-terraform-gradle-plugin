@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
 import org.gradle.internal.os.OperatingSystem
+import org.ysb33r.grashicorp.HashicorpUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
 import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
@@ -58,7 +59,7 @@ class DownloaderOpenTofu extends AbstractDistributionInstaller implements Downlo
      */
     @Override
     URI uriFromVersion(final String ver) {
-        final String osArch = OS.getNativePrefix()
+        final String osArch = HashicorpUtils.osArch(OS)
         osArch ? "${BASEURI}/download/v${ver}/tofu_${ver}_${osArch}.zip".toURI() : null
     }
 
