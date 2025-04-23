@@ -16,7 +16,7 @@
 package org.ysb33r.grashicorp
 
 import groovy.transform.CompileStatic
-import org.ysb33r.grolifant.api.core.OperatingSystem
+import org.gradle.internal.os.OperatingSystem
 
 import java.util.regex.Pattern
 
@@ -114,9 +114,6 @@ class HashicorpUtils {
         os.windows ? path.absolutePath.replaceAll(BACKSLASH, DOUBLE_BACKSLASH) : path.absolutePath
     }
 
-    private final static String VARIANT_32BIT = '386'
-    private final static String VARIANT_64BIT = 'amd64'
-    private final static String VARIANT_ARM64 = 'arm64'
     private final static Pattern BACKSLASH = ~/\x5C/
     private final static String DOUBLE_BACKSLASH = '\\\\\\\\'
 }

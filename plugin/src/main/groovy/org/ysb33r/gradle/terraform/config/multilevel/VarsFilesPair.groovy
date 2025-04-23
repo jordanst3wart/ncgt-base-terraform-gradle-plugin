@@ -18,15 +18,15 @@ package org.ysb33r.gradle.terraform.config.multilevel
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.provider.Provider
-import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.grashicorp.StringUtils
 
 import java.nio.file.Path
 import java.util.stream.Collectors
 
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
+import static org.ysb33r.gradle.terraform.internal.Utils.escapeOneItem
+import static org.ysb33r.gradle.terraform.internal.Utils.escapedList
+import static org.ysb33r.gradle.terraform.internal.Utils.escapedMap
 
 /** Keeps a collection of variables and variable files.
  *
@@ -53,7 +53,7 @@ class VarsFilesPair {
      *
      * @since 0.12
      */
-    final List<Action<VariablesSpec>> additionalVariables = []
+    final List<Action<VariableSpec>> additionalVariables = []
 
     /**
      * Copy these settings to another instance.

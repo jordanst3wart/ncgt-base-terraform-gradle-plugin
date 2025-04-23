@@ -16,15 +16,11 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.grashicorp.HashicorpUtils
-import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
 import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
-
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.ARM64
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
 /** Downloads specific versions of {@code Terraform}.
  *
@@ -46,7 +42,6 @@ import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 @CompileStatic
 class Downloader extends AbstractDistributionInstaller implements  DownloaderBinary {
     public static final OperatingSystem OS = OperatingSystem.current()
-    public static final OperatingSystem.Arch ARCH = OS.arch
     public static final String TOOL_IDENTIFIER = 'terraform'
     public static final String BASEURI = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
 
@@ -64,8 +59,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
      * @return {@b true} for supported platforms,
      */
     static boolean isDownloadSupported() {
-        (OS.windows || OS.linux || OS.macOsX || OS.freeBSD) &&
-            (OS.arch == X86 || OS.arch == X86_64  || OS.arch == ARM64)
+        (OS.windows || OS.linux || OS.macOsX)
     }
 
     /** Provides an appropriate URI to download a specific version of Terraform.
@@ -75,7 +69,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
      */
     @Override
     URI uriFromVersion(final String ver) {
-        final String osArch = HashicorpUtils.osArch(OS)
+        final String osArch = OS.getNativePrefix() + '_' + System.getProperty("os.arch");
         osArch ? "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
     }
 

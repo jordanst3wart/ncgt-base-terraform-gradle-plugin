@@ -20,7 +20,7 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import spock.lang.Issue
 import spock.lang.Specification

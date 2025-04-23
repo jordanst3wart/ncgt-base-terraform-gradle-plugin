@@ -36,9 +36,9 @@ import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
-import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.gradle.terraform.internal.ConfigUtils
+import org.ysb33r.gradle.terraform.internal.Convention
+import org.ysb33r.gradle.terraform.internal.Utils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import javax.inject.Inject
@@ -89,7 +89,7 @@ abstract class TerraformTask extends DefaultTask {
             sourceSet.get().logDir.get().mkdirs()
         }
 
-        TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
+        Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
@@ -133,7 +133,7 @@ abstract class TerraformTask extends DefaultTask {
     ) {
         this.projectOperations = ProjectOperations.find(project)
         this.projectTerraform = project.extensions.getByType(TerraformExtension)
-        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+        this.terraformrc = ConfigUtils.locateTerraformRCExtension(project)
         this.command = cmd
         // not defined at setup time
         this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
@@ -192,7 +192,7 @@ abstract class TerraformTask extends DefaultTask {
     @CompileDynamic
     protected Provider<TerraformTask> taskProvider(String command) {
         Provider<String> taskName = projectOperations.provider { ->
-            TerraformConvention.taskName(sourceSet.get().name, command)
+            Convention.taskName(sourceSet.get().name, command)
         }
 
         taskName.flatMap({ String it ->
@@ -250,7 +250,7 @@ abstract class TerraformTask extends DefaultTask {
 
     @Input
     protected Map<String, String> getTerraformEnvironment() {
-        TerraformUtils.terraformEnvironment(
+        Utils.terraformEnvironment(
             terraformrc,
             name,
             sourceSet.get().dataDir,
@@ -358,7 +358,7 @@ abstract class TerraformTask extends DefaultTask {
                 cex = (ConfigExtension) project.objects.newInstance(it)
             }
             extensions.add(cex.name, cex)
-            commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
+            commandLineProviders.add(projectOperations.provider { -> cex.getCommandLineArgs() })
         }
     }
 

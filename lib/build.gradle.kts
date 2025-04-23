@@ -11,6 +11,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(gradleApi())
+    api("org.ysb33r.gradle:grolifant-herd:3.0.1")
     testImplementation(kotlin("test"))
 }
 

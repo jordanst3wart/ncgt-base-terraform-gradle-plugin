@@ -24,7 +24,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
-import org.ysb33r.gradle.terraform.config.VariablesSpec
+import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -186,14 +186,14 @@ class TerraformSourceDirectorySet implements PatternFilterable {
      *
      * @since 0.2
      */
-    void variables(Action<VariablesSpec> cfg) {
+    void variables(Action<VariableSpec> cfg) {
         cfg.execute(this.vars)
     }
 
     /** Get all terraform variables applicable to this source set.
      *
      */
-    VariablesSpec getVariables() {
+    VariableSpec getVariables() {
         this.vars
     }
 

@@ -17,9 +17,9 @@ package org.ysb33r.gradle.terraform.internal
 
 import spock.lang.Specification
 
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapeOneItem
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedList
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.escapedMap
+import static Utils.escapeOneItem
+import static Utils.escapedList
+import static Utils.escapedMap
 
 class TerraformUtilsSpec extends Specification {
 

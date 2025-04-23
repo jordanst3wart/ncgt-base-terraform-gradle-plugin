@@ -33,11 +33,11 @@ import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
-import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
+import static org.ysb33r.gradle.terraform.internal.ConfigUtils.locateTerraformRCGenerator
+import static org.ysb33r.gradle.terraform.internal.Convention.sourceSetDisplayName
 import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.FMT_APPLY
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
-import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
+import static org.ysb33r.gradle.terraform.internal.Convention.createTasksByConvention
+import static org.ysb33r.gradle.terraform.internal.Convention.taskName
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
@@ -47,7 +47,6 @@ import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
 class TerraformPlugin implements Plugin<Project> {
     public static final String FORMAT_ALL = 'fmtAll'
     public static final String TERRAFORM_RC_EXT = 'terraformrc'
-    public static final String TERRAFORM_RC_TASK = 'generateTerraformConfig'
     public static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
     public static final String TERRAFORM_TASK_GROUP = 'Terraform'
 
@@ -80,7 +79,7 @@ class TerraformPlugin implements Plugin<Project> {
         ProjectOperations.maybeCreateExtension(rootProject)
         TerraformRCExtension terraformRcExt = rootProject.extensions
             .create(TERRAFORM_RC_EXT, TerraformRCExtension, rootProject)
-        rootProject.tasks.register(TERRAFORM_RC_TASK) { it ->
+        rootProject.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { it ->
             it.group = TERRAFORM_TASK_GROUP
             it.description = 'Generates Terraform configuration file'
             it.onlyIf { !terraformRcExt.useGlobalConfig }

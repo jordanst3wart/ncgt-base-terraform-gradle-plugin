@@ -19,9 +19,6 @@ import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.gradle.terraform.config.VariablesSpec
-import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import spock.lang.Issue
 import spock.lang.Specification
 
 class TerraformExtensionSpec extends Specification {

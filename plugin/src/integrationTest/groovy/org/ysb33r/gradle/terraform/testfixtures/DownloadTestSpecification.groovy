@@ -15,8 +15,8 @@
  */
 package org.ysb33r.gradle.terraform.testfixtures
 
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.grolifant.api.core.OperatingSystem
 import spock.lang.Specification
 
 @SuppressWarnings('LineLength')

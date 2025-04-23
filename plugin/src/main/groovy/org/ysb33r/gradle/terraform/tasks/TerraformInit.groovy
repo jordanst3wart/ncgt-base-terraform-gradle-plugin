@@ -24,8 +24,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
-import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.createPluginCacheDir
+import org.ysb33r.gradle.terraform.errors.MissingConfiguration
+import static org.ysb33r.gradle.terraform.internal.ConfigUtils.createPluginCacheDir
 
 /** Equivalent of {@code terraform init}.
  */
@@ -118,7 +118,7 @@ abstract class TerraformInit extends TerraformTask {
         execSpec.cmdArgs "-get=${!skipChildModules}"
 
         if (!this.backendConfig.get().exists()) {
-            throw new MissingTerraformConfiguration("cannot location ${this.backendConfig.get().absolutePath}")
+            throw new MissingConfiguration("cannot location ${this.backendConfig.get().absolutePath}")
         }
 
         if (this.useBackendConfig.get()) {

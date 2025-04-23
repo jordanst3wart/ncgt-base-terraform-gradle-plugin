@@ -17,11 +17,11 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.errors.TerraformExecutionException
 import org.ysb33r.gradle.terraform.internal.Downloader
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
@@ -33,8 +33,8 @@ import org.ysb33r.grolifant.api.v4.exec.ResolvableExecutable
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
 
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.awsEnvironment
-import static org.ysb33r.gradle.terraform.internal.TerraformUtils.googleEnvironment
+import static org.ysb33r.gradle.terraform.internal.Utils.awsEnvironment
+import static org.ysb33r.gradle.terraform.internal.Utils.googleEnvironment
 
 /** Configure project defaults or task specifics for {@code Terraform}.
  *
@@ -80,7 +80,7 @@ class TerraformExtension {
         this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.registry = new ResolverFactoryRegistry(project)
         if (!Downloader.downloadSupported) {
-            throw new TerraformExecutionException(
+            throw new GradleException(
                 "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
             )
         }

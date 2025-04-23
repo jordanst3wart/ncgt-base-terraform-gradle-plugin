@@ -25,7 +25,7 @@ import static org.ysb33r.gradle.terraform.internal.Downloader.OS
  *
  */
 @CompileStatic
-class TerraformUtils {
+class Utils {
 
     /** Get all AWS-related environmental variables.
      *
@@ -63,7 +63,7 @@ class TerraformUtils {
     ) {
         def environment = [
             TF_DATA_DIR         : dataDir.get().absolutePath,
-            TF_CLI_CONFIG_FILE  : TerraformConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
+            TF_CLI_CONFIG_FILE  : ConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
             TF_LOG_PATH         : terraformLogFile(name, logDir).absolutePath,
             TF_LOG              : logLevel ?: '',
         ]

@@ -17,8 +17,8 @@ package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
-import org.ysb33r.gradle.terraform.config.VariablesSpec
-import org.ysb33r.gradle.terraform.errors.TerraformConfigurationException
+import org.ysb33r.gradle.terraform.config.VariableSpec
+import org.ysb33r.gradle.terraform.errors.ConfigurationException
 import java.nio.file.Path
 
 import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
@@ -29,7 +29,7 @@ import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
  * @since 0.1
  */
 @CompileStatic
-class Variables implements VariablesSpec {
+class Variables implements VariableSpec {
 
     final String name = 'variables'
 
@@ -125,7 +125,7 @@ class Variables implements VariablesSpec {
     List<String> getCommandLineArgs() {
         Path root = rootDirResolver.orNull?.toPath()
         if (root == null) {
-            throw new TerraformConfigurationException(
+            throw new ConfigurationException(
                 'This method can only be called when attached to a task extension or a source set'
             )
         }

@@ -71,7 +71,7 @@ class TerraformInitSpec extends IntegrationSpecification {
         String providerVersion = '2.70.0'
         File pluginDir = new File(
             testkitDir,
-            "caches/terraform.d/registry.terraform.io/hashicorp/aws/${providerVersion}/${HashicorpUtils.osArch(DownloadTestSpecification.OS)}"
+            "caches/terraform.d/registry.terraform.io/hashicorp/aws/${providerVersion}/${DownloadTestSpecification.OS.getNativePrefix()}"
         )
         new File(srcDir, 'init.tf').text = """
         provider "aws" {
@@ -99,7 +99,7 @@ class TerraformInitSpec extends IntegrationSpecification {
         '''
         File pluginDir = new File(
             testkitDir,
-            "caches/terraform.d/${HashicorpUtils.osArch(DownloadTestSpecification.OS)}"
+            "caches/terraform.d/${DownloadTestSpecification.OS.getNativePrefix()}"
         )
         new File(srcDir, 'init.tf').text = '''
 provider "aws" {

@@ -34,7 +34,7 @@ import static java.nio.file.attribute.PosixFilePermission.*
  * @author Schalk W. Cronjé
  */
 @CompileStatic
-class TerraformConfigUtils {
+class ConfigUtils {
 
     /** Locates the Terraform configuration file in use by the specific project
      *

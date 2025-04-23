@@ -21,12 +21,10 @@ import org.gradle.api.Task
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskContainer
-import org.ysb33r.grolifant.api.core.OperatingSystem
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
-
-import static org.ysb33r.gradle.terraform.plugins.TerraformPlugin.TERRAFORM_RC_TASK
 import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
 /** Extension that describes a {@code terraformrc} file.
@@ -35,6 +33,7 @@ import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
  */
 @CompileStatic
 class TerraformRCExtension {
+    public static final String TERRAFORM_RC_TASK = 'generateTerraformConfig'
 
     /** Disable checkpoint.
      *
