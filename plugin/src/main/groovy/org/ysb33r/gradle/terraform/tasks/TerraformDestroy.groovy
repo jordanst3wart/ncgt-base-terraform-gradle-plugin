@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.tasks
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
@@ -34,7 +33,7 @@ import java.util.concurrent.Callable
  * @since 0.1
  */
 @CompileStatic
-class TerraformDestroy extends AbstractTerraformTask {
+abstract class TerraformDestroy extends TerraformTask {
     @Internal
     Provider<File> getVariablesFile() {
         project.provider({ ->

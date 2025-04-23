@@ -25,7 +25,7 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
  * @author Schalk W. Cronjé
  */
 @CompileStatic
-class TerraformDestroyPlan extends TerraformPlan {
+abstract class TerraformDestroyPlan extends TerraformPlan {
 
     @Override
     File getPlanOutputFile() {

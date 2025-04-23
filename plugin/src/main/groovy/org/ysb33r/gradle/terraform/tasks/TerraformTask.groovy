@@ -26,6 +26,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecSpec
+import org.gradle.workers.WorkerExecutor
+import org.ysb33r.gradle.terraform.RunExec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
@@ -39,17 +41,18 @@ import org.ysb33r.gradle.terraform.internal.TerraformConvention
 import org.ysb33r.gradle.terraform.internal.TerraformUtils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
+import javax.inject.Inject
 import java.util.concurrent.Callable
 
 /** A base class for performing a {@code terraform} execution.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.1
  */
 @CompileStatic
 @SuppressWarnings('MethodCount')
-class AbstractTerraformTask extends DefaultTask {
+abstract class TerraformTask extends DefaultTask {
+
+    @Inject
+    abstract WorkerExecutor getWorkerExecutor()
 
     void setSourceSet(TerraformSourceDirectorySet sourceSet) {
         this.sourceSet = project.providers.provider { sourceSet }
@@ -96,9 +99,10 @@ class AbstractTerraformTask extends DefaultTask {
         }
         logger.info("Using Terraform environment: ${terraformEnvironment}")
         logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
+        execWorkAction(execSpec, runner, stdoutCapture)
         // TODO logger.lifecycle...???
         // TODO remove stdoutCapture
-        if (this.stdoutCapture) {
+        /*if (this.stdoutCapture) {
             // runs for just show task
             this.stdoutCapture.get().withOutputStream { strm ->
                 execSpec.standardOutput(strm)
@@ -107,7 +111,16 @@ class AbstractTerraformTask extends DefaultTask {
         } else {
             // runs for everything else
             project.exec(runner).assertNormalExitValue()
-        }
+        }*/
+    }
+
+    private execWorkAction(TerraformExecSpec execSpec, Action<ExecSpec> runner, Provider<File> captureStdout) {
+        def workQueue = workerExecutor.classLoaderIsolation()
+        workQueue.submit(RunExec, parameters -> {
+            parameters.project.set(project)
+            parameters.runner.set(runner)
+            parameters.stdOut.set(captureStdout)
+        })
     }
 
     /** Command-line parameter for no colour.
@@ -126,7 +139,7 @@ class AbstractTerraformTask extends DefaultTask {
      * @param configExtensions Configuration extensions to be added to this task.
      * @param terraformConfigExtensions Configuration extensions that are added to the terraform task extension.
      */
-    protected AbstractTerraformTask(
+    protected TerraformTask(
         String cmd,
         List<Class> configExtensions
     ) {
@@ -192,14 +205,14 @@ class AbstractTerraformTask extends DefaultTask {
      * @since 0.10
      */
     @CompileDynamic
-    protected Provider<AbstractTerraformTask> taskProvider(String command) {
+    protected Provider<TerraformTask> taskProvider(String command) {
         Provider<String> taskName = projectOperations.provider { ->
             TerraformConvention.taskName(sourceSet.get().name, command)
         }
 
         taskName.flatMap({ String it ->
-            project.tasks.named(it, AbstractTerraformTask)
-        } as Transformer<Provider<AbstractTerraformTask>, String>)
+            project.tasks.named(it, TerraformTask)
+        } as Transformer<Provider<TerraformTask>, String>)
     }
 
     /**

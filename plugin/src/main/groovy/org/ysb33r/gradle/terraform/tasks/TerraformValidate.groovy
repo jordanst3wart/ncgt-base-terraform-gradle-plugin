@@ -16,8 +16,6 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import groovy.transform.CompileStatic
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 
@@ -26,7 +24,7 @@ import javax.inject.Inject
 /** Equivalent of {@code terraform validate}.
  */
 @CompileStatic
-class TerraformValidate extends AbstractTerraformTask {
+abstract class TerraformValidate extends TerraformTask {
 
     @Inject
     TerraformValidate() {

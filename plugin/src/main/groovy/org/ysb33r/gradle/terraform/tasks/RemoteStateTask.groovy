@@ -30,10 +30,6 @@ import java.util.concurrent.Callable
 
 /**
  * Generates a remote state file containing partial configuration for backend.
- *
- * @author Schalk W. Cronjé
- *
- * @since 0.12 (Refactored from {@code AbstractRemoteStateConfigGenerator}).
  */
 @CompileStatic
 class RemoteStateTask extends DefaultTask {

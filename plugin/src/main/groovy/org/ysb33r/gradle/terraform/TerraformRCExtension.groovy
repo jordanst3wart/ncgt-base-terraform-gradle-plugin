@@ -164,5 +164,4 @@ class TerraformRCExtension {
     private final Map<String, String> credentials = [:]
     private final ProjectOperations projectOperations
     private final Provider<Task> terraformRCTask
-
 }

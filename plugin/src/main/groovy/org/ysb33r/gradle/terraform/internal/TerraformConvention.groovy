@@ -21,7 +21,7 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformInit
@@ -119,21 +119,21 @@ class TerraformConvention {
         DefaultTerraformTasks taskDetails,
         String newTaskName
     ) {
-        TaskProvider<AbstractTerraformTask> taskProvider = project.tasks.register(
+        TaskProvider<TerraformTask> taskProvider = project.tasks.register(
             newTaskName,
             taskDetails.type
         )
         taskProvider.configure(taskConfigurator(sourceSet, taskDetails))
     }
 
-    private static Action<AbstractTerraformTask> taskConfigurator(
+    private static Action<TerraformTask> taskConfigurator(
         TerraformSourceDirectorySet sourceSet,
         DefaultTerraformTasks type
     ) {
         String name = sourceSet.name
-        new Action<AbstractTerraformTask>() {
+        new Action<TerraformTask>() {
             @Override
-            void execute(AbstractTerraformTask t) {
+            void execute(TerraformTask t) {
                 t.sourceSet = sourceSet
                 t.group = TERRAFORM_TASK_GROUP
                 t.description = "${type.description} for '${name}'"

@@ -27,7 +27,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
-import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -59,7 +59,7 @@ class TerraformPlugin implements Plugin<Project> {
             t.dependsOn(locateTerraformRCGenerator(t.project))
         }
 
-        project.tasks.withType(AbstractTerraformTask).configureEach { AbstractTerraformTask t ->
+        project.tasks.withType(TerraformTask).configureEach { TerraformTask t ->
             t.dependsOn(locateTerraformRCGenerator(t.project))
         }
 
