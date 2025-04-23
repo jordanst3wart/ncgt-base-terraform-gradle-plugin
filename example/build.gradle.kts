@@ -11,6 +11,8 @@ plugins {
 terraform {
     useAwsEnvironment()
     useGoogleEnvironment()
+    setLockTimeout(30)
+    setParallel(11)
     executable(mapOf("version" to "1.10.1"))
 }
 
