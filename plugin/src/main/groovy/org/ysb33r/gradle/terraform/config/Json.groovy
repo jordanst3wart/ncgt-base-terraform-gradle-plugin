@@ -3,7 +3,7 @@ package org.ysb33r.gradle.terraform.config
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class Json implements TerraformTaskConfigExtension {
+class Json implements ConfigExtension {
     final String name = 'json'
 
     boolean enabled = false

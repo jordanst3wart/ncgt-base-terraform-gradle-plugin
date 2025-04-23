@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
  *
  */
 @CompileStatic
-class Refresh implements TerraformTaskConfigExtension {
+class Refresh implements ConfigExtension {
     final String name = 'refresh'
     boolean refresh = true
 

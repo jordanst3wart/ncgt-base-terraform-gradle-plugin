@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
  * @since 0.1
  */
 @CompileStatic
-class Parallel implements TerraformTaskConfigExtension {
+class Parallel implements ConfigExtension {
     final String name = 'parallel'
 
     Integer maxParallel = 10

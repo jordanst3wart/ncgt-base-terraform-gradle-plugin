@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
  */
 
 @CompileStatic
-class Lock implements TerraformTaskConfigExtension {
+class Lock implements ConfigExtension {
     final String name = 'lock'
 
     boolean enabled = true
