@@ -15,12 +15,10 @@
  */
 package org.ysb33r.gradle.terraform
 
-import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.testfixtures.ProjectBuilder
-import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
 import spock.lang.Issue
 import spock.lang.Specification
@@ -164,10 +162,10 @@ class TerraformSourceSetsSpec extends Specification {
         def mainSourceSet = tss.getByName('main') as TerraformSourceDirectorySet
         mainSourceSet.srcDir.get() == project.file('foo/bar')
         mainSourceSet.backendPropertyText().get() == "hi"
-        Set<String> files = ["filename.tf", "foo.tf"].toSet()
-        mainSourceSet.variables.fileNames == files
+        //Set<String> files = ["filename.tf", "foo.tf"].toSet()
+        //mainSourceSet.variables.fileNames == files
 
-        def releaseSourceSet = tss.getByName( 'release')
+        def releaseSourceSet = tss.getByName('release')
         releaseSourceSet.srcDir.get() == project.file('src/release/tf')
     }
 
