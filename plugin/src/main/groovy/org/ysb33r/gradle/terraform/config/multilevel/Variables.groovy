@@ -21,8 +21,6 @@ import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.errors.ConfigurationException
 import java.nio.file.Path
 
-import static org.ysb33r.grolifant.api.v4.MapUtils.stringizeValues
-
 /** A configuration building block for tasks that need to pass variables to
  * a {@code terraform task}.
  *
@@ -108,8 +106,8 @@ class Variables implements VariableSpec {
      * {@link org.ysb33r.gradle.terraform.TerraformSourceDirectorySet}.
      */
     @Override
-    void file(final Object fileName) {
-        varsFilesPair.files.add fileName
+    void file(final String fileName) {
+        varsFilesPair.files.add(fileName)
     }
 
     /** List of file names containing Terraform variables.

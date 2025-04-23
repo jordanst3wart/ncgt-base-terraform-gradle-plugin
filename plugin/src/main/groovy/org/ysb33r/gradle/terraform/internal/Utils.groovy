@@ -18,7 +18,6 @@ package org.ysb33r.gradle.terraform.internal
 import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.grashicorp.StringUtils
 import static org.ysb33r.gradle.terraform.internal.Downloader.OS
 
 /** General utilities for Terraform.
@@ -84,71 +83,6 @@ class Utils {
         new File(logDir.get(), "${name}.log").absoluteFile
     }
 
-    /**
-     * Takes a list and creates a HCL-list with appropriate escaping.
-     *
-     * @param items List items
-     * @return Escaped string
-     *
-     * @since 0.12
-     */
-    static String escapedList(Iterable<Object> items, boolean escapeInnerLevel) {
-        String joinedList = Transform.toList(items as Collection) { Object it ->
-            escapeOneItem(it, escapeInnerLevel)
-        }.join(COMMA_SEPARATED)
-        "[${joinedList}]"
-    }
-
-    /**
-     * Takes a map and creates a HCL-map with appropriate escaping.
-     *
-     * @param items Map items
-     * @return Escaped string
-     *
-     * @since 0.12
-     */
-    static String escapedMap(Map<String, ?> items, boolean escapeInnerLevel) {
-        String joinedMap = Transform.toList(items) { Map.Entry<String, ?> entry ->
-            "\"${entry.key}\" = ${escapeOneItem(entry.value, escapeInnerLevel)}".toString()
-        }.join(COMMA_SEPARATED)
-        "{${joinedMap}}".toString()
-    }
-
-    /**
-     * Escaped a single item.
-     *
-     * @param item Item to escape
-     * @param innerLevel Whether the escaped item is actually nested.
-     * @return Escaped item
-     *
-     * @since 0.12
-     */
-    static String escapeOneItem(Object item, boolean innerLevel) {
-        switch (item) {
-            case Provider:
-                return escapeOneItem(((Provider) item).get(), innerLevel)
-            case Map:
-                return escapedMap((Map) item, innerLevel)
-            case Iterable:
-                return escapedList((Iterable) item, innerLevel)
-            case Number:
-            case Boolean:
-                return StringUtils.stringize(item)
-            default:
-                return innerLevel ?
-                    "\"${escapeQuotesInString(StringUtils.stringize(item))}\"".toString() :
-                    escapeQuotesInString(StringUtils.stringize(item))
-        }
-    }
-
-    static String escapeQuotesInString(String item) {
-        item.replaceAll(~/"/, '\\\\"')
-    }
-
-    static String stringizeOrNull(Object thingy) {
-        thingy != null ? StringUtils.stringize(thingy) : null
-    }
-
     private static Map<String, String> defaultEnvironment() {
         if (OS.windows) {
             [
@@ -166,6 +100,4 @@ class Utils {
             ]
         }
     }
-
-    private static final String COMMA_SEPARATED = ', '
 }

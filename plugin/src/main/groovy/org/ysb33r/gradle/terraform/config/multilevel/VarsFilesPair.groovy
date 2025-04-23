@@ -16,17 +16,9 @@
 package org.ysb33r.gradle.terraform.config.multilevel
 
 import groovy.transform.CompileStatic
-import org.gradle.api.Action
-import org.gradle.api.provider.Provider
-import org.ysb33r.gradle.terraform.config.VariableSpec
-import org.ysb33r.grashicorp.StringUtils
 
 import java.nio.file.Path
 import java.util.stream.Collectors
-
-import static org.ysb33r.gradle.terraform.internal.Utils.escapeOneItem
-import static org.ysb33r.gradle.terraform.internal.Utils.escapedList
-import static org.ysb33r.gradle.terraform.internal.Utils.escapedMap
 
 /** Keeps a collection of variables and variable files.
  *
@@ -46,27 +38,7 @@ class VarsFilesPair {
     /**
      * List of filenames or relative paths to a terraform source set.
      */
-    final List<Object> files = []
-
-    /**
-     * Additional variables from other sources.
-     *
-     * @since 0.12
-     */
-    final List<Action<VariableSpec>> additionalVariables = []
-
-    /**
-     * Copy these settings to another instance.
-     *
-     * @param target Target instance
-     *
-     * @since 0.12
-     */
-    void copyTo(VarsFilesPair target) {
-        target.files.addAll(this.files)
-        target.vars.putAll(this.vars)
-        target.additionalVariables.addAll(this.additionalVariables)
-    }
+    final List<String> files = []
 
     /**
      * Returns the command-line representation.
@@ -93,7 +65,7 @@ class VarsFilesPair {
      * @since 0.12
      */
     Set<String> getFileNames() {
-        StringUtils.stringize(this.files).toSet()
+        this.files.toSet()
     }
 
     /**
@@ -103,20 +75,7 @@ class VarsFilesPair {
      */
     @Override
     String toString() {
-        "vars=${vars}, files=${files}, additionalsCount=${additionalVariables.size()}"
-    }
-
-    private String escapeObject(Object variable, boolean escapeInnerLevel) {
-        switch (variable) {
-            case Provider:
-                return escapeObject(((Provider) variable).get(), escapeInnerLevel)
-            case Map:
-                return escapedMap((Map) variable, escapeInnerLevel)
-            case List:
-                return escapedList((Iterable) variable, escapeInnerLevel)
-            default:
-                return escapeOneItem(variable, escapeInnerLevel)
-        }
+        "vars=${vars}, files=${files}"
     }
 }
 
