@@ -32,13 +32,13 @@ import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.config.TerraformTaskConfigExtension
-import org.ysb33r.gradle.terraform.internal.TerraformConfigUtils
-import org.ysb33r.gradle.terraform.internal.TerraformConvention
-import org.ysb33r.gradle.terraform.internal.TerraformUtils
+import org.ysb33r.gradle.terraform.internal.ConfigUtils
+import org.ysb33r.gradle.terraform.internal.Convention
+import org.ysb33r.gradle.terraform.internal.Utils
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import javax.inject.Inject
@@ -89,7 +89,7 @@ abstract class TerraformTask extends DefaultTask {
             sourceSet.get().logDir.get().mkdirs()
         }
 
-        TerraformUtils.terraformLogFile(name, sourceSet.get().logDir).delete()
+        Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
         TerraformExecSpec execSpec = buildExecSpec()
         Action<ExecSpec> runner = new Action<ExecSpec>() {
             @Override
@@ -100,22 +100,10 @@ abstract class TerraformTask extends DefaultTask {
         logger.info("Using Terraform environment: ${terraformEnvironment}")
         logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
         execWorkAction(execSpec, runner, stdoutCapture)
-        // TODO logger.lifecycle...???
-        // TODO remove stdoutCapture
-        /*if (this.stdoutCapture) {
-            // runs for just show task
-            this.stdoutCapture.get().withOutputStream { strm ->
-                execSpec.standardOutput(strm)
-                project.exec(runner).assertNormalExitValue()
-            }
-        } else {
-            // runs for everything else
-            project.exec(runner).assertNormalExitValue()
-        }*/
     }
 
     private execWorkAction(TerraformExecSpec execSpec, Action<ExecSpec> runner, Provider<File> captureStdout) {
-        def workQueue = workerExecutor.classLoaderIsolation()
+        def workQueue = workerExecutor.noIsolation()
         workQueue.submit(RunExec, parameters -> {
             parameters.project.set(project)
             parameters.runner.set(runner)
@@ -145,7 +133,7 @@ abstract class TerraformTask extends DefaultTask {
     ) {
         this.projectOperations = ProjectOperations.find(project)
         this.projectTerraform = project.extensions.getByType(TerraformExtension)
-        this.terraformrc = TerraformConfigUtils.locateTerraformRCExtension(project)
+        this.terraformrc = ConfigUtils.locateTerraformRCExtension(project)
         this.command = cmd
         // not defined at setup time
         this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
@@ -189,10 +177,7 @@ abstract class TerraformTask extends DefaultTask {
 
     protected Provider<List<String>> sourceSetVariables() {
         project.provider {
-            def variables = this.sourceSet.get().variables
-            def configExtension = variables as TerraformTaskConfigExtension
-            // TODO this shouldn't work
-            configExtension.commandLineArgs
+            this.sourceSet.get().variables.commandLineArgs
         }
     }
 
@@ -207,7 +192,7 @@ abstract class TerraformTask extends DefaultTask {
     @CompileDynamic
     protected Provider<TerraformTask> taskProvider(String command) {
         Provider<String> taskName = projectOperations.provider { ->
-            TerraformConvention.taskName(sourceSet.get().name, command)
+            Convention.taskName(sourceSet.get().name, command)
         }
 
         taskName.flatMap({ String it ->
@@ -265,7 +250,7 @@ abstract class TerraformTask extends DefaultTask {
 
     @Input
     protected Map<String, String> getTerraformEnvironment() {
-        TerraformUtils.terraformEnvironment(
+        Utils.terraformEnvironment(
             terraformrc,
             name,
             sourceSet.get().dataDir,
@@ -362,7 +347,7 @@ abstract class TerraformTask extends DefaultTask {
      */
     private void withConfigExtensions(List<Class> configExtensions) {
         for (it in configExtensions) {
-            TerraformTaskConfigExtension cex
+            ConfigExtension cex
             if (it == Lock) {
                 cex = projectTerraform.getLock()
             } else if (it == Parallel) {
@@ -370,10 +355,10 @@ abstract class TerraformTask extends DefaultTask {
             } else if (it == Json) {
                 cex = projectTerraform.getJson()
             } else {
-                cex = (TerraformTaskConfigExtension) project.objects.newInstance(it)
+                cex = (ConfigExtension) project.objects.newInstance(it)
             }
             extensions.add(cex.name, cex)
-            commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
+            commandLineProviders.add(projectOperations.provider { -> cex.getCommandLineArgs() })
         }
     }
 

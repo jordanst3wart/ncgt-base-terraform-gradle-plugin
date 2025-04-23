@@ -9,6 +9,10 @@ plugins {
     alias(libs.plugins.grgit)
 }
 
+dependencies {
+    implementation(project(":lib"))
+}
+
 apply(from = rootProject.file("gradle/plugin-dev.gradle"))
 apply(from = rootProject.file("gradle/codenarc.gradle"))
 

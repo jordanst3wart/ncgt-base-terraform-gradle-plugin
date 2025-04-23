@@ -16,15 +16,11 @@
 package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.grashicorp.HashicorpUtils
-import org.ysb33r.grolifant.api.core.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grolifant.api.errors.DistributionFailedException
 import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
-
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.ARM64
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86
-import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 
 /** Downloads specific versions of {@code Terraform}.
  *
@@ -44,7 +40,6 @@ import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
 @CompileStatic
 class DownloaderOpenTofu extends AbstractDistributionInstaller implements DownloaderBinary {
     public static final OperatingSystem OS = OperatingSystem.current()
-    public static final OperatingSystem.Arch ARCH = OS.arch
     public static final String TOOL_IDENTIFIER = 'tofu'
     public static final String BASEURI = 'https://github.com/opentofu/opentofu/releases'
 
@@ -55,15 +50,6 @@ class DownloaderOpenTofu extends AbstractDistributionInstaller implements Downlo
      */
     DownloaderOpenTofu(final String version, final ProjectOperations projectOperations) {
         super(TOOL_IDENTIFIER, version, "native-binaries/${TOOL_IDENTIFIER}", projectOperations)
-    }
-
-    /** Tells the system whether downloading can be supported.
-     *
-     * @return {@b true} for supported platforms,
-     */
-    static boolean isDownloadSupported() {
-        (OS.windows || OS.linux || OS.macOsX || OS.freeBSD) &&
-            (OS.arch == X86 || OS.arch == X86_64  || OS.arch == ARM64)
     }
 
     /** Provides an appropriate URI to download a specific version of Terraform.

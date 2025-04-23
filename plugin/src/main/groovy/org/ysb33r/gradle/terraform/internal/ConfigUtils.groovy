@@ -20,9 +20,9 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.errors.MissingTerraformConfiguration
-import org.ysb33r.grolifant.api.core.OperatingSystem
+import org.ysb33r.gradle.terraform.errors.MissingConfiguration
 
 import java.nio.file.Files
 
@@ -34,7 +34,7 @@ import static java.nio.file.attribute.PosixFilePermission.*
  * @author Schalk W. Cronjé
  */
 @CompileStatic
-class TerraformConfigUtils {
+class ConfigUtils {
 
     /** Locates the Terraform configuration file in use by the specific project
      *
@@ -49,7 +49,7 @@ class TerraformConfigUtils {
      *
      * @return Location of configuration file as a string.
      *
-     * @throw {@link MissingTerraformConfiguration} if the location cannot be resolved.
+     * @throw {@link MissingConfiguration} if the location cannot be resolved.
      */
     static String locateGlobalTerraformConfigAsString() {
         String configFromEnv = System.getenv('TF_CLI_CONFIG_FILE')
@@ -62,7 +62,7 @@ class TerraformConfigUtils {
                 if (appData) {
                     "${appData}\\terraform.rc"
                 } else {
-                    throw new MissingTerraformConfiguration('%APPDATA% not available')
+                    throw new MissingConfiguration('%APPDATA% not available')
                 }
             } else {
                 "${System.getProperty('user.home')}/.terraformrc"
@@ -77,7 +77,7 @@ class TerraformConfigUtils {
      * @param project Project to start search from.
      * @return {@link TerraformRCExtension}. Never {@code null}.
      *
-     * @throw {@link MissingTerraformConfiguration} if extension cannot be located.
+     * @throw {@link MissingConfiguration} if extension cannot be located.
      */
     static TerraformRCExtension locateTerraformRCExtension(Project project) {
         TerraformRCExtension terraformrc
@@ -92,7 +92,7 @@ class TerraformConfigUtils {
                 }
             }
         } catch (UnknownDomainObjectException e) {
-            throw new MissingTerraformConfiguration(
+            throw new MissingConfiguration(
                 'Cannot locate a TerraformRC Extension in this project or the root project',
                 e
             )
@@ -106,7 +106,7 @@ class TerraformConfigUtils {
      *
      * @param project Project to start search from.
      * @return Task.*
-     * @throw {@link MissingTerraformConfiguration} if task cannot be located.
+     * @throw {@link MissingConfiguration} if task cannot be located.
      */
     static Task locateTerraformRCGenerator(Project project) {
         TerraformRCExtension ext = locateTerraformRCExtension(project)
@@ -114,7 +114,7 @@ class TerraformConfigUtils {
         try {
             ext.terraformRCTask.get()
         } catch (UnknownTaskException e) {
-            throw new MissingTerraformConfiguration(
+            throw new MissingConfiguration(
                 'Cannot locate a task in this project or the root project which could generate the terraformrc file',
                 e
             )
@@ -126,7 +126,7 @@ class TerraformConfigUtils {
      * @param terraformrc {@link TerraformRCExtension}.
      * @return Location of the cache directory or {@code empty} if a global configuration is used.
      *
-     * @throw {@link MissingTerraformConfiguration} if {@link TerraformRCExtension} cannot be located.
+     * @throw {@link MissingConfiguration} if {@link TerraformRCExtension} cannot be located.
      *
      * @since 0.10.0
      */

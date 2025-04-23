@@ -35,7 +35,7 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformPlugin.TERRAFORM_TASK
  * @author Schalk W. Cronjé
  */
 @CompileStatic
-class TerraformConvention {
+class Convention {
     /** Provides a task name
      *
      * @param sourceSetName Name of source set the task will be associated with.

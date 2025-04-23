@@ -15,6 +15,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "gradle-terraform-plugin"
+include("lib")
 include("plugin")
 include(":example")
-

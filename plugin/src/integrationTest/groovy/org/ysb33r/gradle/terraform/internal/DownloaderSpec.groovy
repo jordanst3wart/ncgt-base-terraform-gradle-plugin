@@ -47,7 +47,7 @@ class DownloaderSpec extends DownloadTestSpecification {
     @IgnoreIf({ DownloadTestSpecification.SKIP_TESTS })
     def 'Download a Terraform distribution'() {
         given: 'A requirement to download Terraform #TERRAFORM_VERSION'
-        Downloader dwn = new Downloader(DownloadTestSpecification.TERRAFORM_VERSION, projectOperations)
+        DownloaderTerraform dwn = new DownloaderTerraform(DownloadTestSpecification.TERRAFORM_VERSION, projectOperations)
         dwn.downloadRoot = new File(project.buildDir, 'download')
 
         when: 'The distribution root is requested'
