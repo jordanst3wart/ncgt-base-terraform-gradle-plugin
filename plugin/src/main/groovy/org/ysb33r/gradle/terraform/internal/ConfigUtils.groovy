@@ -20,9 +20,9 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
-import org.ysb33r.grolifant.api.core.OperatingSystem
 
 import java.nio.file.Files
 

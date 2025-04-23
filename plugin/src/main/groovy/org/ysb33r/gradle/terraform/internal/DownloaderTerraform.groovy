@@ -40,7 +40,7 @@ import org.ysb33r.grolifant.api.v4.AbstractDistributionInstaller
 
 // org.ysb33r.grolifant.api.core.downloader.AbstractDistributionInstaller
 @CompileStatic
-class Downloader extends AbstractDistributionInstaller implements  DownloaderBinary {
+class DownloaderTerraform extends AbstractDistributionInstaller implements  DownloaderBinary {
     public static final OperatingSystem OS = OperatingSystem.current()
     public static final String TOOL_IDENTIFIER = 'terraform'
     public static final String BASEURI = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
@@ -50,7 +50,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
      * @param version Version of {@code Terraform}.
      * @param projectOperations Project this is associated with.
      */
-    Downloader(final String version, final ProjectOperations projectOperations) {
+    DownloaderTerraform(final String version, final ProjectOperations projectOperations) {
         super(TOOL_IDENTIFIER, version, "native-binaries/${TOOL_IDENTIFIER}", projectOperations)
     }
 
@@ -70,7 +70,7 @@ class Downloader extends AbstractDistributionInstaller implements  DownloaderBin
     @Override
     URI uriFromVersion(final String ver) {
         final String osArch = HashicorpUtils.osArch(OS)
-        osArch ? "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI() : null
+        "${BASEURI}/${ver}/terraform_${ver}_${osArch}.zip".toURI()
     }
 
     /** Returns the path to the {@code terraform} executable.

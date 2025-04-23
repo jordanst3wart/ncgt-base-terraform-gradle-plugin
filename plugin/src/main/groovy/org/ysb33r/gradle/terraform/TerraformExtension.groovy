@@ -22,7 +22,7 @@ import org.gradle.api.Project
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.internal.Downloader
+import org.ysb33r.gradle.terraform.internal.DownloaderTerraform
 import org.ysb33r.gradle.terraform.internal.DownloaderBinary
 import org.ysb33r.gradle.terraform.internal.DownloaderOpenTofu
 import org.ysb33r.grolifant.api.core.ProjectOperations
@@ -79,23 +79,13 @@ class TerraformExtension {
         this.env = [:]
         this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.registry = new ResolverFactoryRegistry(project)
-        if (!Downloader.downloadSupported) {
+        if (!DownloaderTerraform.downloadSupported) {
             throw new GradleException(
-                "Terraform distribution not supported on ${projectOperations.stringTools.stringize(Downloader.OS)}"
+                "Terraform distribution not supported on ${projectOperations.stringTools.stringize(DownloaderTerraform.OS)}"
             )
         }
         addVersionResolver(projectOperations)
         executable([version: TERRAFORM_DEFAULT])
-    }
-
-    /** Standard set of platforms.
-     *
-     * @return The set of provider platforms supported at the time the plugin was released.
-     *
-     * @since 0.14.0
-     */
-    static Set<String> getAllPlatforms() {
-        PLATFORMS.asImmutable()
     }
 
     ExternalExecutable getResolver() {
@@ -176,7 +166,7 @@ class TerraformExtension {
                 if (tofu) {
                     new DownloaderOpenTofu(version, p)
                 } else {
-                    new Downloader(version, p)
+                    new DownloaderTerraform(version, p)
                 }
         }
 
@@ -186,13 +176,6 @@ class TerraformExtension {
             new ResolveExecutableByVersion(projectOperations, downloaderFactory, resolver)
         )
     }
-
-    private static final Set<String> PLATFORMS = [
-        'darwin_amd64', 'darwin_arm64',
-        'windows_amd64', 'windows_386',
-        'linux_386', 'linux_amd64', 'linux_arm', 'linux_arm64',
-        'freebsd_386', 'freebsd_amd64', 'freebsd_arm'
-    ].toSet()
 
     private final Map<String, Object> env
     private final ResolverFactoryRegistry registry
