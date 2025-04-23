@@ -25,7 +25,7 @@ class TerraformCheckPluginSpec extends Specification {
 
     void 'The check task depends on tf*FmtCheck tasks'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
         when:
         project.allprojects {
@@ -37,8 +37,8 @@ class TerraformCheckPluginSpec extends Specification {
         }
 
         def check = project.tasks.named('check').get()
-        def tfFmtCheckProvider = project.tasks.named('tfMainFmtCheck').get()
-        def tfFmtCheck = project.tasks.named('tfMainFmtCheck').get()
+        def tfFmtCheckProvider = project.tasks.named('fmtCheckMain').get()
+        def tfFmtCheck = project.tasks.named('fmtCheckMain').get()
 
         def dependsOn = check.dependsOn.flatten()
 

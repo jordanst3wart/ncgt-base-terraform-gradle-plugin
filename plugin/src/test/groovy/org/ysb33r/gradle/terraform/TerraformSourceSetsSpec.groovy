@@ -31,7 +31,7 @@ class TerraformSourceSetsSpec extends Specification {
     @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/1')
     void 'Variable definitions in source set should not create new source sets'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
         when:
         project.allprojects {
@@ -60,7 +60,7 @@ class TerraformSourceSetsSpec extends Specification {
     @Issue('https://gitlab.com/ysb33rOrg/terraform-gradle-plugin/issues/1')
     void 'test different variables supported'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
         when:
         Map<String, ?> myMap = [name: 'John', age: 30, city: 'New York']
@@ -89,7 +89,7 @@ class TerraformSourceSetsSpec extends Specification {
 
     void 'Items must be able resolve entities in project scope'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
         project.extensions.create('testExt', TestExtension, project.providers, project)
 
         when:
@@ -101,7 +101,7 @@ class TerraformSourceSetsSpec extends Specification {
 
     void 'Items must be able resolve entities in project scope even with different order of plugins applied'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
         project.extensions.create('testExt', TestExtension, project.providers, project)
 
         when:
@@ -113,7 +113,7 @@ class TerraformSourceSetsSpec extends Specification {
 
     void 'Can provide a tfvars file'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
         project.allprojects {
             terraformSourceSets {
@@ -134,7 +134,7 @@ class TerraformSourceSetsSpec extends Specification {
 
         then:
         vars.fileNames.contains('foo.tfvars')
-        cmdline.contains("-var-file=${project.file('src/tf/main/foo.tfvars')}".toString())
+        cmdline.contains("-var-file=${project.file('src/main/tf/foo.tfvars')}".toString())
 
         and:
         fooPos < foo2Pos
@@ -142,7 +142,7 @@ class TerraformSourceSetsSpec extends Specification {
 
     void 'source sets'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
         project.allprojects {
             terraformSourceSets {
                 main {
@@ -168,7 +168,7 @@ class TerraformSourceSetsSpec extends Specification {
         mainSourceSet.variables.fileNames == files
 
         def releaseSourceSet = tss.getByName( 'release')
-        releaseSourceSet.srcDir.get() == project.file('src/tf/release')
+        releaseSourceSet.srcDir.get() == project.file('src/release/tf')
     }
 
     void configureFourSourceSets() {

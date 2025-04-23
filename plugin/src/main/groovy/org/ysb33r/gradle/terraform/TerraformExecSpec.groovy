@@ -22,7 +22,6 @@ import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable
 
 /** An execution specification for {@code Terraform}.
  *
- * @since 0.1
  */
 @CompileStatic
 class TerraformExecSpec extends AbstractCommandExecSpec {
@@ -30,8 +29,6 @@ class TerraformExecSpec extends AbstractCommandExecSpec {
     /** Construct class and attach it to specific project.
      *
      * @param projectOperations Project this exec spec is attached.
-     *
-     * @since 0.10.0
      */
     TerraformExecSpec(ProjectOperations projectOperations, ExternalExecutable resolver) {
         super(projectOperations, resolver)

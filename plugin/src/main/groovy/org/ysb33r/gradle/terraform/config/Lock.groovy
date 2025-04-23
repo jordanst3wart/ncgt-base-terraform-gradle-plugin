@@ -19,21 +19,17 @@ import groovy.transform.CompileStatic
 
 /** Allows for lock configurations on a task.
  *
- * On Terraform v0.15+ anything set here is ignored if used with
- *   {@link org.ysb33r.gradle.terraform.tasks.TerraformInit}.
- *
- * @since 0.1
  */
+
 @CompileStatic
 class Lock implements TerraformTaskConfigExtension {
     final String name = 'lock'
 
     boolean enabled = true
-    Integer timeout = 0
+    Integer timeout = 30
 
     @Override
-    @SuppressWarnings('UnnecessaryCast')
     List<String> getCommandLineArgs() {
-        ["-lock=${enabled}", "-lock-timeout=${timeout}s"] as List<String>
+        ["-lock=${enabled}".toString(), "-lock-timeout=${timeout}s".toString()]
     }
 }

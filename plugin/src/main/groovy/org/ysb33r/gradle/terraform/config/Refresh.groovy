@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ysb33r.gradle.terraform.errors
+package org.ysb33r.gradle.terraform.config
 
 import groovy.transform.CompileStatic
-import groovy.transform.InheritConstructors
-import org.ysb33r.grolifant.api.errors.ExecutionException
 
-/** Thrown when terraform source format does not conform to convention.
+/** Allows for options related to walking the state tree.
  *
- * @author Schalk W. Cronjé
- *
- * @since 0.10
  */
 @CompileStatic
-@InheritConstructors
-class TerraformSourceFormatViolation extends ExecutionException {
+class Refresh implements TerraformTaskConfigExtension {
+    final String name = 'refresh'
+    boolean refresh = true
+
+    @Override
+    List<String> getCommandLineArgs() {
+        ["-refresh=${refresh}".toString()]
+    }
 }

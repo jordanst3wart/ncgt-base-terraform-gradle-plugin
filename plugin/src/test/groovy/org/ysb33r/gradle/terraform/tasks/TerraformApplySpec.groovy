@@ -25,7 +25,7 @@ class TerraformApplySpec extends Specification {
 
     void 'commands for terraform apply'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
 
         when:
@@ -41,15 +41,13 @@ class TerraformApplySpec extends Specification {
         }
 
         then:
-        def applyTask = project.tasks.named('tfMainApply').get()
+        def applyTask = project.tasks.named('applyMain').get()
         applyTask instanceof TerraformApply
-        // applyTask.setTargets(["someResource"]) // bug
-        applyTask.setJson(true)
         def spec = applyTask.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll(['-auto-approve', '-input=false', '-lock=true', '-lock-timeout=0s', '-parallelism=10', '-refresh=true', '-json'])
-        spec.getCmdArgs().size() == 8
+        spec.getCmdArgs().containsAll(['-auto-approve', '-input=false', '-lock=true', '-lock-timeout=30s', '-parallelism=10', '-refresh=true'])
+        spec.getCmdArgs().size() == 7
         def planfile = false
         spec.getCmdArgs().forEach{ it ->
             if(it.contains(".tf.plan")) {

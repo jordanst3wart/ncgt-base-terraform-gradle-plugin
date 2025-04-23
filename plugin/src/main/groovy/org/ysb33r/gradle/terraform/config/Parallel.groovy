@@ -22,13 +22,15 @@ import groovy.transform.CompileStatic
  * @since 0.1
  */
 @CompileStatic
-class StateOptionsFull extends StateOptionsConcurrency {
-    boolean refresh = true
+class Parallel implements TerraformTaskConfigExtension {
+    final String name = 'parallel'
+
+    Integer maxParallel = 10
 
     @Override
     List<String> getCommandLineArgs() {
-        List<String> args = super.commandLineArgs
-        args.add "-refresh=${refresh}".toString()
-        args
+        [
+            "-parallelism=${maxParallel}".toString(),
+        ]
     }
 }

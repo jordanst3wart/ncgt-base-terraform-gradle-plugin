@@ -18,31 +18,54 @@ package org.ysb33r.gradle.terraform.plugins
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.base.plugins.LifecycleBasePlugin
+import org.ysb33r.gradle.terraform.TerraformExtension
+import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.tasks.AbstractTerraformTask
+import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
+import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
+import static org.ysb33r.gradle.terraform.internal.TerraformConfigUtils.locateTerraformRCGenerator
+import static org.ysb33r.gradle.terraform.internal.TerraformConvention.sourceSetDisplayName
 import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.FMT_APPLY
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.createTasksByConvention
 import static org.ysb33r.gradle.terraform.internal.TerraformConvention.taskName
-import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
 /** Provide the basic capabilities for dealing with Terraform tasks. Allow for downloading & caching of
  * Terraform distributions on a variety of the most common development platforms.
  *
- * @since 0.1
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
-    public static final String FORMAT_ALL = 'tfFormatAll'
+    public static final String FORMAT_ALL = 'fmtAll'
+    public static final String TERRAFORM_RC_EXT = 'terraformrc'
+    public static final String TERRAFORM_RC_TASK = 'generateTerraformConfig'
+    public static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
+    public static final String TERRAFORM_TASK_GROUP = 'Terraform'
 
     void apply(Project project) {
-        project.apply plugin: TerraformBasePlugin
+        ProjectOperations.maybeCreateExtension(project)
+        configureTerraformRC(project.rootProject)
+
+        project.tasks.withType(RemoteStateTask).configureEach { RemoteStateTask t ->
+            t.dependsOn(locateTerraformRCGenerator(t.project))
+        }
+
+        project.tasks.withType(AbstractTerraformTask).configureEach { AbstractTerraformTask t ->
+            t.dependsOn(locateTerraformRCGenerator(t.project))
+        }
+
+        project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
+        createTerraformSourceSetsExtension(project)
+
         def formatAll = project.tasks.register(FORMAT_ALL)
         formatAll.configure {
             it.group = TERRAFORM_TASK_GROUP
@@ -50,6 +73,45 @@ class TerraformPlugin implements Plugin<Project> {
         }
         terraformSourceSetConventionTaskRules(project, formatAll)
         configureCheck(project)
+    }
+
+    private static void configureTerraformRC(Project rootProject) {
+        // create projections for root rootProject
+        ProjectOperations.maybeCreateExtension(rootProject)
+        TerraformRCExtension terraformRcExt = rootProject.extensions
+            .create(TERRAFORM_RC_EXT, TerraformRCExtension, rootProject)
+        rootProject.tasks.register(TERRAFORM_RC_TASK) { it ->
+            it.group = TERRAFORM_TASK_GROUP
+            it.description = 'Generates Terraform configuration file'
+            it.onlyIf { !terraformRcExt.useGlobalConfig }
+            it.inputs.property'details', { ->
+                StringWriter w = new StringWriter()
+                terraformRcExt.toHCL(w).toString()
+            }
+            it.outputs.file terraformRcExt.terraformRC
+            it.doLast {
+                terraformRcExt.terraformRC.get().withWriter { w ->
+                    terraformRcExt.toHCL(w)
+                }
+            }
+        }
+    }
+
+    private static NamedDomainObjectContainer<TerraformSourceDirectorySet> createTerraformSourceSetsExtension(
+        Project project
+    ) {
+        NamedDomainObjectFactory<TerraformSourceDirectorySet> factory = { String name ->
+            project.objects.newInstance(
+                TerraformSourceDirectorySet,
+                project,
+                name,
+                sourceSetDisplayName(name)
+            )
+        }
+        NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer =
+            project.objects.domainObjectContainer(TerraformSourceDirectorySet, factory)
+        project.extensions.add(TERRAFORM_SOURCESETS, sourceSetContainer)
+        sourceSetContainer
     }
 
     private static void configureCheck(Project project) {

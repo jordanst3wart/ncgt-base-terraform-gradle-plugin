@@ -27,7 +27,8 @@ import groovy.transform.CompileStatic
 @SuppressWarnings('LineLength')
 enum DefaultTerraformTasks {
     INIT('init', TerraformInit, 'Initialises Terraform'),
-    SHOW('showState', TerraformShowState, 'Generates a report on the current state'),
+    SHOW_STATE('showState', TerraformShowState, 'Generates a report on the current state'),
+    SHOW('show', TerraformShow, 'Generates a report from a plan file'),
     PLAN('plan', TerraformPlan, 'Generates Terraform execution plan'),
     APPLY('apply', TerraformApply, 'Builds or changes infrastructure'),
     DESTROY_PLAN('destroyPlan', TerraformDestroyPlan, 'Generates Terraform destruction plan'),

@@ -23,11 +23,10 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.ysb33r.gradle.terraform.plugins.TerraformPlugin
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
-
-import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_TASK_GROUP
 
 /**
  * Generates a remote state file containing partial configuration for backend.
@@ -40,7 +39,7 @@ import static org.ysb33r.gradle.terraform.plugins.TerraformBasePlugin.TERRAFORM_
 class RemoteStateTask extends DefaultTask {
 
     RemoteStateTask() {
-        group = TERRAFORM_TASK_GROUP
+        group = TerraformPlugin.TERRAFORM_TASK_GROUP
         description = 'Generates configuration for backend state provider'
         this.destinationDir = project.objects.property(File)
         this.outputFile = project.objects.property(File)
@@ -50,7 +49,7 @@ class RemoteStateTask extends DefaultTask {
             project.providers.provider(new Callable<File>() {
                 @Override
                 File call() throws Exception {
-                    new File(destinationDir.get(), 'terraform-backend-config.tf')
+                    new File(destinationDir.get(), 'backend-config.tf')
                 }
             })
         )

@@ -22,28 +22,27 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
-import org.ysb33r.gradle.terraform.config.Json
 
 import javax.inject.Inject
 import java.util.concurrent.Callable
 
-/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
+/** Equivalent of {@code terraform show /path/to/terraform.plan}.
  */
 @CompileStatic
-class TerraformShowState extends AbstractTerraformTask {
+class TerraformShow extends AbstractTerraformTask {
 
     @Inject
-    TerraformShowState() {
+    TerraformShow() {
         super('show', [])
         outputFile = project.objects.property(File)
         outputFile.set(
             project.provider({ ->
                 new File(sourceSet.get().reportsDir.get(),
-                    "${sourceSet.get().name}.status.${json ? 'tf.json' : 'tf'}")
+                    "${sourceSet.get().name}.${json ? 'tf.json' : 'tf'}")
             } as Callable<File>))
 
         supportsColor(false)
-        captureStdOutTo(statusReportOutputFile)
+        captureStdOutTo(reportOutputFile)
         inputs.files(taskProvider('init'))
         alwaysOutOfDate()
     }
@@ -52,23 +51,24 @@ class TerraformShowState extends AbstractTerraformTask {
      *
      * This option can be set from the command-line with {@code --json}.
      */
+    // only task where json is true
     @Option(option = 'json', description = 'Force output to be in JSON format')
     @Internal
-    boolean json = false
+    boolean json = true
 
     /** Get the location where the report file needs to be generated.
      *
      * @return File provider
      */
     @OutputFile
-    Provider<File> getStatusReportOutputFile() {
+    Provider<File> getReportOutputFile() {
         this.outputFile
     }
 
     @Override
     void exec() {
         super.exec()
-        URI fileLocation = statusReportOutputFile.get().toURI()
+        URI fileLocation = reportOutputFile.get().toURI()
         logger.lifecycle(
             "The textual representation of the state file has been generated into ${fileLocation}"
         )
@@ -84,9 +84,10 @@ class TerraformShowState extends AbstractTerraformTask {
         super.addCommandSpecificsToExecSpec(execSpec)
 
         if (json) {
-            execSpec.cmdArgs JSON_FORMAT
+            execSpec.cmdArgs(JSON_FORMAT)
         }
 
+        execSpec.cmdArgs(this.planFile.get().absolutePath)
         execSpec
     }
 

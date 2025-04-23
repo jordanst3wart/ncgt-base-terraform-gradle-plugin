@@ -76,22 +76,22 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
         projectOperations.fsOperations.updateFileProperty(
             sourceDir,
-            "src/tf/${name}"
+            "src/${name}/tf"
         )
 
         projectOperations.fsOperations.updateFileProperty(
             dataDir,
-            projectOperations.buildDirDescendant("tf/${name}")
+            projectOperations.buildDirDescendant("${name}/tf")
         )
 
         projectOperations.fsOperations.updateFileProperty(
             logDir,
-            projectOperations.buildDirDescendant("tf/${name}/logs")
+            projectOperations.buildDirDescendant("${name}/tf/logs")
         )
 
         projectOperations.fsOperations.updateFileProperty(
             reportsDir,
-            projectOperations.buildDirDescendant("reports/tf/${name}")
+            projectOperations.buildDirDescendant("${name}/tf/reports")
         )
 
         this.vars = new Variables(this.sourceDir)
@@ -101,19 +101,11 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         }.curry(this.secondarySources))
     }
 
-    /** The display name is the string representation of the source set.
-     *
-     * @return String representation
-     */
     @Override
     String toString() {
         this.displayName
     }
 
-    /** Provide for the root directory of the source set,
-     *
-     * @return File provider.
-     */
     Provider<File> getSrcDir() {
         this.sourceDir
     }
@@ -143,15 +135,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.dataDir
     }
 
-    /** Sets the Terraform data directory.
-     *
-     * @param dir Directory can be anything convertible using {@link Project#file}.
-     * @return {@code this}.
-     */
-    void setDataDir(Object dir) {
-        projectOperations.fsOperations.updateFileProperty(this.dataDir, dir)
-    }
-
     /** Log directory provider.
      *
      * @return File provider.
@@ -160,30 +143,12 @@ class TerraformSourceDirectorySet implements PatternFilterable {
         this.logDir
     }
 
-    /** Sets the log directory.
-     *
-     * @param dir Directory can be anything convertible using {@link Project#file}.
-     * @return {@code this}.
-     */
-    void setLogDir(Object dir) {
-        projectOperations.fsOperations.updateFileProperty(this.logDir, dir)
-    }
-
     /** Reports directory.
      *
      * @return File provider.
      */
     Provider<File> getReportsDir() {
         this.reportsDir
-    }
-
-    /** Sets the reports directory.
-     *
-     * @param dir Directory can be anything convertible using {@link Project#file}.
-     * @return {@code this}.
-     */
-    void setReportsDir(Object dir) {
-        projectOperations.fsOperations.updateFileProperty(this.reportsDir, dir)
     }
 
     /**
@@ -227,9 +192,6 @@ class TerraformSourceDirectorySet implements PatternFilterable {
 
     /** Get all terraform variables applicable to this source set.
      *
-     * @param cfg
-     *
-     * @since 0.2
      */
     VariablesSpec getVariables() {
         this.vars

@@ -33,12 +33,6 @@ class TerraformDestroyPlan extends TerraformPlan {
     }
 
     @Override
-    File getPlanReportOutputFile() {
-        new File(sourceSet.get().reportsDir.get(),
-            "${sourceSet.get().name}.tf.destroy.plan.${jsonReport ? 'json' : 'txt'}")
-    }
-
-    @Override
     Provider<File> getVariablesFile() {
         super.variablesFile.map {
             new File(it.parentFile, '_d_.tfVars')

@@ -23,9 +23,9 @@ class TerraformDestroySpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    void 'commands for terraform apply'() {
+    void 'commands for terraform destroy'() {
         setup:
-        project.apply plugin: 'org.ysb33r.terraform'
+        project.apply plugin: 'foo.bar.terraform'
 
 
         when:
@@ -41,10 +41,9 @@ class TerraformDestroySpec extends Specification {
         }
 
         then:
-        def task = project.tasks.named('tfMainDestroy').get()
+        def task = project.tasks.named('destroyMain').get()
         task instanceof TerraformDestroy
         // task.setTargets(["someResource"]) // bug
-        task.setJson(true)
         def spec = task.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
@@ -52,12 +51,11 @@ class TerraformDestroySpec extends Specification {
             '-auto-approve',
             '-input=false',
             '-lock=true',
-            '-lock-timeout=0s',
+            '-lock-timeout=30s',
             '-parallelism=10',
             '-refresh=true',
-            '-json'
         ])
-        spec.getCmdArgs().size() == 9
+        spec.getCmdArgs().size() == 8
 
         def varsFile = false
         spec.getCmdArgs().forEach{ it ->

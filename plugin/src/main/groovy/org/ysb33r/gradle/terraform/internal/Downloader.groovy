@@ -41,6 +41,8 @@ import static org.ysb33r.grolifant.api.core.OperatingSystem.Arch.X86_64
  * </ul>
  * <p> (Patches welcome!)
  */
+
+// org.ysb33r.grolifant.api.core.downloader.AbstractDistributionInstaller
 @CompileStatic
 class Downloader extends AbstractDistributionInstaller implements  DownloaderBinary {
     public static final OperatingSystem OS = OperatingSystem.current()

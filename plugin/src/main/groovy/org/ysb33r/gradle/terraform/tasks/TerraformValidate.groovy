@@ -19,30 +19,21 @@ import groovy.transform.CompileStatic
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.config.Json
 
 import javax.inject.Inject
 
 /** Equivalent of {@code terraform validate}.
- *
- * @since 0.1
  */
 @CompileStatic
 class TerraformValidate extends AbstractTerraformTask {
 
     @Inject
     TerraformValidate() {
-        super('validate', [])
+        super('validate', [Json])
         supportsColor()
         inputs.files(taskProvider('init'))
     }
-
-/** Whether output should be in JSON
-     *
-     * This option can be set from the command-line with {@code --upgrade=true}.
-     */
-    @Option(option = 'json', description = 'Force validate output to be in JSON format')
-    @Internal
-    boolean json = false
 
     /** Add specific command-line options for the command.
      *
@@ -52,10 +43,6 @@ class TerraformValidate extends AbstractTerraformTask {
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
         super.addCommandSpecificsToExecSpec(execSpec)
-
-        if (json) {
-            execSpec.cmdArgs JSON_FORMAT
-        }
         execSpec
     }
 }

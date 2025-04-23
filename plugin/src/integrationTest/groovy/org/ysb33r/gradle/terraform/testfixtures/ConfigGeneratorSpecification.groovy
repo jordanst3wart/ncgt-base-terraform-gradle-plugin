@@ -29,7 +29,7 @@ class ConfigGeneratorSpecification extends IntegrationSpecification {
         testkitDir = testProjectDir.newFolder()
         srcDir = new File(projectDir, 'src/tf/main')
         srcDir.mkdirs()
-        outputFile = new File(projectDir, 'build/tfRemoteState/tfBackendConfiguration/terraform-backend-config.tf')
+        outputFile = new File(projectDir, 'build/tfRemoteState/tfBackendConfiguration/backend-config.tf')
 
         new File(projectDir, 'settings.gradle').text = "rootProject.name = '${PROJECT_NAME}'"
 

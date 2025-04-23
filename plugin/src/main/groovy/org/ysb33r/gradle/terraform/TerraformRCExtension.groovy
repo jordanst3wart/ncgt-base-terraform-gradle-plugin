@@ -26,7 +26,7 @@ import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import java.util.concurrent.Callable
 
-import static org.ysb33r.gradle.terraform.plugins.TerraformRCPlugin.TERRAFORM_RC_TASK
+import static org.ysb33r.gradle.terraform.plugins.TerraformPlugin.TERRAFORM_RC_TASK
 import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
 /** Extension that describes a {@code terraformrc} file.
@@ -58,7 +58,7 @@ class TerraformRCExtension {
      *
      * When set to {@code true} use global Terraform configuration rather than a project configuration.
      *
-     * Default is {@code false}.
+     * Default is {@code true}.
      */
     boolean useGlobalConfig = false
 

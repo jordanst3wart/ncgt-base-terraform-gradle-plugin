@@ -33,7 +33,7 @@ class TerraformFmtApply extends AbstractTerraformTask {
     }
 
     @Input
-    boolean recursive = false
+    boolean recursive = true
 
     @Override
     protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {

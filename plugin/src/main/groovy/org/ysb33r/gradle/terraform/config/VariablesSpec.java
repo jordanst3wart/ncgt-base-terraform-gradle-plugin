@@ -19,6 +19,7 @@ import org.gradle.api.Action;
 import org.gradle.api.provider.Provider;
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,4 +81,6 @@ public interface VariablesSpec {
      *                 the appropriate {@link TerraformSourceDirectorySet}.
      */
     void file(final Object fileName);
+
+    List<String> getCommandLineArgs();
 }
