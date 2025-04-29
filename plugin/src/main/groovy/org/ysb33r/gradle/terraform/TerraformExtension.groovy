@@ -19,6 +19,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
@@ -81,7 +82,7 @@ class TerraformExtension {
         this.registry = new ResolverFactoryRegistry(project)
         if (!DownloaderTerraform.downloadSupported) {
             throw new GradleException(
-                "Terraform distribution not supported on ${projectOperations.stringTools.stringize(DownloaderTerraform.OS)}"
+                "Terraform distribution not supported on ${OperatingSystem.current().name}"
             )
         }
         addVersionResolver(projectOperations)

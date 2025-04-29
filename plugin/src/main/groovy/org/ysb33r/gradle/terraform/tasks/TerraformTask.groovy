@@ -102,6 +102,18 @@ abstract class TerraformTask extends DefaultTask {
         execWorkAction(execSpec, runner, stdoutCapture)
     }
 
+    /**
+     * Obtain a list of associated variables, should if be a valid condition for the task.
+     *
+     * In most cases this will be empty.
+     *
+     * @return Associated variables in terraform format.
+     */
+    @Internal
+    List<Provider<List<String>>> getTfVarProviders() {
+        this.tfVarProviders
+    }
+
     private execWorkAction(TerraformExecSpec execSpec, Action<ExecSpec> runner, Provider<File> captureStdout) {
         def workQueue = workerExecutor.noIsolation()
         workQueue.submit(RunExec, parameters -> {
@@ -138,18 +150,6 @@ abstract class TerraformTask extends DefaultTask {
         // not defined at setup time
         this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
         withConfigExtensions(configExtensions)
-    }
-
-    /**
-     * Obtain a list of associated variables, should if be a valid condition for the task.
-     *
-     * In most cases this will be empty.
-     *
-     * @return Associated variables in terraform format.
-     */
-    @Internal
-    List<Provider<List<String>>> getTfVarProviders() {
-        this.tfVarProviders
     }
 
     @Internal
@@ -349,16 +349,16 @@ abstract class TerraformTask extends DefaultTask {
         for (it in configExtensions) {
             ConfigExtension cex
             if (it == Lock) {
-                cex = projectTerraform.getLock()
+                cex = projectTerraform.lock
             } else if (it == Parallel) {
-                cex = projectTerraform.getParallel()
+                cex = projectTerraform.parallel
             } else if (it == Json) {
-                cex = projectTerraform.getJson()
+                cex = projectTerraform.json
             } else {
                 cex = (ConfigExtension) project.objects.newInstance(it)
             }
             extensions.add(cex.name, cex)
-            commandLineProviders.add(projectOperations.provider { -> cex.getCommandLineArgs() })
+            commandLineProviders.add(projectOperations.provider { -> cex.commandLineArgs })
         }
     }
 
