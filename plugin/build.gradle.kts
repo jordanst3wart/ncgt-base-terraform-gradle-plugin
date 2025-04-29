@@ -25,7 +25,7 @@ fun Map<String, Any?>.getOrSystemEnvOrDefault(key: String, defaultValue: String)
     }
 }.toString()
 
-val githubUsername = project.properties.getOrSystemEnvOrDefault("GH_USERNAME", "newscorp-ghfb")
+val githubUsername = project.properties.getOrSystemEnvOrDefault("GH_USERNAME", "jordanst3wart")
 /*
  * this is a github classic token that requires publishing permissions to write a new package
  */
