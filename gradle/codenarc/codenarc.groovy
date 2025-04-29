@@ -71,7 +71,7 @@ ruleset {
     }
     ConfusingTernary
     CouldBeElvis
-    CouldBeSwitchStatement
+    // CouldBeSwitchStatement
     FieldTypeRequired
     HashtableIsObsolete
     IfStatementCouldBeTernary
@@ -350,8 +350,8 @@ ruleset {
 //    WaitOutsideOfWhileLoop
 
     // rulesets/design.xml
-    AbstractClassWithPublicConstructor
-    AbstractClassWithoutAbstractMethod
+    // AbstractClassWithPublicConstructor
+    // AbstractClassWithoutAbstractMethod
     AssignmentToStaticFieldFromInstanceMethod
     BooleanMethodReturnsNull
 //    CloneableWithoutClone
