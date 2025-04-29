@@ -28,7 +28,7 @@ class TerraformExtensionSpec extends Specification {
     def 'Configure terraform executable using a version'() {
         when: 'A version is configured'
         project.allprojects {
-            apply plugin : 'foo.bar.terraform'
+            apply plugin : 'bot.stewart.terraform'
 
             // tag::configure-with-tag[]
             terraform {
@@ -44,7 +44,7 @@ class TerraformExtensionSpec extends Specification {
     def 'Configure terraform executable using a path'() {
         when: 'A path is configured'
         project.allprojects {
-            apply plugin : 'foo.bar.terraform'
+            apply plugin : 'bot.stewart.terraform'
 
             // tag::configure-with-path[]
             terraform {
@@ -59,7 +59,7 @@ class TerraformExtensionSpec extends Specification {
 
     def 'Cannot configure terraform with more than one option'() {
         setup:
-        project.apply plugin : 'foo.bar.terraform'
+        project.apply plugin : 'bot.stewart.terraform'
 
         when:
         project.terraform.executable version : '7.10.0', path : '/path/to'

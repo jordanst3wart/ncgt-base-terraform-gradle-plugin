@@ -28,7 +28,7 @@ class TerraformPluginSpec extends Specification {
     Project project = ProjectBuilder.builder().build()
 
     void setup() {
-        project.apply plugin: 'foo.bar.terraform'
+        project.apply plugin: 'bot.stewart.terraform'
         project.allprojects {
             terraformSourceSets {
                 main {

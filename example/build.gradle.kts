@@ -1,8 +1,7 @@
 /*import org.ysb33r.gradle.terraform.TerraformRCExtension
 
-
 plugins {
-    id("foo.bar.terraform") version ("CLEAN-UP-4-SNAPSHOT")
+    id("bot.stewart.terraform") version ("FIXES-SNAPSHOT")
     // id("com.newscorp.gt.gradle.terraform")
 }
 

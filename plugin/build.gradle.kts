@@ -51,7 +51,7 @@ fun createVersion(): String {
 gradlePlugin {
     plugins {
         create("terraformPlugin") {
-            id = "foo.bar.terraform" // property("ID").toString()
+            id = "bot.stewart.terraform" // property("ID").toString()
             implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformPlugin" // property("IMPLEMENTATION_CLASS").toString()
             version = createVersion()
             displayName = "Terraform Plugin"
@@ -59,20 +59,6 @@ gradlePlugin {
             tags = listOf("terraform")
             // website = property("WEBSITE").toString()
             // vcsUrl = property("VCS_URL").toString()
-        }
-    }
-}
-
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            credentials {
-                username = githubUsername
-                password = githubToken
-            }
-            uri("https://maven.pkg.github.com/jordanst3wart/gradle-terraform-plugin")
         }
     }
 }
@@ -88,3 +74,15 @@ tasks.test {
     jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED", "--add-opens=java.base/java.util=ALL-UNNAMED")
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            credentials {
+                username = githubUsername
+                password = githubToken
+            }
+            uri("https://maven.pkg.github.com/jordanst3wart/gradle-terraform-plugin")
+        }
+    }
+}

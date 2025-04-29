@@ -25,7 +25,7 @@ class TerraformPlanSpec extends Specification {
 
     void 'commands for terraform plan'() {
         setup:
-        project.apply plugin: 'foo.bar.terraform'
+        project.apply plugin: 'bot.stewart.terraform'
 
 
         when:
