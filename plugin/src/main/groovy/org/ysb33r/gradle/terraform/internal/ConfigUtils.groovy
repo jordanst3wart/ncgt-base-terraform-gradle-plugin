@@ -17,9 +17,7 @@ package org.ysb33r.gradle.terraform.internal
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
-import org.gradle.api.UnknownTaskException
 import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
@@ -98,27 +96,6 @@ class ConfigUtils {
             )
         }
         terraformrc
-    }
-
-    /** Locates the task that can generate a {@code terraformrc} file.
-     *
-     * Should only be called in configuration phase.
-     *
-     * @param project Project to start search from.
-     * @return Task.*
-     * @throw {@link MissingConfiguration} if task cannot be located.
-     */
-    static Task locateTerraformRCGenerator(Project project) {
-        TerraformRCExtension ext = locateTerraformRCExtension(project)
-
-        try {
-            ext.terraformRCTask.get()
-        } catch (UnknownTaskException e) {
-            throw new MissingConfiguration(
-                'Cannot locate a task in this project or the root project which could generate the terraformrc file',
-                e
-            )
-        }
     }
 
     /** Creates the plugin cache directory if it is not a global configuration.

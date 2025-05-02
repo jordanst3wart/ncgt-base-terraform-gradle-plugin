@@ -121,16 +121,6 @@ class TerraformRCExtension {
         this.terraformRC
     }
 
-    /**
-     * Task that creates the {@code .terraformrc} file.
-     *
-     * @return Provider*
-     * @since 0.17.0
-     */
-    Provider<Task> getTerraformRCTask() {
-        this.terraformRCTask
-    }
-
     /** Adds a credential set to the configuration file.
      *
      * @param key Remote Terraform system name

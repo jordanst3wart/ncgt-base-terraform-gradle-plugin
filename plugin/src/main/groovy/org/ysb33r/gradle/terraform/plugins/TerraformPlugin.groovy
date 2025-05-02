@@ -33,7 +33,6 @@ import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import static org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
-import static org.ysb33r.gradle.terraform.internal.ConfigUtils.locateTerraformRCGenerator
 import static org.ysb33r.gradle.terraform.internal.Convention.sourceSetDisplayName
 import static org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.FMT_APPLY
 import static org.ysb33r.gradle.terraform.internal.Convention.createTasksByConvention
@@ -55,11 +54,11 @@ class TerraformPlugin implements Plugin<Project> {
         configureTerraformRC(project.rootProject)
 
         project.tasks.withType(RemoteStateTask).configureEach { RemoteStateTask t ->
-            t.dependsOn(locateTerraformRCGenerator(t.project))
+            t.dependsOn(TerraformRCExtension.TERRAFORM_RC_TASK)
         }
 
         project.tasks.withType(TerraformTask).configureEach { TerraformTask t ->
-            t.dependsOn(locateTerraformRCGenerator(t.project))
+            t.dependsOn(TerraformRCExtension.TERRAFORM_RC_TASK)
         }
 
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
