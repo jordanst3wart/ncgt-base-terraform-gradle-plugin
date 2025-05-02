@@ -1,63 +1,49 @@
-/*
- * Copyright 2017-2022 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.ysb33r.gradle.terraform
 
-import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
-
+import org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
+import java.io.File
+import java.io.Writer
 import java.util.concurrent.Callable
-import static org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 
-/** Extension that describes a {@code terraformrc} file.
+/** Extension that describes a `terraformrc` file.
  *
  * @author Schalk W. Cronjé
  */
-@CompileStatic
-class TerraformRCExtension {
-    public static final String TERRAFORM_RC_TASK = 'generateTerraformConfig'
+class TerraformRCExtension(project: Project) {
+    companion object {
+        const val TERRAFORM_RC_TASK = "generateTerraformConfig"
+    }
 
     /** Disable checkpoint.
      *
      * When set to true, disables upgrade and security bulletin checks that require reaching out to
      * HashiCorp-provided network services.
      *
-     * Default is {@code true}.
+     * Default is `true`.
      */
-    boolean disableCheckPoint = true
+    var disableCheckPoint = true
 
     /** Disable checkpoint signature.
      *
      * When set to true, allows the upgrade and security bulletin checks described above but disables the use of an
      * anonymous id used to de-duplicate warning messages.
      *
-     * Default is {@code false}.
+     * Default is `false`.
      */
-    boolean disableCheckPointSignature = false
+    var disableCheckPointSignature = false
 
     /** Select source of Terraform configuration.
      *
-     * When set to {@code true} use global Terraform configuration rather than a project configuration.
+     * When set to `true` use global Terraform configuration rather than a project configuration.
      *
-     * Default is {@code true}.
+     * Default is `true`.
      */
-    boolean useGlobalConfig = false
+    var useGlobalConfig = false
 
     /** Plugin cache may break dependency lock file.
      *
@@ -68,34 +54,43 @@ class TerraformRCExtension {
      * valid for use on another computer with a different operating system or CPU architecture, because it
      * will include only a checksum of the package in the global cache.
      *
-     * Default is {@code false}.
+     * Default is `false`.
      */
-    boolean pluginCacheMayBreakDependencyLockFile = false
+    var pluginCacheMayBreakDependencyLockFile = false
 
-    TerraformRCExtension(Project project) {
+    private val pluginCacheDir: Property<File>
+    private val terraformRC: Provider<File>
+    private val credentials = mutableMapOf<String, String>()
+    private val projectOperations: ProjectOperations
+
+    init {
         this.projectOperations = ProjectOperations.find(project)
 
-        this.terraformRC = project.providers.provider({ File defaultLoc ->
-            defaultLoc
-        }.curry(new File(projectOperations.projectCacheDir, '.terraformrc')) as Callable<File>)
+        this.terraformRC = project.providers.provider(
+            Callable<File> {
+                File(projectOperations.projectCacheDir, ".terraformrc")
+            }
+        )
 
-        this.pluginCacheDir = project.objects.property(File)
+        this.pluginCacheDir = project.objects.property(File::class.java)
         projectOperations.fsOperations.updateFileProperty(
             this.pluginCacheDir,
-            projectOperations.gradleUserHomeDir.map { new File(it, 'caches/terraform.d') }
+            projectOperations.gradleUserHomeDir.map { File(it, "caches/terraform.d") }
         )
     }
 
     /** Sets the location of the Terraform plugin cache directory
      *
-     * @param dir Anything that is convertible using {@code project.file}.
+     * @param dir Anything that is convertible using `project.file`.
      */
-    void setPluginCacheDir(Object dir) {
+    fun setPluginCacheDir(dir: Any) {
         projectOperations.fsOperations.updateFileProperty(
             this.pluginCacheDir,
-            projectOperations.provider({ ->
-                projectOperations.fsOperations.file(dir)
-            } as Callable<File>)
+            projectOperations.provider(
+                Callable<File> {
+                    projectOperations.fsOperations.file(dir)
+                }
+            )
         )
     }
 
@@ -103,16 +98,16 @@ class TerraformRCExtension {
      *
      * @return Location of cache directory as a file provider.
      */
-    Provider<File> getPluginCacheDir() {
-        this.pluginCacheDir
+    fun getPluginCacheDir(): Provider<File> {
+        return this.pluginCacheDir
     }
 
-    /** Location of the {@code terraformrc} file if it shoudl be written by the project.
+    /** Location of the `terraformrc` file if it should be written by the project.
      *
-     * @return Location of {@code terraformrc} file. Never {@code null}.
+     * @return Location of `terraformrc` file. Never `null`.
      */
-    Provider<File> getTerraformRC() {
-        this.terraformRC
+    fun getTerraformRC(): Provider<File> {
+        return this.terraformRC
     }
 
     /** Adds a credential set to the configuration file.
@@ -120,8 +115,8 @@ class TerraformRCExtension {
      * @param key Remote Terraform system name
      * @param token Token for remote Terraform system.
      */
-    void credentials(String key, String token) {
-        credentials.put(key, token)
+    fun credentials(key: String, token: String) {
+        credentials[key] = token
     }
 
     /** Writes to the content of the Terraform configuration to an HCL writer.
@@ -129,21 +124,16 @@ class TerraformRCExtension {
      * @param writer Writer instance to send output to.
      * @return The writer
      */
-    Writer toHCL(Writer writer) {
+    fun toHCL(writer: Writer): Writer {
         writer.write("disable_checkpoint = ${this.disableCheckPoint}\n")
         writer.write("disable_checkpoint_signature = ${this.disableCheckPointSignature}\n")
         writer.write("plugin_cache_dir = \"${escapedFilePath(OperatingSystem.current(), pluginCacheDir.get())}\"\n")
         writer.write("plugin_cache_may_break_dependency_lock_file = ${this.pluginCacheMayBreakDependencyLockFile}\n")
-        this.credentials.each { String key, String token ->
+        this.credentials.forEach { (key, token) ->
             writer.write("credentials \"${key}\" {\n")
             writer.write("  token = \"${token}\"\n")
-            writer.write('}\n')
+            writer.write("}\n")
         }
-        writer
+        return writer
     }
-
-    private final Property<File> pluginCacheDir
-    private final Provider<File> terraformRC
-    private final Map<String, String> credentials = [:]
-    private final ProjectOperations projectOperations
 }
