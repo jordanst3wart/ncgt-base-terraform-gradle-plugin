@@ -17,10 +17,8 @@ package org.ysb33r.gradle.terraform
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.TaskContainer
 import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.grolifant.api.core.ProjectOperations
 
@@ -86,10 +84,6 @@ class TerraformRCExtension {
             this.pluginCacheDir,
             projectOperations.gradleUserHomeDir.map { new File(it, 'caches/terraform.d') }
         )
-
-        this.terraformRCTask = project.provider({ TaskContainer t ->
-            t.getByName(TERRAFORM_RC_TASK)
-        }.curry(project.tasks) as Callable<Task>)
     }
 
     /** Sets the location of the Terraform plugin cache directory
@@ -136,14 +130,14 @@ class TerraformRCExtension {
      * @return The writer
      */
     Writer toHCL(Writer writer) {
-        writer.println "disable_checkpoint = ${this.disableCheckPoint}"
-        writer.println "disable_checkpoint_signature = ${this.disableCheckPointSignature}"
-        writer.println "plugin_cache_dir = \"${escapedFilePath(OperatingSystem.current(), pluginCacheDir.get())}\""
-        writer.println "plugin_cache_may_break_dependency_lock_file = ${this.pluginCacheMayBreakDependencyLockFile}"
+        writer.write("disable_checkpoint = ${this.disableCheckPoint}\n")
+        writer.write("disable_checkpoint_signature = ${this.disableCheckPointSignature}\n")
+        writer.write("plugin_cache_dir = \"${escapedFilePath(OperatingSystem.current(), pluginCacheDir.get())}\"\n")
+        writer.write("plugin_cache_may_break_dependency_lock_file = ${this.pluginCacheMayBreakDependencyLockFile}\n")
         this.credentials.each { String key, String token ->
-            writer.println "credentials \"${key}\" {"
-            writer.println "  token = \"${token}\""
-            writer.println '}'
+            writer.write("credentials \"${key}\" {\n")
+            writer.write("  token = \"${token}\"\n")
+            writer.write('}\n')
         }
         writer
     }
@@ -152,5 +146,4 @@ class TerraformRCExtension {
     private final Provider<File> terraformRC
     private final Map<String, String> credentials = [:]
     private final ProjectOperations projectOperations
-    private final Provider<Task> terraformRCTask
 }
