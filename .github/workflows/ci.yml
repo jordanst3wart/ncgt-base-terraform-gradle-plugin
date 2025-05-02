@@ -40,6 +40,6 @@ jobs:
             - name: Publish Plugin to github if main branch
               run: |
                   if [ "${{ matrix.java }}" == "11" ]; then
-                    ./gradlew publishAllPublicationsToGithubPackagesRepository
+                    ./gradlew publishAllPublicationsToGithubPackagesRepository --stacktrace
                   fi
               if: success() && github.event_name == 'push' && github.ref == 'refs/heads/master'
