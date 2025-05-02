@@ -144,7 +144,7 @@ abstract class TerraformTask extends DefaultTask {
         List<Class> configExtensions
     ) {
         this.projectOperations = ProjectOperations.find(project)
-        this.projectTerraform = project.extensions.getByType(TerraformExtension)
+        this.terraformExtension = project.extensions.getByType(TerraformExtension)
         this.terraformrc = ConfigUtils.locateTerraformRCExtension(project)
         this.command = cmd
         // not defined at setup time
@@ -290,13 +290,13 @@ abstract class TerraformTask extends DefaultTask {
     }
 
     protected TerraformExecSpec addExecutableToExecSpec(final TerraformExecSpec execSpec) {
-        execSpec.executable(toolExtension.resolvableExecutable.executable.absolutePath)
+        execSpec.executable(terraformExtension.resolvableExecutable.executable.absolutePath)
         execSpec
     }
 
     @Internal
-    protected TerraformExtension getToolExtension() {
-        projectTerraform
+    protected TerraformExtension getTerraformExtension() {
+        terraformExtension
     }
 
     /** Configures a {@link TerraformExecSpec}.
@@ -337,7 +337,7 @@ abstract class TerraformTask extends DefaultTask {
      * @return {@link TerraformExecSpec}. Never {@code null}.
      */
     protected TerraformExecSpec createExecSpec() {
-        new TerraformExecSpec(projectOperations, projectTerraform.resolver)
+        new TerraformExecSpec(projectOperations, terraformExtension.resolver)
     }
 
     /** To be called subclass constructor for defining specific configuration extensions that are
@@ -349,11 +349,11 @@ abstract class TerraformTask extends DefaultTask {
         for (it in configExtensions) {
             ConfigExtension cex
             if (it == Lock) {
-                cex = projectTerraform.lock
+                cex = terraformExtension.lock
             } else if (it == Parallel) {
-                cex = projectTerraform.parallel
+                cex = terraformExtension.parallel
             } else if (it == Json) {
-                cex = projectTerraform.json
+                cex = terraformExtension.json
             } else {
                 cex = (ConfigExtension) project.objects.newInstance(it)
             }
@@ -398,7 +398,7 @@ abstract class TerraformTask extends DefaultTask {
     private String terraformLogLevel = 'TRACE'
     private final String command
     private final ProjectOperations projectOperations
-    private final TerraformExtension projectTerraform
+    private final TerraformExtension terraformExtension
     private final TerraformRCExtension terraformrc
     private final List<Provider<List<String>>> commandLineProviders = []
     private final List<Provider<List<String>>> tfVarProviders = []
