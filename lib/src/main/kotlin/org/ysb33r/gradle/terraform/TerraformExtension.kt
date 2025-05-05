@@ -53,12 +53,12 @@ class TerraformExtension(private val project: Project) {
 
     lateinit var resolvableExecutable: ResolvableExecutable
 
-    private val env = mutableMapOf<String, Any>()
-    private val registry: ResolverFactoryRegistry
-    private val projectOperations: ProjectOperations
-    private val lock = Lock()
-    private val parallel = Parallel()
-    private val json = Json()
+    val env = mutableMapOf<String, Any>()
+    val registry: ResolverFactoryRegistry
+    val projectOperations: ProjectOperations
+    val lock = Lock()
+    val parallel = Parallel()
+    val json = Json()
 
     init {
         this.projectOperations = ProjectOperations.maybeCreateExtension(project)
@@ -86,9 +86,9 @@ class TerraformExtension(private val project: Project) {
      *
      * @param args New environment key-value map of properties.
      */
-    fun setEnvironment(args: Map<String, Any?>) {
+    fun setEnvironment(args: Map<String, Any>) {
         this.env.clear()
-        this.env.putAll(args as Map<String, Any>)
+        this.env.putAll(args)
     }
 
     /** Environment for running the exe
@@ -105,8 +105,8 @@ class TerraformExtension(private val project: Project) {
      *
      * @param args Environmental variable key-value map.
      */
-    fun environment(args: Map<String, Any?>) {
-        this.env.putAll(args as Map<String, Any>)
+    fun environment(args: Map<String, Any>) {
+        this.env.putAll(args)
     }
 
     fun useAwsEnvironment() {
@@ -122,24 +122,12 @@ class TerraformExtension(private val project: Project) {
         this.lock.enabled = true
     }
 
-    fun getLock(): Lock {
-        return this.lock
-    }
-
     fun setParallel(parallel: Int) {
         this.parallel.maxParallel = parallel
     }
 
-    fun getParallel(): Parallel {
-        return this.parallel
-    }
-
     fun setJson(enabled: Boolean) {
         this.json.enabled = enabled
-    }
-
-    fun getJson(): Json {
-        return this.json
     }
 
     @Suppress("UNCHECKED_CAST")

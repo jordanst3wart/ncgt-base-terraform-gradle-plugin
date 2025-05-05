@@ -16,8 +16,6 @@ dependencies {
 apply(from = rootProject.file("gradle/plugin-dev.gradle"))
 apply(from = rootProject.file("gradle/codenarc.gradle"))
 
-
-
 fun Map<String, Any?>.getOrSystemEnvOrDefault(key: String, defaultValue: String): String = this.getOrElse(key) {
     System.getenv().getOrElse(key) {
         logger.warn("'$key' property is not defined, defaulting to '$defaultValue'")

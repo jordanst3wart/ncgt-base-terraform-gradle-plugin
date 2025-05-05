@@ -15,7 +15,6 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
-import groovy.transform.CompileStatic
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
 import org.ysb33r.gradle.terraform.TerraformExecSpec
@@ -25,34 +24,31 @@ import org.ysb33r.gradle.terraform.config.Parallel
 import org.ysb33r.gradle.terraform.config.Refresh
 
 import javax.inject.Inject
+import java.io.File
 
 /** Equivalent of {@code terraform apply}.
  *
  * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
  * in order to retrieve most of its configuration.
  */
-@CompileStatic
-abstract class TerraformApply extends TerraformTask {
+abstract class TerraformApply : TerraformTask {
 
     @InputFile
-    private final Provider<File> planFile
+    private val planFiles: Provider<File>
 
     @Inject
-    @SuppressWarnings('DuplicateStringLiteral')
-    TerraformApply() {
-        super('apply', [Lock, Refresh, Parallel, Json])
+    constructor() : super("apply", listOf(Lock::class.java, Refresh::class.java, Parallel::class.java, Json::class.java)) {
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        planFile = this.getPlanFile()
-        inputs.files(taskProvider('plan'))
-        mustRunAfter(taskProvider('plan'))
+        planFiles = this.planFile
+        inputs.files(taskProvider("plan"))
+        mustRunAfter(taskProvider("plan"))
     }
 
-    @Override
-    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs(planFile.get().absolutePath)
-        execSpec
+        execSpec.cmdArgs(planFiles.get().absolutePath)
+        return execSpec
     }
 }

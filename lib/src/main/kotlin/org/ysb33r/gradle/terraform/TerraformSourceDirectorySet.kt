@@ -25,9 +25,9 @@ class TerraformSourceDirectorySet @Inject constructor(
 
     private val backendText: Property<String>
     private val sourceDir: Property<File>
-    private val dataDir: Property<File>
-    private val logDir: Property<File>
-    private val reportsDir: Property<File>
+    val dataDir: Property<File>
+    val logDir: Property<File>
+    val reportsDir: Property<File>
     private val projectOperations: ProjectOperations
     private val vars: Variables
     private val patternSet = PatternSet()

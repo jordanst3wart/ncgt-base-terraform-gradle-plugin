@@ -15,35 +15,33 @@
  */
 package org.ysb33r.gradle.terraform.tasks
 
-import groovy.transform.CompileStatic
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
 import javax.inject.Inject
-import java.util.concurrent.Callable
+import java.io.File
+import java.net.URI
 
-/** Equivalent of {@code terraform show /path/to/terraform.plan}.
+/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
  */
-@CompileStatic
-abstract class TerraformShow extends TerraformTask {
+abstract class TerraformShowState : TerraformTask {
+    @OutputFile
+    val statusReportOutputFile: Property<File> = project.objects.property(File::class.java)
 
     @Inject
-    TerraformShow() {
-        super('show', [])
-        outputFile = project.objects.property(File)
-        outputFile.set(
-            project.provider({ ->
-                new File(sourceSet.get().reportsDir.get(),
-                    "${sourceSet.get().name}.${json ? 'tf.json' : 'tf'}")
-            } as Callable<File>))
+    constructor() : super("show", emptyList()) {
+        statusReportOutputFile.set(
+            project.provider {
+                File(sourceSet.get().reportsDir.get(),
+                    "${sourceSet.get().name}.status.${if (json) "tf.json" else "tf"}")
+            })
 
         supportsColor(false)
-        captureStdOutTo(reportOutputFile)
-        inputs.files(taskProvider('init'))
+        captureStdOutTo(statusReportOutputFile)
+        inputs.files(taskProvider("init"))
         alwaysOutOfDate()
     }
 
@@ -51,26 +49,15 @@ abstract class TerraformShow extends TerraformTask {
      *
      * This option can be set from the command-line with {@code --json}.
      */
-    // only task where json is true
-    @Option(option = 'json', description = 'Force output to be in JSON format')
+    @Option(option = "json", description = "Force output to be in JSON format")
     @Internal
-    boolean json = true
+    var json: Boolean = false
 
-    /** Get the location where the report file needs to be generated.
-     *
-     * @return File provider
-     */
-    @OutputFile
-    Provider<File> getReportOutputFile() {
-        this.outputFile
-    }
-
-    @Override
-    void exec() {
+    override fun exec() {
         super.exec()
-        URI fileLocation = reportOutputFile.get().toURI()
+        val fileLocation: URI = statusReportOutputFile.get().toURI()
         logger.lifecycle(
-            "The textual representation of the state file has been generated into ${fileLocation}"
+            "The textual representation of the state file has been generated into $fileLocation"
         )
     }
 
@@ -79,17 +66,13 @@ abstract class TerraformShow extends TerraformTask {
      * @param execSpec
      * @return execSpec
      */
-    @Override
-    protected TerraformExecSpec addCommandSpecificsToExecSpec(TerraformExecSpec execSpec) {
+    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
 
         if (json) {
             execSpec.cmdArgs(JSON_FORMAT)
         }
 
-        execSpec.cmdArgs(this.planFile.get().absolutePath)
-        execSpec
+        return execSpec
     }
-
-    private final Property<File> outputFile
 }

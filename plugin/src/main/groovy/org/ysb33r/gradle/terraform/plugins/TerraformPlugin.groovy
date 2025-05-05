@@ -27,6 +27,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.internal.Convention
 import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
@@ -44,16 +45,14 @@ import static org.ysb33r.gradle.terraform.internal.Convention.taskName
  */
 @CompileStatic
 class TerraformPlugin implements Plugin<Project> {
-    public static final String FORMAT_ALL = 'fmtAll'
-    public static final String TERRAFORM_RC_EXT = 'terraformrc'
-    public static final String TERRAFORM_SOURCESETS = 'terraformSourceSets'
-    public static final String TERRAFORM_TASK_GROUP = 'Terraform'
+
 
     void apply(Project project) {
         ProjectOperations.maybeCreateExtension(project)
         configureTerraformRC(project.rootProject)
 
         project.tasks.withType(RemoteStateTask).configureEach { RemoteStateTask t ->
+            t.group = Convention.TERRAFORM_TASK_GROUP
             t.dependsOn(TerraformRCExtension.TERRAFORM_RC_TASK)
         }
 
@@ -64,9 +63,9 @@ class TerraformPlugin implements Plugin<Project> {
         project.extensions.create(TerraformExtension.NAME, TerraformExtension, project)
         createTerraformSourceSetsExtension(project)
 
-        def formatAll = project.tasks.register(FORMAT_ALL)
+        def formatAll = project.tasks.register(Convention.FORMAT_ALL)
         formatAll.configure {
-            it.group = TERRAFORM_TASK_GROUP
+            it.group = Convention.TERRAFORM_TASK_GROUP
             it.description = 'Formats all terraform source'
         }
         terraformSourceSetConventionTaskRules(project, formatAll)
@@ -77,9 +76,9 @@ class TerraformPlugin implements Plugin<Project> {
         // create projections for root rootProject
         ProjectOperations.maybeCreateExtension(rootProject)
         TerraformRCExtension terraformRcExt = rootProject.extensions
-            .create(TERRAFORM_RC_EXT, TerraformRCExtension, rootProject)
+            .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension, rootProject)
         rootProject.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { it ->
-            it.group = TERRAFORM_TASK_GROUP
+            it.group = Convention.TERRAFORM_TASK_GROUP
             it.description = 'Generates Terraform configuration file'
             it.onlyIf { !terraformRcExt.useGlobalConfig }
             it.inputs.property'details', { ->
@@ -108,7 +107,7 @@ class TerraformPlugin implements Plugin<Project> {
         }
         NamedDomainObjectContainer<TerraformSourceDirectorySet> sourceSetContainer =
             project.objects.domainObjectContainer(TerraformSourceDirectorySet, factory)
-        project.extensions.add(TERRAFORM_SOURCESETS, sourceSetContainer)
+        project.extensions.add(Convention.TERRAFORM_SOURCESETS, sourceSetContainer)
         sourceSetContainer
     }
 
