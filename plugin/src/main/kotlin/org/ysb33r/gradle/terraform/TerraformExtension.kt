@@ -45,7 +45,7 @@ import org.ysb33r.grolifant.api.v4.exec.NamedResolvedExecutableFactory
  *
  * @since 0.1
  */
-class TerraformExtension(private val project: Project) {
+open class TerraformExtension(private val project: Project) {
     companion object {
         const val NAME = "terraform"
         const val TERRAFORM_DEFAULT = "1.8.0"

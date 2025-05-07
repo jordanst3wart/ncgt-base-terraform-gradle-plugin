@@ -11,60 +11,23 @@ import java.io.Writer
 import java.util.concurrent.Callable
 
 /** Extension that describes a `terraformrc` file.
- *
- * @author Schalk W. Cronjé
+ * find details about options here: https://developer.hashicorp.com/terraform/cli/config/config-file
  */
-class TerraformRCExtension(project: Project) {
+open class TerraformRCExtension(project: Project) {
     companion object {
         const val TERRAFORM_RC_TASK = "generateTerraformConfig"
     }
 
-    /** Disable checkpoint.
-     *
-     * When set to true, disables upgrade and security bulletin checks that require reaching out to
-     * HashiCorp-provided network services.
-     *
-     * Default is `true`.
-     */
     var disableCheckPoint = true
-
-    /** Disable checkpoint signature.
-     *
-     * When set to true, allows the upgrade and security bulletin checks described above but disables the use of an
-     * anonymous id used to de-duplicate warning messages.
-     *
-     * Default is `false`.
-     */
     var disableCheckPointSignature = false
-
-    /** Select source of Terraform configuration.
-     *
-     * When set to `true` use global Terraform configuration rather than a project configuration.
-     *
-     * Default is `true`.
-     */
     var useGlobalConfig = false
-
-    /** Plugin cache may break dependency lock file.
-     *
-     * Setting this option gives Terraform CLI permission to create an incomplete dependency
-     * lock file entry for a provider if that would allow Terraform to use the cache to install that provider.
-     *
-     * In that situation the dependency lock file will be valid for use on the current system but may not be
-     * valid for use on another computer with a different operating system or CPU architecture, because it
-     * will include only a checksum of the package in the global cache.
-     *
-     * Default is `false`.
-     */
     var pluginCacheMayBreakDependencyLockFile = false
 
     private val pluginCacheDir: Property<File>
     private val terraformRC: Provider<File>
-    private val credentials = mutableMapOf<String, String>()
-    private val projectOperations: ProjectOperations
+    private val projectOperations: ProjectOperations = ProjectOperations.find(project)
 
     init {
-        this.projectOperations = ProjectOperations.find(project)
 
         this.terraformRC = project.providers.provider(
             Callable<File> {
@@ -110,15 +73,6 @@ class TerraformRCExtension(project: Project) {
         return this.terraformRC
     }
 
-    /** Adds a credential set to the configuration file.
-     *
-     * @param key Remote Terraform system name
-     * @param token Token for remote Terraform system.
-     */
-    fun credentials(key: String, token: String) {
-        credentials[key] = token
-    }
-
     /** Writes to the content of the Terraform configuration to an HCL writer.
      *
      * @param writer Writer instance to send output to.
@@ -129,11 +83,6 @@ class TerraformRCExtension(project: Project) {
         writer.write("disable_checkpoint_signature = ${this.disableCheckPointSignature}\n")
         writer.write("plugin_cache_dir = \"${escapedFilePath(OperatingSystem.current(), pluginCacheDir.get())}\"\n")
         writer.write("plugin_cache_may_break_dependency_lock_file = ${this.pluginCacheMayBreakDependencyLockFile}\n")
-        this.credentials.forEach { (key, token) ->
-            writer.write("credentials \"${key}\" {\n")
-            writer.write("  token = \"${token}\"\n")
-            writer.write("}\n")
-        }
         return writer
     }
 }

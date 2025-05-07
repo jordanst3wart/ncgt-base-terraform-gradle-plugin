@@ -21,6 +21,14 @@ abstract class TerraformInit : TerraformTask {
     @get:Internal
     var skipChildModules: Boolean = false
 
+
+    @Input
+    val useBackendConfig: Property<Boolean>
+
+    @get:Optional
+    @get:InputFile
+    val backendConfig: Property<File>
+
     /**
      * The directory where terraform plugins data is written to.
      */
@@ -46,32 +54,9 @@ abstract class TerraformInit : TerraformTask {
     constructor() : super("init", emptyList()) {
         supportsInputs()
         supportsColor()
-        this.backendConfig = project.objects.property(File::class.java)
-        this.useBackendConfig = project.objects.property(Boolean::class.java)
+        backendConfig = project.objects.property(File::class.java)
+        useBackendConfig = project.objects.property(Boolean::class.java)
     }
-
-    /** Configuration for Terraform backend.
-     *
-     * See [https://www.terraform.io/docs/backends/config.html#partial-configuration]
-     *
-     * @return Location of configuration file. Can be [null] if none is required.
-     */
-    @get:Optional
-    @get:InputFile
-    var backendConfigFile: Property<File> = project.objects.property(File::class.java)
-        get() = this.backendConfig
-
-    /** Set location of backend configuration file.
-     *
-     * @param backendFile Anything that can be converted using [project.file].
-     */
-    fun setBackendConfigFile(backendFile: File) {
-        backendConfig.set(backendFile)
-    }
-
-    @get:Input
-    var useBackendFile: Provider<Boolean> = project.objects.property(Boolean::class.java)
-        get() = this.useBackendConfig
 
     override fun exec() {
         createPluginCacheDir(this.terraformrc)
@@ -100,7 +85,4 @@ abstract class TerraformInit : TerraformTask {
 
         return execSpec
     }
-
-    private var useBackendConfig: Provider<Boolean>
-    private val backendConfig: Property<File>
 }

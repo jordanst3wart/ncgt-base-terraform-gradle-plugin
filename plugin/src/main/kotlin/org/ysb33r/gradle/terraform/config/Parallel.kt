@@ -1,8 +1,7 @@
 package org.ysb33r.gradle.terraform.config
 
-class Parallel : ConfigExtension {
+open class Parallel : ConfigExtension {
     override val name: String = "parallel"
-
     var maxParallel: Int = 10
 
     override fun getCommandLineArgs(): List<String> {

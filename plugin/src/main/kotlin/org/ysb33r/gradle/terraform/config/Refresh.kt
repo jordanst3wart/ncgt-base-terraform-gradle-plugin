@@ -1,6 +1,6 @@
 package org.ysb33r.gradle.terraform.config
 
-class Refresh : ConfigExtension {
+open class Refresh : ConfigExtension {
     override val name = "refresh"
     var refresh = true
 

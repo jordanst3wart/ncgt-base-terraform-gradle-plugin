@@ -17,12 +17,11 @@ import javax.inject.Inject
 /** Describes a Terraform source set
  *
  */
-class TerraformSourceDirectorySet @Inject constructor(
+open class TerraformSourceDirectorySet @Inject constructor(
     project: Project,
     val name: String,
     val displayName: String
 ) : PatternFilterable {
-
     private val backendText: Property<String>
     private val sourceDir: Property<File>
     val dataDir: Property<File>

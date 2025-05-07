@@ -1,8 +1,7 @@
 package org.ysb33r.gradle.terraform.config
 
-class Json : ConfigExtension {
+open class Json : ConfigExtension {
     override val name: String = "json"
-
     var enabled: Boolean = false
 
     /** Command-line parameter for JSON output.

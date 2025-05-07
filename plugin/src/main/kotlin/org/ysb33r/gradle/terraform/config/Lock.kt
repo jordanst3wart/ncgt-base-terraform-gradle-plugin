@@ -1,8 +1,7 @@
 package org.ysb33r.gradle.terraform.config
 
-class Lock() : ConfigExtension {
+open class Lock() : ConfigExtension {
     override val name: String = "lock"
-
     var enabled: Boolean = true
     var timeout: Int = 30
 

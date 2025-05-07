@@ -91,14 +91,15 @@ object Convention {
         ) { it ->
             it.group = TERRAFORM_TASK_GROUP
             it.description = "Write partial backend configuration file for '${sourceSet.name}'"
-            it.setBackendText(sourceSet.backendPropertyText().map { text -> text })
-            it.setDestinationDir(File("${project.buildDir}/${sourceSet.name}/tf/remoteState"))
+            it.backendText.set(sourceSet.backendPropertyText().map { text -> text })
+            // TODO clean this up I could add this logic to the source set
+            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
         }
 
         project.tasks.named(taskName(sourceSet.name, "init"), TerraformInit::class.java).configure { it ->
             it.dependsOn(remoteStateTask)
-            it.backendConfigFile = remoteStateTask.get().backendConfigFile
-            it.useBackendFile = remoteStateTask.get().backendFileRequired
+            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
+            it.useBackendConfig.set(true)
         }
     }
 

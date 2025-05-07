@@ -34,7 +34,7 @@ import java.io.File
 abstract class TerraformApply : TerraformTask {
 
     @InputFile
-    private val planFiles: Provider<File>
+    val planFiles: Provider<File>
 
     @Inject
     constructor() : super("apply", listOf(Lock::class.java, Refresh::class.java, Parallel::class.java, Json::class.java)) {
