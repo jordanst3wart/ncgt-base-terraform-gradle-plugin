@@ -47,11 +47,11 @@ class TerraformSourceSetsSpec extends Specification {
         }
 
         NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
-        def allVars = ((Variables) tss.getByName('main').variables).allVars
+        def variables = ((Variables) tss.getByName('main').variables)
 
         then:
         verifyAll {
-            allVars.vars.foo1 == 'bar1'
+            variables.vars.foo1 == 'bar1'
         }
     }
 
@@ -76,11 +76,11 @@ class TerraformSourceSetsSpec extends Specification {
         }
 
         NamedDomainObjectContainer<TerraformSourceDirectorySet> tss = project.terraformSourceSets
-        def allVars = ((Variables) tss.getByName('main').variables).allVars
+        def variables = ((Variables) tss.getByName('main').variables)
 
         then:
         verifyAll {
-            allVars.vars.abc == 'abcde'
+            variables.vars.abc == 'abcde'
             //allVars.vars.someMap.name == 'John'
         }
     }

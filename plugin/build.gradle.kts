@@ -3,20 +3,29 @@ import java.util.Date
 
 plugins {
     groovy
-    codenarc
+    kotlin("jvm") version "1.8.0"
     `java-gradle-plugin`
     `maven-publish`
     alias(libs.plugins.grgit)
 }
 
 dependencies {
-    implementation(project(":lib"))
+    implementation(kotlin("stdlib"))
+    implementation(gradleApi())
+    api("org.ysb33r.gradle:grolifant-herd:3.0.1")
+
+    testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(localGroovy())
+    testImplementation(gradleTestKit())
+    testImplementation("org.ysb33r.gradle:grolifant-herd:3.0.1")
 }
 
-apply(from = rootProject.file("gradle/plugin-dev.gradle"))
-apply(from = rootProject.file("gradle/codenarc.gradle"))
-
-
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
 
 fun Map<String, Any?>.getOrSystemEnvOrDefault(key: String, defaultValue: String): String = this.getOrElse(key) {
     System.getenv().getOrElse(key) {

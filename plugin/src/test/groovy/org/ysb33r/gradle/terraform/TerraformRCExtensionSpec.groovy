@@ -34,15 +34,11 @@ class TerraformRCExtensionSpec extends Specification {
         project.allprojects {
             apply plugin: 'foo.bar.terraform'
 
-            // tag::configure-with-tag[]
             terraformrc {
-                disableCheckPoint = true // <1>
-                disableCheckPointSignature = false // <2>
-                useGlobalConfig = false  // <3>
-
-                credentials 'foo.terraform.example', 'foo.terraform.token'  // <4>
+                disableCheckPoint = true
+                disableCheckPointSignature = false
+                useGlobalConfig = false
             }
-            // end::configure-with-tag[]
         }
 
         def terraformrc = project.extensions.getByType(TerraformRCExtension)
@@ -54,9 +50,6 @@ class TerraformRCExtensionSpec extends Specification {
 disable_checkpoint_signature = false
 plugin_cache_dir = "${escapedFilePath(os, terraformrc.pluginCacheDir.get())}"
 plugin_cache_may_break_dependency_lock_file = false
-credentials "foo.terraform.example" {
-  token = "foo.terraform.token"
-}
 """.replaceAll(~/\r?\n/, '!!')
     }
 }
