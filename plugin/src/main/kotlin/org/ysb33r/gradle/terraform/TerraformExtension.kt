@@ -18,7 +18,6 @@ import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
 import org.ysb33r.gradle.terraform.internal.Utils.awsEnvironment
 import org.ysb33r.gradle.terraform.internal.Utils.googleEnvironment
-import org.ysb33r.grolifant.api.v4.exec.NamedResolvedExecutableFactory
 
 /** Configure project defaults or task specifics for `Terraform`.
  *
@@ -43,7 +42,6 @@ import org.ysb33r.grolifant.api.v4.exec.NamedResolvedExecutableFactory
  *
  * @author Schalk W. Cronjé
  *
- * @since 0.1
  */
 open class TerraformExtension(private val project: Project) {
     companion object {

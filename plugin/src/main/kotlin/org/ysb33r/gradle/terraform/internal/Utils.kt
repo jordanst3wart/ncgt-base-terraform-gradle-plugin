@@ -30,7 +30,7 @@ object Utils {
             "TF_DATA_DIR" to dataDir.get().absolutePath,
             "TF_CLI_CONFIG_FILE" to ConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
             "TF_LOG_PATH" to terraformLogFile(name, logDir).absolutePath,
-            "TF_LOG" to (logLevel ?: "")
+            "TF_LOG" to logLevel
         )
         environment.putAll(defaultEnvironment())
         return environment
