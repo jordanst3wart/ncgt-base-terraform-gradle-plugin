@@ -43,7 +43,7 @@ abstract class RunExec : WorkAction<RunExecParameters> {
             processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT)
         }
         val process = processBuilder.start()
-        val future = process.onExit()
+        val future = process.onExit() // might not need to be a future
         future.whenComplete { result, error ->
             if (error != null) {
                 throw GradleException("Error executing process", error)
