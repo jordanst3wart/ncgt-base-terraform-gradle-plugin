@@ -32,7 +32,7 @@ class TerraformPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         ProjectOperations.maybeCreateExtension(project)
-        configureTerraformRC(project.rootProject)
+        configureTerraformRC(project)
 
         project.tasks.withType(RemoteStateTask::class.java).configureEach { t ->
             t.group = Convention.TERRAFORM_TASK_GROUP
@@ -58,7 +58,6 @@ class TerraformPlugin : Plugin<Project> {
     companion object {
         private fun configureTerraformRC(rootProject: Project) {
             // create projections for root rootProject
-            ProjectOperations.maybeCreateExtension(rootProject)
             val terraformRcExt = rootProject.extensions
                 .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension::class.java, rootProject)
             rootProject.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { task ->

@@ -12,12 +12,8 @@ import org.ysb33r.gradle.terraform.errors.MissingConfiguration
 import org.ysb33r.gradle.terraform.internal.ConfigUtils.createPluginCacheDir
 import java.io.File
 
-/** Equivalent of [terraform init]. */
 abstract class TerraformInit : TerraformTask {
 
-    /**
-     * Skip initialisation of child modules.
-     */
     @get:Internal
     var skipChildModules: Boolean = false
 
@@ -54,6 +50,7 @@ abstract class TerraformInit : TerraformTask {
     constructor() : super("init", emptyList()) {
         supportsInputs()
         supportsColor()
+        alwaysOutOfDate()
         backendConfig = project.objects.property(File::class.java)
         useBackendConfig = project.objects.property(Boolean::class.java)
     }
@@ -66,9 +63,6 @@ abstract class TerraformInit : TerraformTask {
     /** Add specific command-line options for the command.
      * If [--refresh-dependencies] was specified on the command-line the [-upgrade] will be passed
      * to [terraform init].
-     *
-     * @param execSpec
-     * @return execSpec
      */
     override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)

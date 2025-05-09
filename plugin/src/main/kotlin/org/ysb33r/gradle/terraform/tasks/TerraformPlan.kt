@@ -13,9 +13,6 @@ import javax.inject.Inject
 import java.io.File
 import java.util.concurrent.Callable
 
-/** Equivalent of {@code terraform plan}.
- *
- */
 abstract class TerraformPlan : TerraformTask {
 
     @Inject
@@ -25,8 +22,10 @@ abstract class TerraformPlan : TerraformTask {
     ) {
         supportsInputs()
         supportsColor()
-        inputs.files(taskProvider("init"))
+        alwaysOutOfDate() // plans are potentially always out of date if refresh=true
+        //inputs.files(taskProvider("init"))
         addCommandLineProvider(sourceSetVariables())
+        mustRunAfter(taskProvider("init"))
     }
 
     /** Where the plan file will be written to.
@@ -48,9 +47,7 @@ abstract class TerraformPlan : TerraformTask {
     override fun exec() {
         createVarsFile()
         super.exec()
-
         val planOut = planOutputFile
-
         logger.lifecycle(
             "The plan file has been generated into ${planOut.toURI()}"
         )
@@ -72,6 +69,7 @@ abstract class TerraformPlan : TerraformTask {
         execSpec.apply {
             cmdArgs("-out=${planOutputFile}")
             cmdArgs("-var-file=${variablesFile.get().absolutePath}")
+            // cmdArgs("-detailed-exitcode")
         }
         return execSpec
     }

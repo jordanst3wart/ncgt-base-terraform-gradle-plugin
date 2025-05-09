@@ -49,6 +49,10 @@ abstract class TerraformApply : TerraformTask {
     override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
         execSpec.cmdArgs(planFiles.get().absolutePath)
+        execSpec.apply {
+            // cmdArgs("-detailed-exitcode")
+            cmdArgs(planFiles.get().absolutePath)
+        }
         return execSpec
     }
 }

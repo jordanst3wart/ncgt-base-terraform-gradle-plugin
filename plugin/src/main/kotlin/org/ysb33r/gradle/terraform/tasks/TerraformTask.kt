@@ -4,6 +4,7 @@ import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Transformer
 import org.gradle.api.logging.configuration.ConsoleOutput
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -89,23 +90,28 @@ abstract class TerraformTask(): DefaultTask() {
     @TaskAction
     open fun exec() {
         sourceSet.get().logDir.get().mkdirs()
-
         Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
-        val runner = Action<ExecSpec> { spec ->
+        /*val runner = Action<ExecSpec> { spec ->
             execSpec.copyToExecSpec(spec)
-        }
+        }*/
         logger.info("Using Terraform environment: ${terraformEnvironment}")
         logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
-        execWorkAction(execSpec, runner, this.stdoutCapture)
+        println("------- execspec -------")
+        println(execSpec.command)
+        println(execSpec.environment)
+        logger.info("Running terraform command: ${execSpec.command} ${execSpec.cmdArgs.joinToString(" ")}")
+        execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>,this.stdoutCapture)
     }
 
-    private fun execWorkAction(execSpec: TerraformExecSpec, runner: Action<ExecSpec>, captureStdout: Provider<File>) {
+    private fun execWorkAction(environment: Map<String, String>, commands: List<String>, captureStdout: Provider<File>) {
         val workQueue = workerExecutor.noIsolation()
+        // val foo = project.objects.listProperty(String::class.java)
         workQueue.submit(RunExec::class.java) { parameters ->
-            parameters.getProject().set(project)
-            parameters.getRunner().set(runner)
+            parameters.getCommands().set(commands)
+            parameters.getEnvironment().set(environment)
             parameters.getStdOut().set(captureStdout)
+            parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
         }
     }
 
@@ -127,10 +133,6 @@ abstract class TerraformTask(): DefaultTask() {
 
     /**
      * Marks task to always be out of date.
-     *
-     * Calls this from the constructor of Terraform task types that should always be out of date.
-     *
-     * @since 0.10.
      */
     protected fun alwaysOutOfDate() {
         inputs.property("always-out-of-date", UUID.randomUUID().toString())
