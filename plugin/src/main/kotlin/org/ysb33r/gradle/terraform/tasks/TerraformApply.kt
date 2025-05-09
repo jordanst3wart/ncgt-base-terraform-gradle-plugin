@@ -42,8 +42,6 @@ abstract class TerraformApply : TerraformTask {
         supportsInputs()
         supportsColor()
         planFiles = this.planFile
-        inputs.files(taskProvider("plan"))
-        mustRunAfter(taskProvider("plan"))
     }
 
     override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {

@@ -26,4 +26,8 @@ terraformSourceSets {
         setSrcDir("src/main/tf")
         setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
     }
+    create("aws") {
+        setSrcDir("src/aws/tf")
+        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+    }
 }

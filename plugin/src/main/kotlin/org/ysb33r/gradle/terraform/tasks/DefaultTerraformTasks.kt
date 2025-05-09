@@ -3,7 +3,7 @@ package org.ysb33r.gradle.terraform.tasks
 /** Maps terraform tasks to conventions. */
 enum class DefaultTerraformTasks(
     val command: String,
-    val type: Class<*>,
+    val type: Class<out TerraformTask>,
     val description: String
 ) {
     INIT("init", TerraformInit::class.java, "Initialises Terraform"),

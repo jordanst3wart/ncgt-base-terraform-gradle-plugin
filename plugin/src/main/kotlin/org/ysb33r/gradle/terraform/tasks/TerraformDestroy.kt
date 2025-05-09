@@ -26,8 +26,6 @@ abstract class TerraformDestroy : TerraformTask {
         supportsAutoApprove()
         supportsInputs()
         supportsColor()
-        inputs.files(taskProvider("destroyPlan"))
-        mustRunAfter(taskProvider("destroyPlan"))
         addCommandLineProvider(sourceSetVariables())
     }
 

@@ -23,9 +23,7 @@ abstract class TerraformPlan : TerraformTask {
         supportsInputs()
         supportsColor()
         alwaysOutOfDate() // plans are potentially always out of date if refresh=true
-        //inputs.files(taskProvider("init"))
         addCommandLineProvider(sourceSetVariables())
-        mustRunAfter(taskProvider("init"))
     }
 
     /** Where the plan file will be written to.

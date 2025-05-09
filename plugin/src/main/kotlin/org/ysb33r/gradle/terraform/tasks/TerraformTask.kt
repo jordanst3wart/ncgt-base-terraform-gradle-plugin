@@ -1,15 +1,11 @@
 package org.ysb33r.gradle.terraform.tasks
 
-import org.gradle.api.Action
 import org.gradle.api.DefaultTask
-import org.gradle.api.Transformer
 import org.gradle.api.logging.configuration.ConsoleOutput
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
-import org.gradle.process.ExecSpec
 import org.gradle.workers.WorkerExecutor
 import org.ysb33r.gradle.terraform.RunExec
 import org.ysb33r.gradle.terraform.TerraformExecSpec
@@ -122,13 +118,8 @@ abstract class TerraformTask(): DefaultTask() {
     }
 
     protected fun taskProvider(command: String): Provider<TerraformTask> {
-        val taskName: Provider<String> = projectOperations.provider {
-            Convention.taskName(sourceSet.get().name, command)
-        }
-
-        return taskName.flatMap(Transformer<Provider<TerraformTask>, String> { taskNameStr ->
-            project.tasks.named(taskNameStr, TerraformTask::class.java)
-        })
+        val taskName = Convention.taskName(sourceSet.get().name, command)
+        return project.tasks.named(taskName, TerraformTask::class.java)
     }
 
     /**
@@ -236,18 +227,12 @@ abstract class TerraformTask(): DefaultTask() {
         return execSpec
     }
 
-    /** Creates a [TerraformExecSpec].
-     *
-     * @return [TerraformExecSpec]. Never [null].
-     */
     protected fun createExecSpec(): TerraformExecSpec {
         return TerraformExecSpec(projectOperations, terraformExtension.getResolver())
     }
 
     /** To be called subclass constructor for defining specific configuration extensions that are
      * supported.
-     *
-     * @param configExtensions
      */
     private fun withConfigExtensions(configExtensions: List<Class<*>>) {
         for (it in configExtensions) {
