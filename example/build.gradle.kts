@@ -1,8 +1,8 @@
-import org.ysb33r.gradle.terraform.TerraformRCExtension
+/*import org.ysb33r.gradle.terraform.TerraformRCExtension
 
 
 plugins {
-    id("foo.bar.terraform") version ("KOTLIN-AGAIN-SNAPSHOT")
+    id("foo.bar.terraform") //version ("KOTLIN-AGAIN-SNAPSHOT")
     // id("com.newscorp.gt.gradle.terraform")
 }
 
