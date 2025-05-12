@@ -25,10 +25,9 @@ open class TerraformRCExtension(project: Project) {
 
     private val pluginCacheDir: Property<File>
     private val terraformRC: Provider<File>
-    private val projectOperations: ProjectOperations = ProjectOperations.find(project)
+    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
 
     init {
-
         this.terraformRC = project.providers.provider(
             Callable<File> {
                 File(projectOperations.projectCacheDir, ".terraformrc")

@@ -1,6 +1,5 @@
 package org.ysb33r.gradle.terraform.plugins
 
-import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Plugin
@@ -32,7 +31,7 @@ class TerraformPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         ProjectOperations.maybeCreateExtension(project)
-        configureTerraformRC(project.rootProject)
+        configureTerraformRC(project)
 
         project.tasks.withType(RemoteStateTask::class.java).configureEach { t ->
             t.group = Convention.TERRAFORM_TASK_GROUP
@@ -44,21 +43,20 @@ class TerraformPlugin : Plugin<Project> {
         }
 
         project.extensions.create(TerraformExtension.NAME, TerraformExtension::class.java, project)
-        createTerraformSourceSetsExtension(project)
+        val sourceSetContainer = createTerraformSourceSetsExtension(project)
 
         val formatAll = project.tasks.register(Convention.FORMAT_ALL)
         formatAll.configure {
             it.group = Convention.TERRAFORM_TASK_GROUP
             it.description = "Formats all terraform source"
         }
-        terraformSourceSetConventionTaskRules(project, formatAll)
+        terraformSourceSetConventionTaskRules(project, sourceSetContainer, formatAll)
         configureCheck(project)
     }
 
     companion object {
         private fun configureTerraformRC(rootProject: Project) {
             // create projections for root rootProject
-            ProjectOperations.maybeCreateExtension(rootProject)
             val terraformRcExt = rootProject.extensions
                 .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension::class.java, rootProject)
             rootProject.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { task ->
@@ -81,7 +79,7 @@ class TerraformPlugin : Plugin<Project> {
         private fun createTerraformSourceSetsExtension(
             project: Project
         ): NamedDomainObjectContainer<TerraformSourceDirectorySet> {
-            val factory = NamedDomainObjectFactory<TerraformSourceDirectorySet> { name ->
+            val factory = NamedDomainObjectFactory { name ->
                 project.objects.newInstance(
                     TerraformSourceDirectorySet::class.java,
                     project,
@@ -95,26 +93,25 @@ class TerraformPlugin : Plugin<Project> {
             return sourceSetContainer
         }
 
+        private fun terraformSourceSetConventionTaskRules(
+            project: Project,
+            sourceSetContainer: NamedDomainObjectContainer<TerraformSourceDirectorySet>,
+            formatAll: TaskProvider<Task>
+        ) {
+            sourceSetContainer.configureEach { sourceSet ->
+                createTasksByConvention(project, sourceSet)
+                formatAll.configure {
+                    it.dependsOn(project.tasks.named(taskName(sourceSet.name, FMT_APPLY.command)))
+                }
+            }
+        }
+
         private fun configureCheck(project: Project) {
             project.pluginManager.apply(LifecycleBasePlugin::class.java)
             val check = project.tasks.named(CHECK_TASK_NAME)
             check.configure {
                 it.dependsOn(project.tasks.withType(TerraformFmtCheck::class.java))
             }
-        }
-
-        private fun terraformSourceSetConventionTaskRules(
-            project: Project,
-            formatAll: TaskProvider<Task>
-        ) {
-            project.extensions.getByType(NamedDomainObjectContainer::class.java as Class<NamedDomainObjectContainer<TerraformSourceDirectorySet>>).configureEach(
-                Action<TerraformSourceDirectorySet> { tsds ->
-                    createTasksByConvention(project, tsds)
-                    formatAll.configure {
-                        it.dependsOn(project.tasks.named(taskName(tsds.name, FMT_APPLY.command)))
-                    }
-                }
-            )
         }
     }
 }

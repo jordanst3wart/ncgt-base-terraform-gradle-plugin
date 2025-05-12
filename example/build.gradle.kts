@@ -2,7 +2,7 @@
 
 
 plugins {
-    id("foo.bar.terraform") version ("CLEAN-UP-4-SNAPSHOT")
+    id("foo.bar.terraform") //version ("KOTLIN-AGAIN-SNAPSHOT")
     // id("com.newscorp.gt.gradle.terraform")
 }
 
@@ -17,7 +17,7 @@ terraform {
 }
 
 // terraformRCExtension define extensions...
-project.rootProject.extensions.getByType<TerraformRCExtension>().apply {
+project.extensions.getByType<TerraformRCExtension>().apply {
     pluginCacheMayBreakDependencyLockFile = true
 }
 
@@ -26,4 +26,8 @@ terraformSourceSets {
         setSrcDir("src/main/tf")
         setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
     }
-}*/
+    create("aws") {
+        setSrcDir("src/aws/tf")
+        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+    }
+}

@@ -3,12 +3,12 @@ package org.ysb33r.gradle.terraform.tasks
 /** Maps terraform tasks to conventions. */
 enum class DefaultTerraformTasks(
     val command: String,
-    val type: Class<*>,
+    val type: Class<out TerraformTask>,
     val description: String
 ) {
     INIT("init", TerraformInit::class.java, "Initialises Terraform"),
     SHOW_STATE("showState", TerraformShowState::class.java, "Generates a report on the current state"),
-    SHOW("show", TerraformShow::class.java, "Generates a report from a plan file"),
+    // SHOW("show", TerraformShow::class.java, "Generates a report from a plan file"),
     PLAN("plan", TerraformPlan::class.java, "Generates Terraform execution plan"),
     APPLY("apply", TerraformApply::class.java, "Builds or changes infrastructure"),
     DESTROY_PLAN("destroyPlan", TerraformDestroyPlan::class.java, "Generates Terraform destruction plan"),
