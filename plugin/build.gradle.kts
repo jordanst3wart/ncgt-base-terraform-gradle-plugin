@@ -81,7 +81,7 @@ publishing {
                 username = githubUsername
                 password = githubToken
             }
-            uri("https://maven.pkg.github.com/jordanst3wart/gradle-terraform-plugin")
+            url = uri("https://maven.pkg.github.com/jordanst3wart/gradle-terraform-plugin")
         }
     }
 }
