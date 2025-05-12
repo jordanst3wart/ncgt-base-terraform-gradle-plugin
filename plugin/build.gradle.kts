@@ -49,7 +49,7 @@ fun String.formatBranchName(): String {
 fun createVersion(): String {
     val gitShortHash = grgit.head().abbreviatedId
     val dateTag = SimpleDateFormat("yyyyMMdd").format(Date())
-    return if (grgit.branch.current().name == "main") {
+    return if (grgit.branch.current().name == "master") {
         "$dateTag-$gitShortHash"
     } else {
         "${grgit.branch.current().name.formatBranchName()}-SNAPSHOT"
