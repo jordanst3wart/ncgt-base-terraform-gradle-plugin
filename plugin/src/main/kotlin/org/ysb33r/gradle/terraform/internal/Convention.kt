@@ -39,28 +39,6 @@ object Convention {
         registerBackendConfigurationTask(sourceSet, project)
     }
 
-    private fun registerBackendConfigurationTask(
-        sourceSet: TerraformSourceDirectorySet,
-        project: Project
-    ) {
-        val remoteStateTask: TaskProvider<RemoteStateTask> = project.tasks.register(
-            backendTaskName(sourceSet.name),
-            RemoteStateTask::class.java
-        ) { it ->
-            it.group = TERRAFORM_TASK_GROUP
-            it.description = "Write partial backend configuration file for '${sourceSet.name}'"
-            it.backendText.set(sourceSet.backendPropertyText().map { text -> text })
-            // TODO clean this up I could add this logic to the source set
-            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
-        }
-
-        project.tasks.named(taskName(sourceSet.name, "init"), TerraformInit::class.java).configure { it ->
-            it.dependsOn(remoteStateTask)
-            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
-            it.useBackendConfig.set(true)
-        }
-    }
-
     private fun registerTask(
         sourceSet: TerraformSourceDirectorySet,
         project: Project,
@@ -84,6 +62,28 @@ object Convention {
             if (taskDetails == APPLY) {
                 t.dependsOn(taskName(name, DefaultTerraformTasks.PLAN.command))
             }
+        }
+    }
+
+    private fun registerBackendConfigurationTask(
+        sourceSet: TerraformSourceDirectorySet,
+        project: Project
+    ) {
+        val remoteStateTask: TaskProvider<RemoteStateTask> = project.tasks.register(
+            backendTaskName(sourceSet.name),
+            RemoteStateTask::class.java
+        ) { it ->
+            it.group = TERRAFORM_TASK_GROUP
+            it.description = "Write partial backend configuration file for '${sourceSet.name}'"
+            it.backendText.set(sourceSet.backendPropertyText().map { text -> text })
+            // TODO clean this up I could add this logic to the source set
+            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
+        }
+
+        project.tasks.named(taskName(sourceSet.name, "init"), TerraformInit::class.java).configure { it ->
+            it.dependsOn(remoteStateTask)
+            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
+            it.useBackendConfig.set(true)
         }
     }
 }
