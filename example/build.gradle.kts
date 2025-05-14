@@ -1,17 +1,13 @@
 import org.ysb33r.gradle.terraform.TerraformRCExtension
 
-
 plugins {
-    // might need to be published to access
-    id("foo.bar.terraform") // version ("FIX-VERSION2-SNAPSHOT")
+    id("foo.bar.terraform")
 }
 
-// /Users/stewartj/.m2/repository/com/newscorp/gt/gradle/terraform
-// com.newscorp.gt.gradle.terraform.gradle.plugin
 terraform {
     useAwsEnvironment()
     useGoogleEnvironment()
-    setLockTimeout(30)
+    setLockTimeout(31)
     setParallel(11)
     executable(mapOf("version" to "1.10.1"))
 }
