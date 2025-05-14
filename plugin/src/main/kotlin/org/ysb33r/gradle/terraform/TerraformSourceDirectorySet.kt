@@ -27,14 +27,13 @@ open class TerraformSourceDirectorySet @Inject constructor(
     val dataDir: Property<File>
     val logDir: Property<File>
     val reportsDir: Property<File>
-    private val projectOperations: ProjectOperations
+    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
     private val vars: Variables
     private val patternSet = PatternSet()
     private val secondarySources: MutableList<Any>
     private val secondarySourcesProvider: Provider<List<File>>
 
     init {
-        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.patternSet.include("**/*.tf", "**/*.tfvars", "*.tfstate")
 
         sourceDir = project.objects.property(File::class.java)

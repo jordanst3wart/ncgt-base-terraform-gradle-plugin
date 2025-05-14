@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.workers.WorkerExecutor
-import org.ysb33r.gradle.terraform.RunExec
+import org.ysb33r.gradle.terraform.RunCommand
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
@@ -85,23 +85,20 @@ abstract class TerraformTask(): DefaultTask() {
     open fun exec() {
         sourceSet.get().logDir.get().mkdirs()
         Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
+        Utils.terraformErrorLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
-        logger.info("Using Terraform environment: ${terraformEnvironment}")
-        logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
-        println("------- execspec -------")
-        println(execSpec.command)
-        println(execSpec.environment)
-        logger.info("Running terraform command: ${execSpec.command} ${execSpec.cmdArgs.joinToString(" ")}")
+        // might not need captureStdout
         execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>,this.stdoutCapture)
     }
 
     private fun execWorkAction(environment: Map<String, String>, commands: List<String>, captureStdout: Provider<File>) {
         val workQueue = workerExecutor.noIsolation()
-        workQueue.submit(RunExec::class.java) { parameters ->
+        workQueue.submit(RunCommand::class.java) { parameters ->
             parameters.getCommands().set(commands)
             parameters.getEnvironment().set(environment)
             parameters.getStdOut().set(captureStdout)
             parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
+            parameters.getErrorLog().set(Utils.terraformErrorLogFile(name, sourceSet.get().logDir))
         }
     }
 

@@ -10,6 +10,10 @@ terraform {
   required_version = ">= 1.8.0"
 }
 
+provider "aws" {
+  region = "us-east-1"
+}
+
 # TODO change
 terraform {
   backend "local" {}
@@ -18,4 +22,13 @@ terraform {
 resource "local_file" "foo" {
   content  = "foo!"
   filename = "${path.module}/foo.txt"
+}
+
+resource "aws_cloudwatch_log_group" "example" {
+  name = "example-log-group"
+
+  tags = {
+    Environment = "dev"
+    Application = "serviceA"
+  }
 }

@@ -2,8 +2,8 @@ import org.ysb33r.gradle.terraform.TerraformRCExtension
 
 
 plugins {
-    id("foo.bar.terraform") version ("KOTLIN-AGAIN-SNAPSHOT")
-    // id("com.newscorp.gt.gradle.terraform")
+    // might need to be published to access
+    id("foo.bar.terraform") // version ("FIX-VERSION2-SNAPSHOT")
 }
 
 // /Users/stewartj/.m2/repository/com/newscorp/gt/gradle/terraform

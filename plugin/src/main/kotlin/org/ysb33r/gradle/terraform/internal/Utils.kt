@@ -41,6 +41,11 @@ object Utils {
         return File(logDir.get(), "${name}.log").absoluteFile
     }
 
+    @JvmStatic
+    fun terraformErrorLogFile(name: String, logDir: Provider<File>): File {
+        return File(logDir.get(), "${name}Error.log").absoluteFile
+    }
+
     private fun defaultEnvironment(): Map<String, String> {
         return if (OS.isWindows) {
             mapOf(

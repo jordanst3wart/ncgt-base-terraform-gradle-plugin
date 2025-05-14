@@ -67,7 +67,7 @@ abstract class TerraformPlan : TerraformTask {
         execSpec.apply {
             cmdArgs("-out=${planOutputFile}")
             cmdArgs("-var-file=${variablesFile.get().absolutePath}")
-            // cmdArgs("-detailed-exitcode")
+            cmdArgs("-detailed-exitcode")
         }
         return execSpec
     }
