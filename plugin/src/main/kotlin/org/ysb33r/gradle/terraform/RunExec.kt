@@ -1,13 +1,14 @@
 package org.ysb33r.gradle.terraform
 
 import org.gradle.api.GradleException
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import java.io.File
-
 
 interface RunExecParameters : WorkParameters {
     fun getEnvironment(): MapProperty<String, String>
@@ -17,6 +18,8 @@ interface RunExecParameters : WorkParameters {
 }
 
 abstract class RunExec : WorkAction<RunExecParameters> {
+    val logger: Logger = Logging.getLogger(RunExec::class.java)
+
     override fun execute() {
         // captures stdout out for show tasks, ie. terraform show
         /*if (parameters.getStdOut().get() != null) {
@@ -32,14 +35,14 @@ abstract class RunExec : WorkAction<RunExecParameters> {
             .command(parameters.getCommands().get())
         processBuilder.environment().clear()
         processBuilder.environment().putAll(parameters.getEnvironment().get())
-        println("------- process builder -------")
-        println(processBuilder.command())
-        println(processBuilder.environment())
-        // val processBuilder = parameters.getProcessBuilder().get()
-        println(processBuilder.command())
+        logger.info("Running ${parameters.getEnvironment().get()}...")
+        logger.info("running: ${processBuilder.command()} with environment: ${processBuilder.environment()}")
+        logger.lifecycle("some lifecycle message")
+        logger.error("Some error message")
         if (parameters.getStdOut().isPresent) {
             processBuilder.redirectOutput(parameters.getStdOut().get())
         } else {
+            processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT)
             processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT)
         }
         val process = processBuilder.start()
