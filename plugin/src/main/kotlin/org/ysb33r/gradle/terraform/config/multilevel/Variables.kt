@@ -1,14 +1,13 @@
 package org.ysb33r.gradle.terraform.config.multilevel
 
-import org.gradle.api.provider.Provider
+import org.gradle.api.file.DirectoryProperty
 import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.errors.ConfigurationException
-import java.io.File
 import java.nio.file.Path
 import kotlin.streams.toList
 
 class Variables(
-    private val rootDirResolver: Provider<File>
+    private val directory: DirectoryProperty
 ) : VariableSpec {
     val name: String = "variables"
     val vars: MutableMap<String, Any> = mutableMapOf()
@@ -48,7 +47,7 @@ class Variables(
     }
 
     override fun getCommandLineArgs(): List<String> {
-        val root = rootDirResolver.orNull?.toPath()
+        val root = directory.get().asFile.toPath()
             ?: throw ConfigurationException(
                 "This method can only be called when attached to a task extension or a source set"
             )

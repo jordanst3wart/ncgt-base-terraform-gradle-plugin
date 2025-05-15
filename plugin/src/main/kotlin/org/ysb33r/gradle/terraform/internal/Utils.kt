@@ -1,5 +1,6 @@
 package org.ysb33r.gradle.terraform.internal
 
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.TerraformRCExtension
@@ -22,12 +23,12 @@ object Utils {
     fun terraformEnvironment(
         terraformrc: TerraformRCExtension,
         name: String,
-        dataDir: Provider<File>,
-        logDir: Provider<File>,
+        dataDir: DirectoryProperty,
+        logDir: DirectoryProperty,
         logLevel: String
     ): Map<String, String> {
         val environment = mutableMapOf(
-            "TF_DATA_DIR" to dataDir.get().absolutePath,
+            "TF_DATA_DIR" to dataDir.get().asFile.absolutePath,
             "TF_CLI_CONFIG_FILE" to ConfigUtils.locateTerraformConfigFile(terraformrc).absolutePath,
             "TF_LOG_PATH" to terraformLogFile(name, logDir).absolutePath,
             "TF_LOG" to logLevel
@@ -37,18 +38,18 @@ object Utils {
     }
 
     @JvmStatic
-    fun terraformLogFile(name: String, logDir: Provider<File>): File {
-        return File(logDir.get(), "${name}.log").absoluteFile
+    fun terraformLogFile(name: String, logDir: DirectoryProperty): File {
+        return File(logDir.get().asFile, "${name}.log").absoluteFile
     }
 
     @JvmStatic
-    fun terraformStdErrLogFile(name: String, logDir: Provider<File>): File {
-        return File(logDir.get(), "${name}StdErr.log").absoluteFile
+    fun terraformStdErrLogFile(name: String, logDir: DirectoryProperty): File {
+        return File(logDir.get().asFile, "${name}StdErr.log").absoluteFile
     }
 
     @JvmStatic
-    fun terraformStdOutLogFile(name: String, logDir: Provider<File>): File {
-        return File(logDir.get(), "${name}StdOut.log").absoluteFile
+    fun terraformStdOutLogFile(name: String, logDir: DirectoryProperty): File {
+        return File(logDir.get().asFile, "${name}StdOut.log").absoluteFile
     }
 
     private fun defaultEnvironment(): Map<String, String> {

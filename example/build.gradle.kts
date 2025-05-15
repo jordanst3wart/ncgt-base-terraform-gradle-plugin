@@ -9,7 +9,6 @@ terraform {
     useGoogleEnvironment()
     setLockTimeout(31)
     setParallel(11)
-    logLevel
     executable(mapOf("version" to "1.10.1"))
 }
 
@@ -20,11 +19,11 @@ project.extensions.getByType<TerraformRCExtension>().apply {
 
 terraformSourceSets {
     create("main") {
-        setSrcDir("src/main/tf")
-        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+        srcDir.set(File("src/main/tf"))
+        backendText.set("# foo = bar") // TODO needs to be defined..., could be optional
     }
     create("aws") {
-        setSrcDir("src/aws/tf")
-        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+        srcDir.set(File("src/aws/tf"))
+        backendText.set("# foo = bar") // TODO needs to be defined..., could be optional
     }
 }

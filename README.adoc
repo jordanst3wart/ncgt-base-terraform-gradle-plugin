@@ -13,9 +13,5 @@ Caused by: java.lang.NoClassDefFoundError: org/gradle/wrapper/ExclusiveFileAcces
 	at org.ysb33r.grolifant.api.core.ExclusiveFileAccess.<init>(ExclusiveFileAccess.groovy)
 ```
 
-// try backend aws things builds
-// try parallel builds
-// TODO make concurrency a singleton
-// TODO make lock a singleton
-// idk about 'refresh' maybe a property...
 // TODO remove old ysb33r dependencies with downloads
+//

@@ -15,19 +15,16 @@ import java.io.File
  */
 open class RemoteStateTask : DefaultTask() {
 
-    private val projectOperations: ProjectOperations
+    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
 
     @get:OutputFile
-    val backendConfig: Property<File>
+    val backendConfig: Property<File> = project.objects.property(File::class.java)
 
     @get:Input
-    val backendText: Property<String>
+    val backendText: Property<String> = project.objects.property(String::class.java)
 
     init {
         description = "Generates configuration for backend state provider"
-        backendConfig = project.objects.property(File::class.java)
-        projectOperations = ProjectOperations.find(project)
-        backendText = project.objects.property(String::class.java)
     }
 
     /**

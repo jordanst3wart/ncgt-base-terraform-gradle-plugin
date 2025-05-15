@@ -11,7 +11,7 @@ import org.ysb33r.gradle.terraform.RunCommand
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 abstract class TerraformTask(): DefaultTask() {
     @Internal
-    lateinit var sourceSet: Provider<TerraformSourceDirectorySet>
+    lateinit var sourceSet: Provider<TerraformSourceSet>
 
     @Internal
     lateinit var command: String
@@ -59,7 +59,7 @@ abstract class TerraformTask(): DefaultTask() {
     ) : this() {
         this.command = cmd
         // not defined at setup time
-        this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
+        this.sourceSet = project.provider { null } as Provider<TerraformSourceSet>
         withConfigExtensions(configExtensions)
     }
 
@@ -71,13 +71,13 @@ abstract class TerraformTask(): DefaultTask() {
         const val JSON_FORMAT = "-json"
     }
 
-    fun setSourceSet(sourceSet: TerraformSourceDirectorySet) {
+    fun setSourceSet(sourceSet: TerraformSourceSet) {
         this.sourceSet = project.providers.provider { sourceSet }
     }
 
     @TaskAction
     open fun exec() {
-        sourceSet.get().logDir.get().mkdirs()
+        sourceSet.get().logDir.get().asFile.mkdirs()
         Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
         Utils.terraformStdErrLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
@@ -89,7 +89,7 @@ abstract class TerraformTask(): DefaultTask() {
         workQueue.submit(RunCommand::class.java) { parameters ->
             parameters.getCommands().set(commands)
             parameters.getEnvironment().set(environment)
-            parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
+            parameters.getWorkingDir().set(sourceSet.get().srcDir)
             parameters.getStdErrLog().set(Utils.terraformStdErrLogFile(name, sourceSet.get().logDir))
             parameters.getStdOutLog().set(Utils.terraformStdOutLogFile(name, sourceSet.get().logDir))
         }
@@ -97,7 +97,7 @@ abstract class TerraformTask(): DefaultTask() {
 
     protected fun sourceSetVariables(): Provider<List<String>> {
         return project.provider {
-            this.sourceSet.get().getVariables().getCommandLineArgs()
+            this.sourceSet.get().vars.getCommandLineArgs()
         }
     }
 
@@ -111,7 +111,7 @@ abstract class TerraformTask(): DefaultTask() {
     @get:Internal
     protected val planFile: Provider<File>
         get() = project.provider(Callable<File> {
-            File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+            File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.plan")
         })
 
     /**
@@ -199,7 +199,7 @@ abstract class TerraformTask(): DefaultTask() {
         val tfEnv = this.terraformEnvironment
         execSpec.apply {
             command(tfcmd)
-            workingDir(sourceSet.get().getSrcDir())
+            workingDir(sourceSet.get().srcDir)
             environment(tfEnv)
             cmdArgs(cmdParams)
         }

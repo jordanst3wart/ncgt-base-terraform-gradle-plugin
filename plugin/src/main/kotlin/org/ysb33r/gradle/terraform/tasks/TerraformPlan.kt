@@ -33,14 +33,14 @@ abstract class TerraformPlan : TerraformTask {
     // TODO maybe should just be planFile
     @get:OutputFile
     open val planOutputFile: File
-        get() = File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+        get() = File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.plan")
 
     /** This is the location of an variables file used to keep anything provided via the build script.
      * @return Location of variables file.
      */
     @get:Internal
     open val variablesFile: Provider<File> = project.provider(Callable {
-        File(sourceSet.get().dataDir.get(), "__.tfvars")
+        File(sourceSet.get().dataDir.get().asFile, "__.tfvars")
     })
 
     override fun exec() {

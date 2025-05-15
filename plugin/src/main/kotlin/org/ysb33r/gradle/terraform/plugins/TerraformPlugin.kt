@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.internal.Convention
 import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
@@ -78,24 +78,24 @@ class TerraformPlugin : Plugin<Project> {
 
         private fun createTerraformSourceSetsExtension(
             project: Project
-        ): NamedDomainObjectContainer<TerraformSourceDirectorySet> {
+        ): NamedDomainObjectContainer<TerraformSourceSet> {
             val factory = NamedDomainObjectFactory { name ->
                 project.objects.newInstance(
-                    TerraformSourceDirectorySet::class.java,
+                    TerraformSourceSet::class.java,
                     project,
                     name,
                     sourceSetDisplayName(name)
                 )
             }
             val sourceSetContainer =
-                project.objects.domainObjectContainer(TerraformSourceDirectorySet::class.java, factory)
+                project.objects.domainObjectContainer(TerraformSourceSet::class.java, factory)
             project.extensions.add(Convention.TERRAFORM_SOURCESETS, sourceSetContainer)
             return sourceSetContainer
         }
 
         private fun terraformSourceSetConventionTaskRules(
             project: Project,
-            sourceSetContainer: NamedDomainObjectContainer<TerraformSourceDirectorySet>,
+            sourceSetContainer: NamedDomainObjectContainer<TerraformSourceSet>,
             formatAll: TaskProvider<Task>
         ) {
             sourceSetContainer.configureEach { sourceSet ->

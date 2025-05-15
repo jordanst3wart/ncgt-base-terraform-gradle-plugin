@@ -31,7 +31,7 @@ abstract class TerraformInit : TerraformTask {
     @get:OutputDirectory
     val pluginDirectory: Provider<File>
         get() = sourceSet.map { source ->
-            source.dataDir.map { File(it, "providers") }
+            source.dataDir.map { File(it.asFile, "providers") }
         } as Provider<File>
 
     // TODO not having these assumes you are using a remote backend...

@@ -21,7 +21,7 @@ abstract class TerraformShowState : TerraformTask {
     constructor() : super("show", emptyList()) {
         statusReportOutputFile.set(
             project.provider {
-                File(sourceSet.get().reportsDir.get(),
+                File(sourceSet.get().reportsDir.get().asFile,
                     "${sourceSet.get().name}.status.${if (json) "tf.json" else "tf"}")
             })
 
