@@ -79,9 +79,8 @@ abstract class TerraformTask(): DefaultTask() {
     open fun exec() {
         sourceSet.get().logDir.get().mkdirs()
         Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
-        Utils.terraformErrorLogFile(name, sourceSet.get().logDir).delete()
+        Utils.terraformStdErrLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
-        // might not need captureStdout
         execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>)
     }
 
@@ -91,7 +90,8 @@ abstract class TerraformTask(): DefaultTask() {
             parameters.getCommands().set(commands)
             parameters.getEnvironment().set(environment)
             parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
-            parameters.getErrorLog().set(Utils.terraformErrorLogFile(name, sourceSet.get().logDir))
+            parameters.getStdErrLog().set(Utils.terraformStdErrLogFile(name, sourceSet.get().logDir))
+            parameters.getStdOutLog().set(Utils.terraformStdOutLogFile(name, sourceSet.get().logDir))
         }
     }
 

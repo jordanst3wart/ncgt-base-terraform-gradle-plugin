@@ -42,25 +42,25 @@ open class TerraformSourceDirectorySet @Inject constructor(
         reportsDir = project.objects.property(File::class.java)
         backendText = project.objects.property(String::class.java)
 
-        projectOperations.fsOperations.updateFileProperty(
-            sourceDir,
-            "src/${name}/tf"
-        )
+        sourceDir.set(File("src/${name}/tf"))
+        dataDir.set(File("${project.layout.buildDirectory}/${name}/tf"))
+        logDir.set(File("${project.layout.buildDirectory}/${name}/tf/logs"))
+        reportsDir.set(File("${project.layout.buildDirectory}/${name}/tf/reports"))
 
-        projectOperations.fsOperations.updateFileProperty(
-            dataDir,
-            projectOperations.buildDirDescendant("${name}/tf")
-        )
+        //projectOperations.fsOperations.updateFileProperty(
+        //    dataDir,
+        //    projectOperations.buildDirDescendant("${name}/tf")
+        //)
 
-        projectOperations.fsOperations.updateFileProperty(
-            logDir,
-            projectOperations.buildDirDescendant("${name}/tf/logs")
-        )
+        //projectOperations.fsOperations.updateFileProperty(
+        //    logDir,
+        //    projectOperations.buildDirDescendant("${name}/tf/logs")
+        //)
 
-        projectOperations.fsOperations.updateFileProperty(
-            reportsDir,
-            projectOperations.buildDirDescendant("${name}/tf/reports")
-        )
+        //projectOperations.fsOperations.updateFileProperty(
+        //    reportsDir,
+        //    projectOperations.buildDirDescendant("${name}/tf/reports")
+        //)
 
         this.vars = Variables(this.sourceDir)
         this.secondarySources = mutableListOf()
@@ -85,6 +85,7 @@ open class TerraformSourceDirectorySet @Inject constructor(
         projectOperations.fsOperations.updateFileProperty(this.sourceDir, dir)
     }
 
+    // TODO add the option for backend file
     fun setBackendText(backText: String) {
         this.backendText.set(backText)
     }
@@ -105,9 +106,9 @@ open class TerraformSourceDirectorySet @Inject constructor(
      *
      * @return File provider.
      */
-    fun getLogDir(): Provider<File> {
-        return this.logDir
-    }
+    //fun getLogDir(): Provider<File> {
+    //    return this.logDir
+    //}
 
     /** Reports directory.
      *

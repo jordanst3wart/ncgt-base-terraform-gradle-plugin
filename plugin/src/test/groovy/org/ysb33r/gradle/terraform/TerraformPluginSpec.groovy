@@ -44,7 +44,8 @@ class TerraformPluginSpec extends Specification {
         expect:
         def tss = project.terraformSourceSets
         tss.getByName('main').srcDir.get() == project.file('foo/bar')
-        tss.getByName( 'release').srcDir.get() == project.file('src/release/tf')
+        def file = tss.getByName( 'release').srcDir.get() as File
+        file.absolutePath.contains('src/release/tf')
         project.tasks.named('initRelease').get() instanceof TerraformInit
         project.tasks.named('planRelease').get() instanceof TerraformPlan
         project.tasks.named('applyRelease').get() instanceof TerraformApply

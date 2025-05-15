@@ -42,8 +42,13 @@ object Utils {
     }
 
     @JvmStatic
-    fun terraformErrorLogFile(name: String, logDir: Provider<File>): File {
-        return File(logDir.get(), "${name}Error.log").absoluteFile
+    fun terraformStdErrLogFile(name: String, logDir: Provider<File>): File {
+        return File(logDir.get(), "${name}StdErr.log").absoluteFile
+    }
+
+    @JvmStatic
+    fun terraformStdOutLogFile(name: String, logDir: Provider<File>): File {
+        return File(logDir.get(), "${name}StdOut.log").absoluteFile
     }
 
     private fun defaultEnvironment(): Map<String, String> {

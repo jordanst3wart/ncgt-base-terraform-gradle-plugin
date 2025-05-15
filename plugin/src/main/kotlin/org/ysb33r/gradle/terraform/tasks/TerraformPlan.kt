@@ -48,7 +48,7 @@ abstract class TerraformPlan : TerraformTask {
         super.exec()
         val planOut = planOutputFile
         logger.lifecycle(
-            "The plan file has been generated into ${planOut.toURI()}"
+            "generating plan file ${planOut.toURI()}"
         )
     }
 
