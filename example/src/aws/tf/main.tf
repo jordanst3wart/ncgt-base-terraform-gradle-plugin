@@ -24,6 +24,7 @@ resource "local_file" "foo" {
   filename = "${path.module}/foo.txt"
 }
 
+// TODO replace with security group
 resource "aws_cloudwatch_log_group" "example" {
   name = "example-log-group"
 

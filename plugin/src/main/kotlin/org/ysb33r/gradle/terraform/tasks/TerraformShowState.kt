@@ -25,7 +25,6 @@ abstract class TerraformShowState : TerraformTask {
             })
 
         supportsColor(false)
-        captureStdOutTo(statusReportOutputFile)
         alwaysOutOfDate()
     }
 

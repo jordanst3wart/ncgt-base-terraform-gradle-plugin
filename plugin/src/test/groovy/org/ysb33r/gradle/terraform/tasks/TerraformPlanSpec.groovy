@@ -32,8 +32,8 @@ class TerraformPlanSpec extends Specification {
         def spec = task.buildExecSpec()
         spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
         spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll(['-input=false', '-lock=true', '-lock-timeout=30s', '-parallelism=10', '-refresh=true'])
-        spec.getCmdArgs().size() == 8
+        spec.getCmdArgs().containsAll(['-input=false', '-lock=true', '-lock-timeout=30s', '-parallelism=10', '-refresh=true','-detailed-exitcode'])
+        spec.getCmdArgs().size() == 9
         def planfile = false
         spec.getCmdArgs().forEach{ it ->
             if(it.contains(".tf.plan")) {

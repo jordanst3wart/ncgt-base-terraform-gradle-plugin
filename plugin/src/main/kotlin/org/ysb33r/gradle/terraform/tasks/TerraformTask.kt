@@ -52,9 +52,6 @@ abstract class TerraformTask(): DefaultTask() {
     @Internal
     val defaultCommandParameters: MutableList<String> = mutableListOf()
 
-    @Internal
-    var stdoutCapture: Provider<File> = project.provider { null as File? }
-
     /**
      * @param cmd Command to be executed. See https://www.terraform.io/docs/commands/index.html for details.
      * @param configExtensions Configuration extensions to be added to this task.
@@ -88,15 +85,14 @@ abstract class TerraformTask(): DefaultTask() {
         Utils.terraformErrorLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
         // might not need captureStdout
-        execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>,this.stdoutCapture)
+        execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>)
     }
 
-    private fun execWorkAction(environment: Map<String, String>, commands: List<String>, captureStdout: Provider<File>) {
+    private fun execWorkAction(environment: Map<String, String>, commands: List<String>) {
         val workQueue = workerExecutor.noIsolation()
         workQueue.submit(RunCommand::class.java) { parameters ->
             parameters.getCommands().set(commands)
             parameters.getEnvironment().set(environment)
-            parameters.getStdOut().set(captureStdout)
             parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
             parameters.getErrorLog().set(Utils.terraformErrorLogFile(name, sourceSet.get().logDir))
         }
@@ -231,14 +227,6 @@ abstract class TerraformTask(): DefaultTask() {
             extensions.add(cex.name, cex)
             commandLineProviders.add(projectOperations.provider { cex.getCommandLineArgs() })
         }
-    }
-
-    /** When command is run, capture the standard output
-     *
-     * @param output Output file
-     */
-    protected fun captureStdOutTo(output: Provider<File>) {
-        this.stdoutCapture = output
     }
 
     /** Add specific command-line options for the command.
