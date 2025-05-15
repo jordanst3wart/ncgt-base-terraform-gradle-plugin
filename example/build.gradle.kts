@@ -9,6 +9,7 @@ terraform {
     useGoogleEnvironment()
     setLockTimeout(31)
     setParallel(11)
+    logLevel
     executable(mapOf("version" to "1.10.1"))
 }
 

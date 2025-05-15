@@ -29,9 +29,6 @@ abstract class TerraformTask(): DefaultTask() {
     lateinit var sourceSet: Provider<TerraformSourceDirectorySet>
 
     @Internal
-    var terraformLogLevel: String = "TRACE"
-
-    @Internal
     lateinit var command: String
 
     @Internal
@@ -154,7 +151,7 @@ abstract class TerraformTask(): DefaultTask() {
             name,
             sourceSet.get().dataDir,
             sourceSet.get().logDir,
-            terraformLogLevel
+            terraformExtension.logLevel.get()
         )
 
     /** Adds a command-line provider.

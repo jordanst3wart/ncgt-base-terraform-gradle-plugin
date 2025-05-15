@@ -53,10 +53,17 @@ object Convention {
             t.setSourceSet(sourceSet)
             t.group = TERRAFORM_TASK_GROUP
             t.description = "${taskDetails.description} for '${name}'"
+            // TODO simplify this
             if (taskDetails != INIT) {
                 t.mustRunAfter(taskName(name, INIT.command))
             }
             if (taskDetails == DefaultTerraformTasks.PLAN) {
+                t.dependsOn(taskName(name, INIT.command))
+            }
+            if (taskDetails == DefaultTerraformTasks.DESTROY_PLAN) {
+                t.dependsOn(taskName(name, INIT.command))
+            }
+            if (taskDetails == DefaultTerraformTasks.VALIDATE) {
                 t.dependsOn(taskName(name, INIT.command))
             }
             if (taskDetails == APPLY) {

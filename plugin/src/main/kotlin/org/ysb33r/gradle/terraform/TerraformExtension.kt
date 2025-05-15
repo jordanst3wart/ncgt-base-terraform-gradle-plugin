@@ -18,6 +18,7 @@ import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
 import org.ysb33r.gradle.terraform.internal.Utils.awsEnvironment
 import org.ysb33r.gradle.terraform.internal.Utils.googleEnvironment
+import org.gradle.api.provider.Property
 
 /** Configure project defaults or task specifics for `Terraform`.
  *
@@ -52,20 +53,20 @@ open class TerraformExtension(private val project: Project) {
     lateinit var resolvableExecutable: ResolvableExecutable
 
     val env = mutableMapOf<String, Any>()
-    val registry: ResolverFactoryRegistry
-    val projectOperations: ProjectOperations
+    val registry: ResolverFactoryRegistry = ResolverFactoryRegistry(project)
+    val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
     val lock = Lock()
     val parallel = Parallel()
     val json = Json()
+    val logLevel : Property<String> = project.objects.property(String::class.java)
 
     init {
-        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
-        this.registry = ResolverFactoryRegistry(project)
         if (!DownloaderTerraform.isDownloadSupported()) {
             throw GradleException(
                 "Terraform distribution not supported on ${OperatingSystem.current().name}"
             )
         }
+        logLevel.set("INFO")
         addVersionResolver(projectOperations)
         executable(mapOf("version" to TERRAFORM_DEFAULT))
     }

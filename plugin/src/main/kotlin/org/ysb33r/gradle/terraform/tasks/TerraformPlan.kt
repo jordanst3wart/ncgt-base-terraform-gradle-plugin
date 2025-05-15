@@ -30,6 +30,7 @@ abstract class TerraformPlan : TerraformTask {
      *
      * @return Location of plan file.
      */
+    // TODO maybe should just be planFile
     @get:OutputFile
     open val planOutputFile: File
         get() = File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")

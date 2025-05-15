@@ -10,7 +10,8 @@ import javax.inject.Inject
 import java.io.File
 import java.net.URI
 
-/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
+/** Equivalent of {@code terraform show}.
+ * shows the state of the terraform plan
  */
 abstract class TerraformShowState : TerraformTask {
     @OutputFile
