@@ -59,6 +59,7 @@ abstract class TerraformTask(): DefaultTask() {
     ) : this() {
         this.command = cmd
         // not defined at setup time
+        // should be a property
         this.sourceSet = project.provider { null } as Provider<TerraformSourceSet>
         withConfigExtensions(configExtensions)
     }
@@ -163,51 +164,16 @@ abstract class TerraformTask(): DefaultTask() {
     }
 
     protected fun buildExecSpec(): TerraformExecSpec {
-        val execSpec = createExecSpec()
-        addExecutableToExecSpec(execSpec)
-        return configureExecSpec(execSpec)
-    }
-
-    protected fun addExecutableToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+        val execSpec = TerraformExecSpec(projectOperations, terraformExtension.getResolver())
         execSpec.executable(terraformExtension.resolvableExecutable.executable.absolutePath)
-        return execSpec
-    }
-
-    /** Configures a [TerraformExecSpec].
-     *
-     * @param execSpec Specification to be configured
-     * @return Configured specification
-     */
-    protected fun configureExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
-        configureExecSpecForCmd(execSpec, command, defaultCommandParameters)
+        execSpec.apply {
+            command(command)
+            workingDir(sourceSet.get().srcDir)
+            environment(terraformEnvironment)
+            cmdArgs(defaultCommandParameters)
+        }
         addCommandSpecificsToExecSpec(execSpec)
         return execSpec
-    }
-
-    /** Configures execution specification for a specific command.
-     *
-     * @param execSpec Specification to configure.
-     * @param tfcmd Terraform command.
-     * @param cmdParams Default command parameters.
-     * @return Configures specification.
-     */
-    protected fun configureExecSpecForCmd(
-        execSpec: TerraformExecSpec,
-        tfcmd: String,
-        cmdParams: List<String>
-    ): TerraformExecSpec {
-        val tfEnv = this.terraformEnvironment
-        execSpec.apply {
-            command(tfcmd)
-            workingDir(sourceSet.get().srcDir)
-            environment(tfEnv)
-            cmdArgs(cmdParams)
-        }
-        return execSpec
-    }
-
-    protected fun createExecSpec(): TerraformExecSpec {
-        return TerraformExecSpec(projectOperations, terraformExtension.getResolver())
     }
 
     /** To be called subclass constructor for defining specific configuration extensions that are

@@ -1,14 +1,10 @@
 package org.ysb33r.gradle.terraform.tasks
 
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.options.Option
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 
 import javax.inject.Inject
-import java.io.File
-import java.net.URI
 
 /** Equivalent of {@code terraform show /path/to/terraform.plan}.
  */

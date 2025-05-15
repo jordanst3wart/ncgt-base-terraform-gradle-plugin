@@ -52,7 +52,7 @@ open class TerraformExtension(private val project: Project) {
 
     lateinit var resolvableExecutable: ResolvableExecutable
 
-    val env = mutableMapOf<String, Any>()
+    val env = mutableMapOf<String, String>()
     val registry: ResolverFactoryRegistry = ResolverFactoryRegistry(project)
     val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
     val lock = Lock()
@@ -85,7 +85,7 @@ open class TerraformExtension(private val project: Project) {
      *
      * @param args New environment key-value map of properties.
      */
-    fun setEnvironment(args: Map<String, Any>) {
+    fun setEnvironment(args: Map<String, String>) {
         this.env.clear()
         this.env.putAll(args)
     }
@@ -97,14 +97,14 @@ open class TerraformExtension(private val project: Project) {
      * @return Map of environmental variables that will be passed.
      */
     fun getEnvironment(): Map<String, String> {
-        return projectOperations.stringTools.stringizeValues(this.env)
+        return this.env as Map<String, String>
     }
 
     /** Add environmental variables to be passed to the exe.
      *
      * @param args Environmental variable key-value map.
      */
-    fun environment(args: Map<String, Any>) {
+    fun environment(args: Map<String, String>) {
         this.env.putAll(args)
     }
 
