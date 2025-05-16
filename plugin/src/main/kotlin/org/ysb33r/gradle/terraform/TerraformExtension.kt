@@ -95,7 +95,7 @@ open class TerraformExtension(private val project: Project) {
      * @return Map of environmental variables that will be passed.
      */
     fun getEnvironment(): Map<String, String> {
-        return this.env as Map<String, String>
+        return this.env
     }
 
     /** Add environmental variables to be passed to the exe.

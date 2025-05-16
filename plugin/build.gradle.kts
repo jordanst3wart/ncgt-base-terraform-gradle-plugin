@@ -3,7 +3,7 @@ import java.util.Date
 
 plugins {
     groovy
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "2.1.21"
     `java-gradle-plugin`
     `maven-publish`
     alias(libs.plugins.grgit)
@@ -61,13 +61,11 @@ gradlePlugin {
     plugins {
         create("terraformPlugin") {
             id = "foo.bar.terraform" // property("ID").toString()
-            implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformPlugin" // property("IMPLEMENTATION_CLASS").toString()
+            implementationClass = "org.ysb33r.gradle.terraform.plugins.TerraformPlugin"
             version = createVersion()
             displayName = "Terraform Plugin"
             description = "Provides Terraform extension and tasks. No need to have terraform installed as plugin will take care of caching and installation in a similar fashion as to have Gradle distributions are cached"
             tags = listOf("terraform")
-            // website = property("WEBSITE").toString()
-            // vcsUrl = property("VCS_URL").toString()
         }
     }
 }
