@@ -19,7 +19,7 @@ enum class DefaultTerraformTasks(
 
     companion object {
         fun tasks(): List<DefaultTerraformTasks> {
-            return values().toList()
+            return entries
         }
     }
 }

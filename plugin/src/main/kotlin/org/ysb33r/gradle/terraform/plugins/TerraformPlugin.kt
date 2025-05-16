@@ -21,6 +21,8 @@ import org.ysb33r.gradle.terraform.internal.Convention.sourceSetDisplayName
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.FMT_APPLY
 import org.ysb33r.gradle.terraform.internal.Convention.createTasksByConvention
 import org.ysb33r.gradle.terraform.internal.Convention.taskName
+import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks
+import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 import java.io.StringWriter
 
 /**
@@ -52,6 +54,7 @@ class TerraformPlugin : Plugin<Project> {
         }
         terraformSourceSetConventionTaskRules(project, sourceSetContainer, formatAll)
         configureCheck(project)
+        configureRootTask(project)
     }
 
     companion object {
@@ -111,6 +114,21 @@ class TerraformPlugin : Plugin<Project> {
             val check = project.tasks.named(CHECK_TASK_NAME)
             check.configure {
                 it.dependsOn(project.tasks.withType(TerraformFmtCheck::class.java))
+                it.dependsOn(project.tasks.withType(TerraformValidate::class.java))
+            }
+        }
+
+        // root tasks to run plans for all source sets
+        private fun configureRootTask(project: Project) {
+            DefaultTerraformTasks.tasks().forEach { task ->
+                project.tasks.findByName(task.command)
+                    ?: project.tasks.register(task.command) {
+                        it.group = Convention.TERRAFORM_TASK_GROUP
+                    }
+
+                project.tasks.getByName(task.command) {
+                    it.dependsOn(project.tasks.withType(task.type))
+                }
             }
         }
     }
