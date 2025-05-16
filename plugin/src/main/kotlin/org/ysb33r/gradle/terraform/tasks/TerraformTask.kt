@@ -3,7 +3,6 @@ package org.ysb33r.gradle.terraform.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.workers.WorkerExecutor
@@ -30,7 +29,7 @@ abstract class TerraformTask(): DefaultTask() {
     lateinit var sourceSet: Provider<TerraformSourceSet>
 
     @Internal
-    lateinit var command: String
+    lateinit var tfCommand: String
 
     @Internal
     var projectOperations: ProjectOperations = ProjectOperations.find(project)
@@ -58,7 +57,7 @@ abstract class TerraformTask(): DefaultTask() {
         cmd: String,
         configExtensions: List<Class<out ConfigExtension>>
     ) : this() {
-        this.command = cmd
+        this.tfCommand = cmd
         // not defined at setup time
         // should be a property
         this.sourceSet = project.provider { null } as Provider<TerraformSourceSet>
@@ -169,7 +168,7 @@ abstract class TerraformTask(): DefaultTask() {
         val execSpec = TerraformExecSpec(projectOperations, terraformExtension.getResolver())
         execSpec.executable(terraformExtension.resolvableExecutable.executable.absolutePath)
         execSpec.apply {
-            command(command)
+            command(tfCommand)
             workingDir(sourceSet.get().srcDir)
             environment(terraformEnvironment())
             cmdArgs(defaultCommandParameters)
