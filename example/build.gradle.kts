@@ -1,4 +1,4 @@
-import org.ysb33r.gradle.terraform.TerraformRCExtension
+/*import org.ysb33r.gradle.terraform.TerraformRCExtension
 
 plugins {
     id("foo.bar.terraform")
