@@ -15,8 +15,6 @@ import java.io.File
  */
 open class RemoteStateTask : DefaultTask() {
 
-    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
-
     @get:OutputFile
     val backendConfig: Property<File> = project.objects.property(File::class.java)
 

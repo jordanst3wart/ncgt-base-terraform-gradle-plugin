@@ -145,4 +145,12 @@ open class TerraformExtension(private val project: Project) {
             )
         }
     }
+
+    private fun awsEnvironment(): Map<String, String> {
+        return System.getenv().filterKeys { it.startsWith("AWS_") }
+    }
+
+    private fun googleEnvironment(): Map<String, String> {
+        return System.getenv().filterKeys { it.startsWith("GOOGLE_") }
+    }
 }

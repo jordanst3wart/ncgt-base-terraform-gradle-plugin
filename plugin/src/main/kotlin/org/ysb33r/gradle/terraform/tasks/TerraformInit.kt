@@ -9,7 +9,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
-import org.ysb33r.gradle.terraform.internal.ConfigUtils.createPluginCacheDir
 import java.io.File
 
 abstract class TerraformInit : TerraformTask {
@@ -56,7 +55,7 @@ abstract class TerraformInit : TerraformTask {
     }
 
     override fun exec() {
-        createPluginCacheDir(this.terraformrc)
+        this.terraformrc.createPluginCacheDir()
         super.exec()
     }
 

@@ -16,8 +16,9 @@ import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.internal.ConfigUtils
 import org.ysb33r.gradle.terraform.internal.Utils
+import org.ysb33r.gradle.terraform.internal.Utils.defaultEnvironment
+import org.ysb33r.gradle.terraform.internal.Utils.terraformLogFile
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import java.io.File
 import java.util.UUID
@@ -38,7 +39,7 @@ abstract class TerraformTask(): DefaultTask() {
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
 
     @Internal
-    var terraformrc: TerraformRCExtension = ConfigUtils.locateTerraformRCExtension(project)
+    var terraformrc: TerraformRCExtension = TerraformRCExtension.locateTerraformRCExtension(project)
 
     @Internal
     val commandLineProviders: MutableList<Provider<List<String>>> = mutableListOf()
@@ -79,7 +80,7 @@ abstract class TerraformTask(): DefaultTask() {
     @TaskAction
     open fun exec() {
         sourceSet.get().logDir.get().asFile.mkdirs()
-        Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
+        terraformLogFile(name, sourceSet.get().logDir).delete()
         Utils.terraformStdErrLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
         execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>)
@@ -147,17 +148,20 @@ abstract class TerraformTask(): DefaultTask() {
 
     @get:Input
     protected val terraformEnvironment: Map<String, String>
-        get() = Utils.terraformEnvironment(
-            terraformrc,
-            name,
-            sourceSet.get().dataDir,
-            sourceSet.get().logDir,
-            terraformExtension.logLevel.get()
-        )
+        get() = {
+            val environment = mutableMapOf(
+                "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
+                "TF_CLI_CONFIG_FILE" to terraformrc.locateTerraformConfigFile().absolutePath,
+                "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
+                "TF_LOG" to terraformExtension.logLevel.get(),
+            )
+            environment.putAll(defaultEnvironment())
+            environment.putAll(terraformExtension.getEnvironment())
+            environment
+        } as Map<String, String>
+
 
     /** Adds a command-line provider.
-     *
-     * @param provider
      */
     protected fun addCommandLineProvider(provider: Provider<List<String>>) {
         this.commandLineProviders.add(provider)
@@ -188,7 +192,7 @@ abstract class TerraformTask(): DefaultTask() {
                 else -> project.objects.newInstance(it)
             }
             extensions.add(cex.name, cex)
-            commandLineProviders.add(projectOperations.provider { cex.getCommandLineArgs() })
+            commandLineProviders.add(project.provider { cex.getCommandLineArgs() })
         }
     }
 
