@@ -146,19 +146,17 @@ abstract class TerraformTask(): DefaultTask() {
         }
     }
 
-    @get:Input
-    protected val terraformEnvironment: Map<String, String>
-        get() = {
-            val environment = mutableMapOf(
-                "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
-                "TF_CLI_CONFIG_FILE" to terraformrc.locateTerraformConfigFile().absolutePath,
-                "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
-                "TF_LOG" to terraformExtension.logLevel.get(),
-            )
-            environment.putAll(defaultEnvironment())
-            environment.putAll(terraformExtension.getEnvironment())
-            environment
-        } as Map<String, String>
+    protected fun terraformEnvironment(): Map<String, String> {
+        val environment = mutableMapOf(
+            "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
+            "TF_CLI_CONFIG_FILE" to terraformrc.locateTerraformConfigFile().absolutePath,
+            "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
+            "TF_LOG" to terraformExtension.logLevel.get(),
+        )
+        environment.putAll(defaultEnvironment())
+        environment.putAll(terraformExtension.getEnvironment())
+        return environment
+    }
 
 
     /** Adds a command-line provider.
@@ -173,7 +171,7 @@ abstract class TerraformTask(): DefaultTask() {
         execSpec.apply {
             command(command)
             workingDir(sourceSet.get().srcDir)
-            environment(terraformEnvironment)
+            environment(terraformEnvironment())
             cmdArgs(defaultCommandParameters)
         }
         addCommandSpecificsToExecSpec(execSpec)

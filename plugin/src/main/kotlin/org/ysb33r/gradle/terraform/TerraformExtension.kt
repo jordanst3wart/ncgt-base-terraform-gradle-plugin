@@ -16,8 +16,6 @@ import org.ysb33r.grolifant.api.v4.exec.ExternalExecutable
 import org.ysb33r.grolifant.api.v4.exec.ResolvableExecutable
 import org.ysb33r.grolifant.api.v4.exec.ResolveExecutableByVersion
 import org.ysb33r.grolifant.api.v4.exec.ResolverFactoryRegistry
-import org.ysb33r.gradle.terraform.internal.Utils.awsEnvironment
-import org.ysb33r.gradle.terraform.internal.Utils.googleEnvironment
 import org.gradle.api.provider.Property
 
 /** Configure project defaults or task specifics for `Terraform`.
