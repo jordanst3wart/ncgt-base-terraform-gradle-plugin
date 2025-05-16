@@ -1,17 +1,13 @@
 /*import org.ysb33r.gradle.terraform.TerraformRCExtension
 
-
 plugins {
-    id("foo.bar.terraform") //version ("KOTLIN-AGAIN-SNAPSHOT")
-    // id("com.newscorp.gt.gradle.terraform")
+    id("foo.bar.terraform")
 }
 
-// /Users/stewartj/.m2/repository/com/newscorp/gt/gradle/terraform
-// com.newscorp.gt.gradle.terraform.gradle.plugin
 terraform {
     useAwsEnvironment()
     useGoogleEnvironment()
-    setLockTimeout(30)
+    setLockTimeout(31)
     setParallel(11)
     executable(mapOf("version" to "1.10.1"))
 }
@@ -23,11 +19,11 @@ project.extensions.getByType<TerraformRCExtension>().apply {
 
 terraformSourceSets {
     create("main") {
-        setSrcDir("src/main/tf")
-        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+        srcDir.set(File("src/main/tf"))
+        backendText.set("# foo = bar") // TODO needs to be defined..., could be optional
     }
     create("aws") {
-        setSrcDir("src/aws/tf")
-        setBackendText("# foo = bar") // TODO needs to be defined..., could be optional
+        srcDir.set(File("src/aws/tf"))
+        backendText.set("# foo = bar") // TODO needs to be defined..., could be optional
     }
 }

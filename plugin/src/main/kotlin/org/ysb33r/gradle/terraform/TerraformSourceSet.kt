@@ -2,6 +2,7 @@ package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -17,113 +18,56 @@ import javax.inject.Inject
 /** Describes a Terraform source set
  *
  */
-open class TerraformSourceDirectorySet @Inject constructor(
+open class TerraformSourceSet @Inject constructor(
     project: Project,
     val name: String,
     val displayName: String
 ) : PatternFilterable {
-    private val backendText: Property<String>
-    private val sourceDir: Property<File>
-    val dataDir: Property<File>
-    val logDir: Property<File>
-    val reportsDir: Property<File>
-    private val projectOperations: ProjectOperations
-    private val vars: Variables
+    // TODO could change to backendFile...
+    // backend text is a bit weird
+    val backendText: Property<String> = project.objects.property(String::class.java)
+    val srcDir: DirectoryProperty = project.objects.directoryProperty()
+    val dataDir: DirectoryProperty = project.objects.directoryProperty()
+    val logDir: DirectoryProperty = project.objects.directoryProperty()
+    val reportsDir: DirectoryProperty = project.objects.directoryProperty()
+    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
+    val vars: Variables
     private val patternSet = PatternSet()
     private val secondarySources: MutableList<Any>
     private val secondarySourcesProvider: Provider<List<File>>
 
     init {
-        this.projectOperations = ProjectOperations.maybeCreateExtension(project)
         this.patternSet.include("**/*.tf", "**/*.tfvars", "*.tfstate")
 
-        sourceDir = project.objects.property(File::class.java)
-        dataDir = project.objects.property(File::class.java)
-        logDir = project.objects.property(File::class.java)
-        reportsDir = project.objects.property(File::class.java)
-        backendText = project.objects.property(String::class.java)
+        // TODO test these
+        srcDir.set(File("src/${name}/tf"))
+        dataDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf"))
+        logDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf/logs"))
+        reportsDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf/reports"))
 
-        projectOperations.fsOperations.updateFileProperty(
-            sourceDir,
-            "src/${name}/tf"
-        )
-
-        projectOperations.fsOperations.updateFileProperty(
-            dataDir,
-            projectOperations.buildDirDescendant("${name}/tf")
-        )
-
-        projectOperations.fsOperations.updateFileProperty(
-            logDir,
-            projectOperations.buildDirDescendant("${name}/tf/logs")
-        )
-
-        projectOperations.fsOperations.updateFileProperty(
-            reportsDir,
-            projectOperations.buildDirDescendant("${name}/tf/reports")
-        )
-
-        this.vars = Variables(this.sourceDir)
+        this.vars = Variables(this.srcDir)
         this.secondarySources = mutableListOf()
         this.secondarySourcesProvider = projectOperations.provider {
             projectOperations.fsOperations.files(secondarySources).toList()
         }
     }
 
+    fun setSrcDir(srcDir: String) {
+        this.srcDir.set(File(srcDir))
+    }
+
     override fun toString(): String {
         return this.displayName
     }
 
-    fun getSrcDir(): Provider<File> {
-        return this.sourceDir
-    }
-
-    /** Sets the source directory.
-     *
-     * @param dir Directory can be anything convertible using [Project.file].
-     */
-    fun setSrcDir(dir: Any) {
-        projectOperations.fsOperations.updateFileProperty(this.sourceDir, dir)
-    }
-
-    fun setBackendText(backText: String) {
-        this.backendText.set(backText)
-    }
-
-    fun backendPropertyText(): Property<String> {
-        return backendText
-    }
-
-    /** Data directory provider.
-     *
-     * @return File provider.
-     */
-    fun getDataDir(): Provider<File> {
-        return this.dataDir
-    }
-
-    /** Log directory provider.
-     *
-     * @return File provider.
-     */
-    fun getLogDir(): Provider<File> {
-        return this.logDir
-    }
-
-    /** Reports directory.
-     *
-     * @return File provider.
-     */
-    fun getReportsDir(): Provider<File> {
-        return this.reportsDir
+    fun setBackendText(backText: File) {
+        this.backendText.set(backText.readText())
     }
 
     /**
      * Additional sources that affects infrastructure.
      *
      * @param files Anything convertible to a file.
-     *
-     * @since 0.10.
      */
     fun secondarySources(vararg files: Any) {
         this.secondarySources.addAll(files)
@@ -133,8 +77,6 @@ open class TerraformSourceDirectorySet @Inject constructor(
      * Additional sources that affects infrastructure.
      *
      * @param files Anything convertible to a file.
-     *
-     * @since 0.10.
      */
     fun secondarySources(files: Iterable<Any>) {
         this.secondarySources.addAll(files)
@@ -152,17 +94,9 @@ open class TerraformSourceDirectorySet @Inject constructor(
      *
      * @param cfg Configurating action.
      *
-     * @since 0.2
      */
     fun variables(cfg: Action<VariableSpec>) {
         cfg.execute(this.vars)
-    }
-
-    /** Get all terraform variables applicable to this source set.
-     *
-     */
-    fun getVariables(): VariableSpec {
-        return this.vars
     }
 
     override fun exclude(closure: groovy.lang.Closure<*>): PatternFilterable {

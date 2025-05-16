@@ -18,7 +18,7 @@ object HashicorpUtils {
     }
 
     @JvmStatic
-    fun osArch(os: OperatingSystem): String? {
+    fun osArch(os: OperatingSystem): String {
         val osName = when {
             os.isWindows -> "windows"
             os.isLinux -> "linux"

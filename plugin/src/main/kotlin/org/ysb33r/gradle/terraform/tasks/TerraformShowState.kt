@@ -10,7 +10,8 @@ import javax.inject.Inject
 import java.io.File
 import java.net.URI
 
-/** Equivalent of {@code terraform show /path/to/terraform.tfstate}.
+/** Equivalent of {@code terraform show}.
+ * shows the state of the terraform plan
  */
 abstract class TerraformShowState : TerraformTask {
     @OutputFile
@@ -20,12 +21,11 @@ abstract class TerraformShowState : TerraformTask {
     constructor() : super("show", emptyList()) {
         statusReportOutputFile.set(
             project.provider {
-                File(sourceSet.get().reportsDir.get(),
+                File(sourceSet.get().reportsDir.get().asFile,
                     "${sourceSet.get().name}.status.${if (json) "tf.json" else "tf"}")
             })
 
         supportsColor(false)
-        captureStdOutTo(statusReportOutputFile)
         alwaysOutOfDate()
     }
 

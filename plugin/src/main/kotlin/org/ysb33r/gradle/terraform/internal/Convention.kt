@@ -2,7 +2,7 @@ package org.ysb33r.gradle.terraform.internal
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
-import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.APPLY
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks.INIT
@@ -32,7 +32,7 @@ object Convention {
     }
 
     @JvmStatic
-    fun createTasksByConvention(project: Project, sourceSet: TerraformSourceDirectorySet) {
+    fun createTasksByConvention(project: Project, sourceSet: TerraformSourceSet) {
         DefaultTerraformTasks.tasks().forEach {
             registerTask(sourceSet, project, it)
         }
@@ -40,7 +40,7 @@ object Convention {
     }
 
     private fun registerTask(
-        sourceSet: TerraformSourceDirectorySet,
+        sourceSet: TerraformSourceSet,
         project: Project,
         taskDetails: DefaultTerraformTasks,
     ) {
@@ -53,10 +53,17 @@ object Convention {
             t.setSourceSet(sourceSet)
             t.group = TERRAFORM_TASK_GROUP
             t.description = "${taskDetails.description} for '${name}'"
+            // TODO simplify this
             if (taskDetails != INIT) {
                 t.mustRunAfter(taskName(name, INIT.command))
             }
             if (taskDetails == DefaultTerraformTasks.PLAN) {
+                t.dependsOn(taskName(name, INIT.command))
+            }
+            if (taskDetails == DefaultTerraformTasks.DESTROY_PLAN) {
+                t.dependsOn(taskName(name, INIT.command))
+            }
+            if (taskDetails == DefaultTerraformTasks.VALIDATE) {
                 t.dependsOn(taskName(name, INIT.command))
             }
             if (taskDetails == APPLY) {
@@ -66,7 +73,7 @@ object Convention {
     }
 
     private fun registerBackendConfigurationTask(
-        sourceSet: TerraformSourceDirectorySet,
+        sourceSet: TerraformSourceSet,
         project: Project
     ) {
         val remoteStateTask: TaskProvider<RemoteStateTask> = project.tasks.register(
@@ -75,14 +82,14 @@ object Convention {
         ) { it ->
             it.group = TERRAFORM_TASK_GROUP
             it.description = "Write partial backend configuration file for '${sourceSet.name}'"
-            it.backendText.set(sourceSet.backendPropertyText().map { text -> text })
+            it.backendText.set(sourceSet.backendText.map { text -> text })
             // TODO clean this up I could add this logic to the source set
-            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
+            it.backendConfig.set(File(project.layout.buildDirectory.get().asFile, "${sourceSet.name}/tf/remoteState/backend-config.tf"))
         }
 
         project.tasks.named(taskName(sourceSet.name, "init"), TerraformInit::class.java).configure { it ->
             it.dependsOn(remoteStateTask)
-            it.backendConfig.set(File("${project.buildDir}/${sourceSet.name}/tf/remoteState/backend-config.tf"))
+            it.backendConfig.set(File(project.layout.buildDirectory.get().asFile, "${sourceSet.name}/tf/remoteState/backend-config.tf"))
             it.useBackendConfig.set(true)
         }
     }

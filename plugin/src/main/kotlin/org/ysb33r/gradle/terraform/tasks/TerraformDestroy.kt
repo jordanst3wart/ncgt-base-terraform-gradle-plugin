@@ -18,7 +18,7 @@ import java.util.concurrent.Callable
 abstract class TerraformDestroy : TerraformTask {
     @get:Internal
     val variablesFile: Provider<File> = project.provider(Callable {
-        File(sourceSet.get().dataDir.get(), "__.tfvars")
+        File(sourceSet.get().dataDir.get().asFile, "__.tfvars")
     })
 
     @Inject

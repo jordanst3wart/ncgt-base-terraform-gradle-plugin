@@ -3,21 +3,21 @@ package org.ysb33r.gradle.terraform.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.configuration.ConsoleOutput
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.workers.WorkerExecutor
-import org.ysb33r.gradle.terraform.RunExec
+import org.ysb33r.gradle.terraform.RunCommand
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
-import org.ysb33r.gradle.terraform.internal.ConfigUtils
 import org.ysb33r.gradle.terraform.internal.Utils
+import org.ysb33r.gradle.terraform.internal.Utils.defaultEnvironment
+import org.ysb33r.gradle.terraform.internal.Utils.terraformLogFile
 import org.ysb33r.grolifant.api.core.ProjectOperations
 import java.io.File
 import java.util.UUID
@@ -26,13 +26,10 @@ import javax.inject.Inject
 
 abstract class TerraformTask(): DefaultTask() {
     @Internal
-    lateinit var sourceSet: Provider<TerraformSourceDirectorySet>
+    lateinit var sourceSet: Provider<TerraformSourceSet>
 
     @Internal
-    var terraformLogLevel: String = "TRACE"
-
-    @Internal
-    lateinit var command: String
+    lateinit var tfCommand: String
 
     @Internal
     var projectOperations: ProjectOperations = ProjectOperations.find(project)
@@ -41,7 +38,7 @@ abstract class TerraformTask(): DefaultTask() {
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
 
     @Internal
-    var terraformrc: TerraformRCExtension = ConfigUtils.locateTerraformRCExtension(project)
+    var terraformrc: TerraformRCExtension = TerraformRCExtension.locateTerraformRCExtension(project)
 
     @Internal
     val commandLineProviders: MutableList<Provider<List<String>>> = mutableListOf()
@@ -52,9 +49,6 @@ abstract class TerraformTask(): DefaultTask() {
     @Internal
     val defaultCommandParameters: MutableList<String> = mutableListOf()
 
-    @Internal
-    var stdoutCapture: Provider<File> = project.provider { null as File? }
-
     /**
      * @param cmd Command to be executed. See https://www.terraform.io/docs/commands/index.html for details.
      * @param configExtensions Configuration extensions to be added to this task.
@@ -63,9 +57,10 @@ abstract class TerraformTask(): DefaultTask() {
         cmd: String,
         configExtensions: List<Class<out ConfigExtension>>
     ) : this() {
-        this.command = cmd
+        this.tfCommand = cmd
         // not defined at setup time
-        this.sourceSet = project.provider { null } as Provider<TerraformSourceDirectorySet>
+        // should be a property
+        this.sourceSet = project.provider { null } as Provider<TerraformSourceSet>
         withConfigExtensions(configExtensions)
     }
 
@@ -77,37 +72,33 @@ abstract class TerraformTask(): DefaultTask() {
         const val JSON_FORMAT = "-json"
     }
 
-    fun setSourceSet(sourceSet: TerraformSourceDirectorySet) {
+    fun setSourceSet(sourceSet: TerraformSourceSet) {
         this.sourceSet = project.providers.provider { sourceSet }
     }
 
     @TaskAction
     open fun exec() {
-        sourceSet.get().logDir.get().mkdirs()
-        Utils.terraformLogFile(name, sourceSet.get().logDir).delete()
+        sourceSet.get().logDir.get().asFile.mkdirs()
+        terraformLogFile(name, sourceSet.get().logDir).delete()
+        Utils.terraformStdErrLogFile(name, sourceSet.get().logDir).delete()
         val execSpec = buildExecSpec()
-        logger.info("Using Terraform environment: ${terraformEnvironment}")
-        logger.debug("Terraform executable will be launched with environment: ${execSpec.environment}")
-        println("------- execspec -------")
-        println(execSpec.command)
-        println(execSpec.environment)
-        logger.info("Running terraform command: ${execSpec.command} ${execSpec.cmdArgs.joinToString(" ")}")
-        execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>,this.stdoutCapture)
+        execWorkAction(execSpec.getEnvironment() as Map<String, String>, execSpec.getCommandLine() as List<String>)
     }
 
-    private fun execWorkAction(environment: Map<String, String>, commands: List<String>, captureStdout: Provider<File>) {
+    private fun execWorkAction(environment: Map<String, String>, commands: List<String>) {
         val workQueue = workerExecutor.noIsolation()
-        workQueue.submit(RunExec::class.java) { parameters ->
+        workQueue.submit(RunCommand::class.java) { parameters ->
             parameters.getCommands().set(commands)
             parameters.getEnvironment().set(environment)
-            parameters.getStdOut().set(captureStdout)
-            parameters.getWorkingDir().set(sourceSet.get().getSrcDir())
+            parameters.getWorkingDir().set(sourceSet.get().srcDir)
+            parameters.getStdErrLog().set(Utils.terraformStdErrLogFile(name, sourceSet.get().logDir))
+            parameters.getStdOutLog().set(Utils.terraformStdOutLogFile(name, sourceSet.get().logDir))
         }
     }
 
     protected fun sourceSetVariables(): Provider<List<String>> {
         return project.provider {
-            this.sourceSet.get().getVariables().getCommandLineArgs()
+            this.sourceSet.get().vars.getCommandLineArgs()
         }
     }
 
@@ -121,7 +112,7 @@ abstract class TerraformTask(): DefaultTask() {
     @get:Internal
     protected val planFile: Provider<File>
         get() = project.provider(Callable<File> {
-            File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+            File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.plan")
         })
 
     /**
@@ -154,70 +145,36 @@ abstract class TerraformTask(): DefaultTask() {
         }
     }
 
-    @get:Input
-    protected val terraformEnvironment: Map<String, String>
-        get() = Utils.terraformEnvironment(
-            terraformrc,
-            name,
-            sourceSet.get().dataDir,
-            sourceSet.get().logDir,
-            terraformLogLevel
+    protected fun terraformEnvironment(): Map<String, String> {
+        val environment = mutableMapOf(
+            "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
+            "TF_CLI_CONFIG_FILE" to terraformrc.locateTerraformConfigFile().absolutePath,
+            "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
+            "TF_LOG" to terraformExtension.logLevel.get(),
         )
+        environment.putAll(defaultEnvironment())
+        environment.putAll(terraformExtension.getEnvironment())
+        return environment
+    }
+
 
     /** Adds a command-line provider.
-     *
-     * @param provider
      */
     protected fun addCommandLineProvider(provider: Provider<List<String>>) {
         this.commandLineProviders.add(provider)
     }
 
     protected fun buildExecSpec(): TerraformExecSpec {
-        val execSpec = createExecSpec()
-        addExecutableToExecSpec(execSpec)
-        return configureExecSpec(execSpec)
-    }
-
-    protected fun addExecutableToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+        val execSpec = TerraformExecSpec(projectOperations, terraformExtension.getResolver())
         execSpec.executable(terraformExtension.resolvableExecutable.executable.absolutePath)
-        return execSpec
-    }
-
-    /** Configures a [TerraformExecSpec].
-     *
-     * @param execSpec Specification to be configured
-     * @return Configured specification
-     */
-    protected fun configureExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
-        configureExecSpecForCmd(execSpec, command, defaultCommandParameters)
+        execSpec.apply {
+            command(tfCommand)
+            workingDir(sourceSet.get().srcDir)
+            environment(terraformEnvironment())
+            cmdArgs(defaultCommandParameters)
+        }
         addCommandSpecificsToExecSpec(execSpec)
         return execSpec
-    }
-
-    /** Configures execution specification for a specific command.
-     *
-     * @param execSpec Specification to configure.
-     * @param tfcmd Terraform command.
-     * @param cmdParams Default command parameters.
-     * @return Configures specification.
-     */
-    protected fun configureExecSpecForCmd(
-        execSpec: TerraformExecSpec,
-        tfcmd: String,
-        cmdParams: List<String>
-    ): TerraformExecSpec {
-        val tfEnv = this.terraformEnvironment
-        execSpec.apply {
-            command(tfcmd)
-            workingDir(sourceSet.get().getSrcDir())
-            environment(tfEnv)
-            cmdArgs(cmdParams)
-        }
-        return execSpec
-    }
-
-    protected fun createExecSpec(): TerraformExecSpec {
-        return TerraformExecSpec(projectOperations, terraformExtension.getResolver())
     }
 
     /** To be called subclass constructor for defining specific configuration extensions that are
@@ -232,16 +189,8 @@ abstract class TerraformTask(): DefaultTask() {
                 else -> project.objects.newInstance(it)
             }
             extensions.add(cex.name, cex)
-            commandLineProviders.add(projectOperations.provider { cex.getCommandLineArgs() })
+            commandLineProviders.add(project.provider { cex.getCommandLineArgs() })
         }
-    }
-
-    /** When command is run, capture the standard output
-     *
-     * @param output Output file
-     */
-    protected fun captureStdOutTo(output: Provider<File>) {
-        this.stdoutCapture = output
     }
 
     /** Add specific command-line options for the command.

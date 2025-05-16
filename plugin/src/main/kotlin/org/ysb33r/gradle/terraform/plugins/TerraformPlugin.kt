@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformRCExtension
-import org.ysb33r.gradle.terraform.TerraformSourceDirectorySet
+import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.internal.Convention
 import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
@@ -55,21 +55,21 @@ class TerraformPlugin : Plugin<Project> {
     }
 
     companion object {
-        private fun configureTerraformRC(rootProject: Project) {
-            // create projections for root rootProject
-            val terraformRcExt = rootProject.extensions
-                .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension::class.java, rootProject)
-            rootProject.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { task ->
+        private fun configureTerraformRC(project: Project) {
+            val terraformRcExt = project.extensions
+                .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension::class.java, project)
+            project.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { task ->
                 task.group = Convention.TERRAFORM_TASK_GROUP
                 task.description = "Generates Terraform configuration file"
                 task.onlyIf { !terraformRcExt.useGlobalConfig }
+                // I don't know if this is useful
                 task.inputs.property("details") {
                     val writer = StringWriter()
                     terraformRcExt.toHCL(writer).toString()
                 }
                 task.outputs.file(terraformRcExt.getTerraformRC())
                 task.doLast {
-                    terraformRcExt.getTerraformRC().get().bufferedWriter().use { writer ->
+                    terraformRcExt.getTerraformRC().asFile.bufferedWriter().use { writer ->
                         terraformRcExt.toHCL(writer)
                     }
                 }
@@ -78,24 +78,24 @@ class TerraformPlugin : Plugin<Project> {
 
         private fun createTerraformSourceSetsExtension(
             project: Project
-        ): NamedDomainObjectContainer<TerraformSourceDirectorySet> {
+        ): NamedDomainObjectContainer<TerraformSourceSet> {
             val factory = NamedDomainObjectFactory { name ->
                 project.objects.newInstance(
-                    TerraformSourceDirectorySet::class.java,
+                    TerraformSourceSet::class.java,
                     project,
                     name,
                     sourceSetDisplayName(name)
                 )
             }
             val sourceSetContainer =
-                project.objects.domainObjectContainer(TerraformSourceDirectorySet::class.java, factory)
+                project.objects.domainObjectContainer(TerraformSourceSet::class.java, factory)
             project.extensions.add(Convention.TERRAFORM_SOURCESETS, sourceSetContainer)
             return sourceSetContainer
         }
 
         private fun terraformSourceSetConventionTaskRules(
             project: Project,
-            sourceSetContainer: NamedDomainObjectContainer<TerraformSourceDirectorySet>,
+            sourceSetContainer: NamedDomainObjectContainer<TerraformSourceSet>,
             formatAll: TaskProvider<Task>
         ) {
             sourceSetContainer.configureEach { sourceSet ->

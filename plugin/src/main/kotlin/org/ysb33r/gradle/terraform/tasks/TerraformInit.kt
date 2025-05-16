@@ -9,7 +9,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
-import org.ysb33r.gradle.terraform.internal.ConfigUtils.createPluginCacheDir
 import java.io.File
 
 abstract class TerraformInit : TerraformTask {
@@ -31,7 +30,7 @@ abstract class TerraformInit : TerraformTask {
     @get:OutputDirectory
     val pluginDirectory: Provider<File>
         get() = sourceSet.map { source ->
-            source.dataDir.map { File(it, "providers") }
+            source.dataDir.map { File(it.asFile, "providers") }
         } as Provider<File>
 
     // TODO not having these assumes you are using a remote backend...
@@ -56,7 +55,7 @@ abstract class TerraformInit : TerraformTask {
     }
 
     override fun exec() {
-        createPluginCacheDir(this.terraformrc)
+        this.terraformrc.createPluginCacheDir()
         super.exec()
     }
 

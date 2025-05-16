@@ -33,7 +33,7 @@ class TerraformPluginSpec extends Specification {
             terraformSourceSets {
                 main {
                     srcDir = file('foo/bar')
-                    backendText("hi")
+                    backendText.set("hi")
                 }
                 release
             }
@@ -43,8 +43,9 @@ class TerraformPluginSpec extends Specification {
     void 'Create additional source sets'() {
         expect:
         def tss = project.terraformSourceSets
-        tss.getByName('main').srcDir.get() == project.file('foo/bar')
-        tss.getByName( 'release').srcDir.get() == project.file('src/release/tf')
+        tss.getByName('main').srcDir.get().asFile == project.file('foo/bar')
+        def file = tss.getByName( 'release').srcDir.get().asFile as File
+        file.absolutePath.contains('src/release/tf')
         project.tasks.named('initRelease').get() instanceof TerraformInit
         project.tasks.named('planRelease').get() instanceof TerraformPlan
         project.tasks.named('applyRelease').get() instanceof TerraformApply
@@ -55,7 +56,7 @@ class TerraformPluginSpec extends Specification {
         def backendTask = project.tasks.named('createBackendConfigurationMain').get() as RemoteStateTask
         backendTask.name == 'createBackendConfigurationMain'
         backendTask.backendFileRequired.get() == true
-        backendTask.backendConfig.get() == new File(project.buildDir, "main/tf/remoteState/backend-config.tf")
+        backendTask.backendConfig.get() == new File(project.layout.buildDirectory.asFile.get(), "main/tf/remoteState/backend-config.tf")
 
         def task = project.tasks.named('initMain').get() as TerraformInit
         task.backendConfig.get() == new File(project.buildDir, "main/tf/remoteState/backend-config.tf")

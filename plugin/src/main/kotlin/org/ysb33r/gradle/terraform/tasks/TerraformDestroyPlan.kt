@@ -10,7 +10,7 @@ import java.io.File
 abstract class TerraformDestroyPlan : TerraformPlan() {
 
     override val planOutputFile: File
-        get() = File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.destroy.plan")
+        get() = File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.destroy.plan")
 
     override val variablesFile: Provider<File>
         get() = super.variablesFile.map {

@@ -30,16 +30,17 @@ abstract class TerraformPlan : TerraformTask {
      *
      * @return Location of plan file.
      */
+    // TODO maybe should just be planFile
     @get:OutputFile
     open val planOutputFile: File
-        get() = File(sourceSet.get().dataDir.get(), "${sourceSet.get().name}.tf.plan")
+        get() = File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.plan")
 
     /** This is the location of an variables file used to keep anything provided via the build script.
      * @return Location of variables file.
      */
     @get:Internal
     open val variablesFile: Provider<File> = project.provider(Callable {
-        File(sourceSet.get().dataDir.get(), "__.tfvars")
+        File(sourceSet.get().dataDir.get().asFile, "__.tfvars")
     })
 
     override fun exec() {
@@ -47,7 +48,7 @@ abstract class TerraformPlan : TerraformTask {
         super.exec()
         val planOut = planOutputFile
         logger.lifecycle(
-            "The plan file has been generated into ${planOut.toURI()}"
+            "generating plan file ${planOut.toURI()}"
         )
     }
 
@@ -67,7 +68,7 @@ abstract class TerraformPlan : TerraformTask {
         execSpec.apply {
             cmdArgs("-out=${planOutputFile}")
             cmdArgs("-var-file=${variablesFile.get().absolutePath}")
-            // cmdArgs("-detailed-exitcode")
+            cmdArgs("-detailed-exitcode")
         }
         return execSpec
     }
