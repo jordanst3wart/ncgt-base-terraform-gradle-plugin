@@ -40,7 +40,11 @@ abstract class RunCommand : WorkAction<RunCommandParameters> {
                     parameters.getStdErrLog().get().asFile.path}):\n${parameters.getStdErrLog().get().asFile.readText()}")
             }
             0 -> {
+                // TODO could stream stdout to the console, or just read it, show warnings
+                // trying just warnings
                 logger.lifecycle("Successfully ran task")
+                logger.lifecycle("output: (from ${parameters.getStdOutLog().get().asFile.path}):\n${
+                    parameters.getStdOutLog().get().asFile.readText()}")
             }
             2 -> {
                 // TODO show stdout if drift...

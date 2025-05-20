@@ -64,7 +64,7 @@ open class TerraformExtension(private val project: Project) {
                 "Terraform distribution not supported on ${OperatingSystem.current().name}"
             )
         }
-        logLevel.set("INFO")
+        logLevel.set("WARN")
         addVersionResolver(projectOperations)
         executable(mapOf("version" to TERRAFORM_DEFAULT))
     }
