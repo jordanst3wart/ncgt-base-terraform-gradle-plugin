@@ -25,7 +25,7 @@ class TerraformRCExtensionSpec extends Specification {
             }
         }
 
-        def terraformrc = project.extensions.getByType(TerraformRCExtension)
+        def terraformrc = project.extensions.getByType(TerraformSetupExtension)
         def hcl = terraformrc.toHCL(new StringWriter()).toString().replaceAll(~/\r?\n/, '!!')
 
         then:

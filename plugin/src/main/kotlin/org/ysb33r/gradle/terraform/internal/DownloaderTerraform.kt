@@ -23,7 +23,7 @@ class DownloaderTerraform(
     companion object {
         val OS: OperatingSystem = OperatingSystem.current()
         const val TOOL_IDENTIFIER = "terraform"
-        val BASEURI: String = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
+        const val BASEURI: String = "https://releases.hashicorp.com/terraform"
     }
 
     override fun uriFromVersion(ver: String): URI {
@@ -48,5 +48,5 @@ class DownloaderTerraform(
     }
 
     private val exeName: String
-        get() = if (OS.isWindows) "terraform.exe" else "terraform"
+        get() = if (OS.isWindows) "$TOOL_IDENTIFIER.exe" else TOOL_IDENTIFIER
 }

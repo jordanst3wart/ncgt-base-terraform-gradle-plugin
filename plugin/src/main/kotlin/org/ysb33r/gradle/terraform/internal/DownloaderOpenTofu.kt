@@ -89,5 +89,5 @@ class DownloaderOpenTofu(
     }
 
     private val exeName: String
-        get() = if (OS.isWindows) "tofu.exe" else "tofu"
+        get() = if (OS.isWindows) "$TOOL_IDENTIFIER.exe" else TOOL_IDENTIFIER
 }

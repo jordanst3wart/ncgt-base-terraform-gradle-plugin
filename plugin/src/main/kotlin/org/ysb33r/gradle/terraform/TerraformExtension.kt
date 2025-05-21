@@ -25,12 +25,6 @@ import org.gradle.api.provider.Property
  * ```
  *   // By tag (Gradle will download and cache the correct distribution).
  *   executable(mapOf("tag" to "0.10.1"))
- *
- *   // By a physical path
- *   executable(mapOf("path" to "/path/to/terraform"))
- *
- *   // By using searchPath (will attempt to locate in search path).
- *   executable(mapOf("searchPath" to ""))
  * ```
  *
  * If the build runs on a platform that supports downloading of the `terraform` executable

@@ -12,7 +12,7 @@ import java.io.File
 
 object Convention {
     const val FORMAT_ALL = "fmtAll"
-    const val TERRAFORM_RC_EXT = "terraformrc"
+    const val TERRAFORM_SETUP_EXT = "terraformSetup"
     const val TERRAFORM_SOURCESETS = "terraformSourceSets"
     const val TERRAFORM_TASK_GROUP = "Terraform"
 

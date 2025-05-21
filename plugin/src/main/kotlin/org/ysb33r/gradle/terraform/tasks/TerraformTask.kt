@@ -11,7 +11,7 @@ import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.RunCommand
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
-import org.ysb33r.gradle.terraform.TerraformRCExtension
+import org.ysb33r.gradle.terraform.TerraformSetupExtension
 import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
@@ -40,7 +40,7 @@ abstract class TerraformTask(): DefaultTask() {
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
 
     @Internal
-    var terraformRc: TerraformRCExtension = project.extensions.getByType(TerraformRCExtension::class.java)
+    var terraformSetup: TerraformSetupExtension = project.extensions.getByType(TerraformSetupExtension::class.java)
 
     @Internal
     val commandLineProviders: MutableList<Provider<List<String>>> = mutableListOf()
@@ -140,7 +140,7 @@ abstract class TerraformTask(): DefaultTask() {
     protected fun terraformEnvironment(): Map<String, String> {
         val environment = mutableMapOf(
             "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
-            "TF_CLI_CONFIG_FILE" to terraformRc.locateTerraformConfigFile().absolutePath,
+            "TF_CLI_CONFIG_FILE" to terraformSetup.terraformRC.asFile.absolutePath,
             "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
             "TF_LOG" to terraformExtension.logLevel.get(),
         )

@@ -9,15 +9,6 @@ object HashicorpUtils {
     private const val DOUBLE_BACKSLASH = "\\\\\\\\"
 
     @JvmStatic
-    fun getDownloadBaseUri(name: String?): String {
-        return if (name == null || name.isEmpty()) {
-            System.getProperty("org.ysb33r.gradle.hashicorp.releases.uri") ?: "https://releases.hashicorp.com"
-        } else {
-            System.getProperty("org.ysb33r.gradle.${name}.uri") ?: "${getDownloadBaseUri(null)}/${name}"
-        }
-    }
-
-    @JvmStatic
     fun osArch(os: OperatingSystem): String {
         val osName = when {
             os.isWindows -> "windows"
