@@ -50,7 +50,7 @@ object Convention {
             newTaskName,
             taskDetails.type
         ) { t ->
-            t.setSourceSet(sourceSet)
+            t.sourceSet.set(sourceSet)
             t.group = TERRAFORM_TASK_GROUP
             t.description = "${taskDetails.description} for '${name}'"
             // TODO simplify this

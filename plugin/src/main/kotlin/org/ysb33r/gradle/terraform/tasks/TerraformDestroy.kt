@@ -2,7 +2,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
@@ -41,9 +41,9 @@ abstract class TerraformDestroy : TerraformTask {
      * @param execSpec
      * @return execSpec
      */
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.cmdArgs("-var-file=${variablesFile.get().absolutePath}")
+        execSpec.args.add("-var-file=${variablesFile.get().absolutePath}")
         return execSpec
     }
 

@@ -1,8 +1,6 @@
 package org.ysb33r.gradle.terraform
 
-import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
@@ -59,12 +57,8 @@ open class TerraformExtension(private val project: Project) {
     val logLevel : Property<String> = project.objects.property(String::class.java)
 
     init {
-        if (!DownloaderTerraform.isDownloadSupported()) {
-            throw GradleException(
-                "Terraform distribution not supported on ${OperatingSystem.current().name}"
-            )
-        }
         logLevel.set("WARN")
+        // getExecutable() will be called by the task
         addVersionResolver(projectOperations)
         executable(mapOf("version" to TERRAFORM_DEFAULT))
     }

@@ -3,7 +3,7 @@ package org.ysb33r.gradle.terraform.tasks
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
@@ -55,18 +55,18 @@ abstract class TerraformDestroyPlan : TerraformTask {
      * @param execSpec
      * @return execSpec
      */
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         if (project.hasProperty("tf.plan.refresh")) {
             logger.lifecycle("tf.plan.refresh property found setting refresh to false")
             extensions.getByType(Refresh::class.java).refresh = false
         }
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.apply {
-            cmdArgs("-out=${planOutputFile}")
-            cmdArgs("-var-file=${variablesFile.get().absolutePath}")
-            cmdArgs("-detailed-exitcode")
-            cmdArgs("-destroy")
-        }
+        execSpec.args.addAll(listOf(
+            "-out=${planOutputFile},",
+            "-var-file=${variablesFile.get().absolutePath}",
+            "-detailed-exitcode",
+            "-destroy"
+        ))
         return execSpec
     }
 

@@ -2,7 +2,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 
 import javax.inject.Inject
 
@@ -34,13 +34,13 @@ abstract class TerraformShow : TerraformTask {
         //)
     }
 
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
 
         if (json) {
-            execSpec.cmdArgs(JSON_FORMAT)
+            execSpec.args.add(JSON_FORMAT)
         }
-        execSpec.cmdArgs(planFile.get().toPath().toAbsolutePath().toString())
+        execSpec.args.add(planFile.get().toPath().toAbsolutePath().toString())
 
         return execSpec
     }

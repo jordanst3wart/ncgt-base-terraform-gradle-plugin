@@ -24,11 +24,6 @@ class DownloaderTerraform(
         val OS: OperatingSystem = OperatingSystem.current()
         const val TOOL_IDENTIFIER = "terraform"
         val BASEURI: String = HashicorpUtils.getDownloadBaseUri(TOOL_IDENTIFIER)
-
-        @JvmStatic
-        fun isDownloadSupported(): Boolean {
-            return (OS.isWindows || OS.isLinux || OS.isMacOsX)
-        }
     }
 
     override fun uriFromVersion(ver: String): URI {

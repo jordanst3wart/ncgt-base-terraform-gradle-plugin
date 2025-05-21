@@ -6,7 +6,6 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.internal.os.OperatingSystem
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
-import org.ysb33r.grolifant.api.core.ProjectOperations
 import org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 import java.io.File
 import java.io.Writer

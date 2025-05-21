@@ -2,6 +2,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.ysb33r.gradle.terraform.ExecSpec
 import spock.lang.Specification
 
 class TerraformPlanSpec extends Specification {
@@ -28,20 +29,19 @@ class TerraformPlanSpec extends Specification {
         then:
         def task = project.tasks.named('planMain').get()
         task instanceof TerraformPlan
-        // applyTask.setTargets(["someResource"]) // bug
-        def spec = task.buildExecSpec()
-        spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
-        spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll(['-input=false', '-lock=true', '-lock-timeout=30s', '-parallelism=10', '-refresh=true','-detailed-exitcode'])
-        spec.getCmdArgs().size() == 9
+        ExecSpec spec = task.buildExecSpec()
+        spec.env.keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
+        spec.env.size() == 6
+        spec.args.containsAll(['-input=false', '-lock=true', '-lock-timeout=30s', '-parallelism=10', '-refresh=true','-detailed-exitcode'])
+        spec.args.size() == 9
         def planfile = false
-        spec.getCmdArgs().forEach{ it ->
+        spec.args.forEach{ it ->
             if(it.contains(".tf.plan")) {
                 planfile = true
             }
         }
         def varsFile = false
-        spec.getCmdArgs().forEach{ it ->
+        spec.args.forEach{ it ->
             if(it.contains("auto.tfvars.json")) {
                 varsFile = true
             }
