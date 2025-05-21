@@ -7,7 +7,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.errors.MissingConfiguration
 import java.io.File
 
@@ -54,26 +54,21 @@ abstract class TerraformInit : TerraformTask {
         useBackendConfig = project.objects.property(Boolean::class.java)
     }
 
-    override fun exec() {
-        this.terraformrc.createPluginCacheDir()
-        super.exec()
-    }
-
     /** Add specific command-line options for the command.
      * If [--refresh-dependencies] was specified on the command-line the [-upgrade] will be passed
      * to [terraform init].
      */
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        execSpec.cmdArgs("-get=${!skipChildModules}")
+        execSpec.args.add("-get=${!skipChildModules}")
 
         if (!this.backendConfig.get().exists()) {
             throw MissingConfiguration("cannot location ${this.backendConfig.get().absolutePath}")
         }
 
         if (this.useBackendConfig.get()) {
-            execSpec.cmdArgs("-backend-config=${this.backendConfig.get().absolutePath}")
+            execSpec.args.add("-backend-config=${this.backendConfig.get().absolutePath}")
         }
 
         return execSpec

@@ -56,11 +56,7 @@ class DownloaderOpenTofu(
      */
     override fun uriFromVersion(ver: String): URI? {
         val osArch = HashicorpUtils.osArch(OS)
-        return if (osArch != null) {
-            URI("${BASEURI}/download/v${ver}/tofu_${ver}_${osArch}.zip")
-        } else {
-            null
-        }
+        return URI("${BASEURI}/download/v${ver}/tofu_${ver}_${osArch}.zip")
     }
 
     /** Returns the path to the `terraform` executable.
@@ -93,5 +89,5 @@ class DownloaderOpenTofu(
     }
 
     private val exeName: String
-        get() = if (OS.isWindows) "tofu.exe" else "tofu"
+        get() = if (OS.isWindows) "$TOOL_IDENTIFIER.exe" else TOOL_IDENTIFIER
 }

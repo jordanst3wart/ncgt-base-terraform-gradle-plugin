@@ -1,7 +1,7 @@
 package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.tasks.Input
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 
 /** The [terraform fmt -write=true] command. */
 abstract class TerraformFmtApply : TerraformTask {
@@ -11,19 +11,19 @@ abstract class TerraformFmtApply : TerraformTask {
     @get:Input
     var recursive: Boolean = true
 
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
 
-        execSpec.cmdArgs("-write=true")
+        execSpec.args.add("-write=true")
 
         if (recursive) {
-            execSpec.cmdArgs("-recursive")
+            execSpec.args.add("-recursive")
         }
 
         if (logger.isInfoEnabled) {
-            execSpec.cmdArgs("-list=true")
+            execSpec.args.add("-list=true")
         } else {
-            execSpec.cmdArgs("-list=false")
+            execSpec.args.add("-list=false")
         }
 
         return execSpec

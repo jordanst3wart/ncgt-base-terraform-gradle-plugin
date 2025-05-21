@@ -17,6 +17,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.ysb33r.gradle.terraform.ExecSpec
 import spock.lang.Specification
 
 class TerraformDestroySpec extends Specification {
@@ -44,10 +45,10 @@ class TerraformDestroySpec extends Specification {
         def task = project.tasks.named('destroyMain').get()
         task instanceof TerraformDestroy
         // task.setTargets(["someResource"]) // bug
-        def spec = task.buildExecSpec()
-        spec.getEnvironment().keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
-        spec.getEnvironment().size() == 6
-        spec.getCmdArgs().containsAll([
+        ExecSpec spec = task.buildExecSpec()
+        spec.env.keySet().containsAll(["TF_DATA_DIR", "TF_CLI_CONFIG_FILE", "TF_LOG_PATH", "TF_LOG", "PATH", "HOME"])
+        spec.env.size() == 6
+        spec.args.containsAll([
             '-auto-approve',
             '-input=false',
             '-lock=true',
@@ -55,10 +56,10 @@ class TerraformDestroySpec extends Specification {
             '-parallelism=10',
             '-refresh=true',
         ])
-        spec.getCmdArgs().size() == 8
+        spec.args.size() == 8
 
         def varsFile = false
-        spec.getCmdArgs().forEach{ it ->
+        spec.args.forEach{ it ->
             if(it.contains("auto.tfvars.json")) {
                 varsFile = true
             }

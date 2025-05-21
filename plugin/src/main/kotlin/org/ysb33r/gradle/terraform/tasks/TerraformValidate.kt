@@ -13,9 +13,4 @@ abstract class TerraformValidate : TerraformTask {
     constructor() : super("validate", listOf(Json::class.java)) {
         supportsColor()
     }
-
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
-        super.addCommandSpecificsToExecSpec(execSpec)
-        return execSpec
-    }
 }

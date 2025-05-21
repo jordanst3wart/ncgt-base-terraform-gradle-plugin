@@ -1,23 +1,8 @@
-/*
- * Copyright 2017-2022 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFile
-import org.ysb33r.gradle.terraform.TerraformExecSpec
+import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
@@ -26,11 +11,6 @@ import org.ysb33r.gradle.terraform.config.Refresh
 import javax.inject.Inject
 import java.io.File
 
-/** Equivalent of {@code terraform apply}.
- *
- * A {@code TerraformApply} task will be bound to {@link TerraformPlan} task
- * in order to retrieve most of its configuration.
- */
 abstract class TerraformApply : TerraformTask {
 
     @InputFile
@@ -44,12 +24,9 @@ abstract class TerraformApply : TerraformTask {
         planFiles = this.planFile
     }
 
-    override fun addCommandSpecificsToExecSpec(execSpec: TerraformExecSpec): TerraformExecSpec {
+    override fun addCommandSpecificsToExecSpec(execSpec: ExecSpec): ExecSpec {
         super.addCommandSpecificsToExecSpec(execSpec)
-        execSpec.apply {
-            // cmdArgs("-detailed-exitcode")
-            cmdArgs(planFiles.get().absolutePath)
-        }
+        execSpec.args.add(planFiles.get().absolutePath)
         return execSpec
     }
 }

@@ -22,11 +22,10 @@ class TerraformRCExtensionSpec extends Specification {
             terraformrc {
                 disableCheckPoint = true
                 disableCheckPointSignature = false
-                useGlobalConfig = false
             }
         }
 
-        def terraformrc = project.extensions.getByType(TerraformRCExtension)
+        def terraformrc = project.extensions.getByType(TerraformSetupExtension)
         def hcl = terraformrc.toHCL(new StringWriter()).toString().replaceAll(~/\r?\n/, '!!')
 
         then:
