@@ -5,13 +5,11 @@ import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileTreeElement
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.config.multilevel.Variables
-import org.ysb33r.grolifant.api.core.ProjectOperations
 import java.io.File
 import javax.inject.Inject
 
@@ -30,11 +28,8 @@ open class TerraformSourceSet @Inject constructor(
     val dataDir: DirectoryProperty = project.objects.directoryProperty()
     val logDir: DirectoryProperty = project.objects.directoryProperty()
     val reportsDir: DirectoryProperty = project.objects.directoryProperty()
-    private val projectOperations: ProjectOperations = ProjectOperations.maybeCreateExtension(project)
     val vars: Variables
     private val patternSet = PatternSet()
-    private val secondarySources: MutableList<Any>
-    private val secondarySourcesProvider: Provider<List<File>>
 
     init {
         this.patternSet.include("**/*.tf", "**/*.tfvars", "*.tfstate")
@@ -44,12 +39,7 @@ open class TerraformSourceSet @Inject constructor(
         dataDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf"))
         logDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf/logs"))
         reportsDir.set(File(project.layout.buildDirectory.get().asFile,"${name}/tf/reports"))
-
         this.vars = Variables(this.srcDir)
-        this.secondarySources = mutableListOf()
-        this.secondarySourcesProvider = projectOperations.provider {
-            projectOperations.fsOperations.files(secondarySources).toList()
-        }
     }
 
     fun setSrcDir(srcDir: String) {
@@ -62,32 +52,6 @@ open class TerraformSourceSet @Inject constructor(
 
     fun setBackendText(backText: File) {
         this.backendText.set(backText.readText())
-    }
-
-    /**
-     * Additional sources that affects infrastructure.
-     *
-     * @param files Anything convertible to a file.
-     */
-    fun secondarySources(vararg files: Any) {
-        this.secondarySources.addAll(files)
-    }
-
-    /**
-     * Additional sources that affects infrastructure.
-     *
-     * @param files Anything convertible to a file.
-     */
-    fun secondarySources(files: Iterable<Any>) {
-        this.secondarySources.addAll(files)
-    }
-
-    /** Provides a list of secondary sources.
-     *
-     * @return Provider never returns null, but could return an empty list.
-     */
-    fun getSecondarySources(): Provider<List<File>> {
-        return this.secondarySourcesProvider
     }
 
     /** Sets Terraform variables that are applicable to this source set.

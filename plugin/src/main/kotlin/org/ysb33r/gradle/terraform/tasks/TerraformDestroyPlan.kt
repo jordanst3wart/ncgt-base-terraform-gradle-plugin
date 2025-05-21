@@ -2,6 +2,7 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputFile
 import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
@@ -20,7 +21,7 @@ abstract class TerraformDestroyPlan : TerraformTask {
     // TODO is @inject needed here?
     @Inject
     constructor() : super(
-        "destroyPlan",
+        "plan",
         listOf(Lock::class.java, Refresh::class.java, Parallel::class.java, Json::class.java)
     ) {
         supportsInputs()
@@ -29,7 +30,8 @@ abstract class TerraformDestroyPlan : TerraformTask {
         addCommandLineProvider(sourceSetVariables())
     }
 
-    val planOutputFile: File
+    @get:OutputFile
+    open val planOutputFile: File
         get() = File(sourceSet.get().dataDir.get().asFile, "${sourceSet.get().name}.tf.destroy.plan")
 
     @get:Internal

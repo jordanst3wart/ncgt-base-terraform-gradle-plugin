@@ -38,7 +38,7 @@ abstract class TerraformTask(): DefaultTask() {
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
 
     @Internal
-    var terraformrc: TerraformRCExtension = TerraformRCExtension.locateTerraformRCExtension(project)
+    var terraformRc: TerraformRCExtension = TerraformRCExtension.locateTerraformRCExtension(project)
 
     @Internal
     val commandLineProviders: MutableList<Provider<List<String>>> = mutableListOf()
@@ -148,7 +148,7 @@ abstract class TerraformTask(): DefaultTask() {
     protected fun terraformEnvironment(): Map<String, String> {
         val environment = mutableMapOf(
             "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
-            "TF_CLI_CONFIG_FILE" to terraformrc.locateTerraformConfigFile().absolutePath,
+            "TF_CLI_CONFIG_FILE" to terraformRc.locateTerraformConfigFile().absolutePath,
             "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
             "TF_LOG" to terraformExtension.logLevel.get(),
         )

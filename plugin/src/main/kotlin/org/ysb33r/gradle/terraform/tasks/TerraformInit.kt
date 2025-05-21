@@ -55,7 +55,7 @@ abstract class TerraformInit : TerraformTask {
     }
 
     override fun exec() {
-        this.terraformrc.createPluginCacheDir()
+        this.terraformRc.createPluginCacheDir()
         super.exec()
     }
 
