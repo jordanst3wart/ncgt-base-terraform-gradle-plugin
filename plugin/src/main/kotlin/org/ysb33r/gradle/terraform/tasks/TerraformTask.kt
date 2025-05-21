@@ -40,7 +40,7 @@ abstract class TerraformTask(): DefaultTask() {
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
 
     @Internal
-    var terraformRc: TerraformRCExtension = TerraformRCExtension.locateTerraformRCExtension(project)
+    var terraformRc: TerraformRCExtension = project.extensions.getByType(TerraformRCExtension::class.java)
 
     @Internal
     val commandLineProviders: MutableList<Provider<List<String>>> = mutableListOf()

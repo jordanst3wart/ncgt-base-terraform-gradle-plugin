@@ -1,7 +1,6 @@
-package org.ysb33r.gradle.terraform.config.multilevel
+package org.ysb33r.gradle.terraform.config
 
 import org.gradle.api.file.DirectoryProperty
-import org.ysb33r.gradle.terraform.config.VariableSpec
 import org.ysb33r.gradle.terraform.errors.ConfigurationException
 import java.nio.file.Path
 import kotlin.streams.toList

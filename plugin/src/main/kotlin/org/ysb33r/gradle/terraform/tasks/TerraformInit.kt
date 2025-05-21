@@ -54,11 +54,6 @@ abstract class TerraformInit : TerraformTask {
         useBackendConfig = project.objects.property(Boolean::class.java)
     }
 
-    override fun exec() {
-        this.terraformRc.createPluginCacheDir()
-        super.exec()
-    }
-
     /** Add specific command-line options for the command.
      * If [--refresh-dependencies] was specified on the command-line the [-upgrade] will be passed
      * to [terraform init].

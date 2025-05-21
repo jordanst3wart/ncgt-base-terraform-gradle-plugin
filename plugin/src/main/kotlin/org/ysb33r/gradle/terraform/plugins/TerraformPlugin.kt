@@ -58,21 +58,18 @@ class TerraformPlugin : Plugin<Project> {
     }
 
     companion object {
+        // TODO use task to download terraform binary...
         private fun configureTerraformRC(project: Project) {
             val terraformRcExt = project.extensions
                 .create(Convention.TERRAFORM_RC_EXT, TerraformRCExtension::class.java, project)
             project.tasks.register(TerraformRCExtension.TERRAFORM_RC_TASK) { task ->
                 task.group = Convention.TERRAFORM_TASK_GROUP
-                task.description = "Generates Terraform configuration file"
-                task.onlyIf { !terraformRcExt.useGlobalConfig }
-                // I don't know if this is useful
-                task.inputs.property("details") {
-                    val writer = StringWriter()
-                    terraformRcExt.toHCL(writer).toString()
-                }
-                task.outputs.file(terraformRcExt.getTerraformRC())
+                task.description = "Generates Terraform rc file, creates plugin cache directory, and downloads binary"
+                task.outputs.file(terraformRcExt.terraformRC)
+                task.outputs.dir(terraformRcExt.pluginCacheDir)
                 task.doLast {
-                    terraformRcExt.getTerraformRC().asFile.bufferedWriter().use { writer ->
+                    terraformRcExt.createPluginCacheDir() // TODO mark as output file
+                    terraformRcExt.terraformRC.asFile.bufferedWriter().use { writer ->
                         terraformRcExt.toHCL(writer)
                     }
                 }

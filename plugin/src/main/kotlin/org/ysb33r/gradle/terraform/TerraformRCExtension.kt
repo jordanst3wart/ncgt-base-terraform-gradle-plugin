@@ -1,11 +1,9 @@
 package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Project
-import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.internal.os.OperatingSystem
-import org.ysb33r.gradle.terraform.errors.MissingConfiguration
 import org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 import java.io.File
 import java.io.Writer
@@ -24,53 +22,18 @@ import java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
  */
 open class TerraformRCExtension(project: Project) {
     companion object {
-        const val TERRAFORM_RC_TASK = "generateTerraformConfig"
-
-        @JvmStatic
-        fun locateTerraformRCExtension(project: Project): TerraformRCExtension {
-            var terraformrc: TerraformRCExtension
-            try {
-                try {
-                    terraformrc = project.extensions.getByType(TerraformRCExtension::class.java)
-                } catch (e: UnknownDomainObjectException) {
-                    if (project != project.rootProject) {
-                        terraformrc = project.rootProject.extensions.getByType(TerraformRCExtension::class.java)
-                    } else {
-                        throw e
-                    }
-                }
-            } catch (e: UnknownDomainObjectException) {
-                throw MissingConfiguration(
-                    "Cannot locate a TerraformRC Extension in this project or the root project",
-                    e
-                )
-            }
-            return terraformrc
-        }
+        const val TERRAFORM_RC_TASK = "setupTerraform"
     }
 
     var disableCheckPoint = true
     var disableCheckPointSignature = false
-    var useGlobalConfig = false
     var pluginCacheMayBreakDependencyLockFile = false
 
-    private val pluginCacheDir: DirectoryProperty = project.objects.directoryProperty()
-    private val terraformRC: RegularFile = project.layout.projectDirectory.file(".gradle/.terraformrc")
+    val pluginCacheDir: DirectoryProperty = project.objects.directoryProperty()
+    val terraformRC: RegularFile = project.layout.projectDirectory.file(".gradle/.terraformrc")
 
     init {
         pluginCacheDir.set(File(project.gradle.gradleUserHomeDir, "caches/terraform.d"))
-    }
-
-    fun setPluginCacheDir(dir: File) {
-        this.pluginCacheDir.set(dir)
-    }
-
-    fun getPluginCacheDir(): DirectoryProperty {
-        return this.pluginCacheDir
-    }
-
-    fun getTerraformRC(): RegularFile {
-        return this.terraformRC
     }
 
     /** Writes to the content of the Terraform configuration to an HCL writer.
@@ -86,12 +49,9 @@ open class TerraformRCExtension(project: Project) {
         return writer
     }
 
-    fun createPluginCacheDir() {
-        if (this.useGlobalConfig) {
-            return
-        }
-
-        val rc = this.getPluginCacheDir().get().asFile
+    // should move to a task
+    fun createPluginCacheDir(): DirectoryProperty {
+        val rc = this.pluginCacheDir.get().asFile
         rc.mkdirs()
         if (OperatingSystem.current().isUnix) {
             Files.setPosixFilePermissions(
@@ -103,32 +63,10 @@ open class TerraformRCExtension(project: Project) {
                 )
             )
         }
+        return this.pluginCacheDir
     }
 
     fun locateTerraformConfigFile(): File {
-        return if (this.useGlobalConfig) {
-            File(locateGlobalTerraformConfigAsString())
-        } else {
-            this.getTerraformRC().asFile
-        }
-    }
-
-    private fun locateGlobalTerraformConfigAsString(): String {
-        val configFromEnv = System.getenv("TF_CLI_CONFIG_FILE")
-
-        return if (configFromEnv != null && configFromEnv.isNotEmpty()) {
-            configFromEnv
-        } else {
-            if (OperatingSystem.current().isWindows) {
-                val appData = System.getenv("APPDATA")
-                if (appData != null && appData.isNotEmpty()) {
-                    "${appData}\\terraform.rc"
-                } else {
-                    throw MissingConfiguration("%APPDATA% not available")
-                }
-            } else {
-                "${System.getProperty("user.home")}/.terraformrc"
-            }
-        }
+        return this.terraformRC.asFile
     }
 }

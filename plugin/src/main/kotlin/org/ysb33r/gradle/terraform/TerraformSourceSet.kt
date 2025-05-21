@@ -9,7 +9,7 @@ import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.ysb33r.gradle.terraform.config.VariableSpec
-import org.ysb33r.gradle.terraform.config.multilevel.Variables
+import org.ysb33r.gradle.terraform.config.Variables
 import java.io.File
 import javax.inject.Inject
 

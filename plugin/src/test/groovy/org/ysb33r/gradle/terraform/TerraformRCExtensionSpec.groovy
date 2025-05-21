@@ -22,7 +22,6 @@ class TerraformRCExtensionSpec extends Specification {
             terraformrc {
                 disableCheckPoint = true
                 disableCheckPointSignature = false
-                useGlobalConfig = false
             }
         }
 
