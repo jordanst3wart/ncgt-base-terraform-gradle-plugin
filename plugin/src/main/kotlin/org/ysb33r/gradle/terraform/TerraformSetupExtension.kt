@@ -32,4 +32,13 @@ open class TerraformSetupExtension(project: Project) {
         executable.set(Executable.TERRAFORM)
         executableVersion.set(TERRAFORM_DEFAULT)
     }
+
+    fun getExecutablePath(): File {
+        if (executableVersion.isPresent) {
+            val version = executableVersion.get()
+            return executable.get().executablePath(version)
+        } else {
+            return executable.get().executablePath(TERRAFORM_DEFAULT)
+        }
+    }
 }

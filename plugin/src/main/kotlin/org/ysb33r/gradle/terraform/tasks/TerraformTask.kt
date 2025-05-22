@@ -159,7 +159,8 @@ abstract class TerraformTask(): DefaultTask() {
     protected fun buildExecSpec(): ExecSpec {
         // check if downloaded terraform binary is available
         // if not download it
-        val tfExecSpec = TerraformExecSpec(projectOperations, terraformExtension.getResolver())
+        // val tfExecSpec = TerraformExeciSpec(projectOperations, terraformExtension.getResolver())
+        // terraformExtension
         val execSpec = ExecSpec(terraformExtension.resolvableExecutable.executable.absolutePath,
             tfCommand,
             defaultCommandParameters,

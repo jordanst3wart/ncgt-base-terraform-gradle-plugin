@@ -33,7 +33,7 @@ class TerraformPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         ProjectOperations.maybeCreateExtension(project)
-        configureTerraformRC(project)
+        registerSetupTerraformTask(project)
 
         project.tasks.withType(RemoteStateTask::class.java).configureEach { t ->
             t.group = Convention.TERRAFORM_TASK_GROUP
@@ -58,8 +58,7 @@ class TerraformPlugin : Plugin<Project> {
     }
 
     companion object {
-        // TODO use task to download terraform binary...
-        private fun configureTerraformRC(project: Project) {
+        private fun registerSetupTerraformTask(project: Project) {
             val terraformSetupExt = project.extensions
                 .create(Convention.TERRAFORM_SETUP_EXT, TerraformSetupExtension::class.java, project)
             project.tasks.register(TerraformSetupExtension.TERRAFORM_SETUP_TASK, TerraformSetup::class.java) { task ->
