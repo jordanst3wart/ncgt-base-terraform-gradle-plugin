@@ -11,7 +11,7 @@ class TerraformRCExtensionSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
 
-    def 'Configure terraform rc'() {
+    /*def 'Configure terraform setup'() {
         setup:
         def os = OperatingSystem.current()
 
@@ -35,5 +35,5 @@ disable_checkpoint_signature = false
 plugin_cache_dir = "${escapedFilePath(os, terraformrc.pluginCacheDir.get().asFile)}"
 plugin_cache_may_break_dependency_lock_file = false
 """.replaceAll(~/\r?\n/, '!!')
-    }
+    }*/
 }

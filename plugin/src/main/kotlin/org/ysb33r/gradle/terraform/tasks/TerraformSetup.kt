@@ -2,15 +2,16 @@ package org.ysb33r.gradle.terraform.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
-import org.ysb33r.gradle.terraform.TerraformExtension.Companion.TERRAFORM_DEFAULT
-import org.ysb33r.gradle.terraform.TerraformSetupExtension
+import org.ysb33r.gradle.terraform.internal.Convention
+import org.ysb33r.gradle.terraform.internal.Executable
 import org.ysb33r.grashicorp.HashicorpUtils.escapedFilePath
 import java.io.File
 import java.io.Writer
@@ -29,22 +30,27 @@ import java.util.zip.ZipInputStream
 open class TerraformSetup: DefaultTask() {
 
     @get:Input
-    val terraformSetupExt: Property<TerraformSetupExtension> =
-        project.objects.property(TerraformSetupExtension::class.java)
+    val terraformRcMap = project.objects.mapProperty(String::class.java, Boolean::class.java)
+
+    @get:Input
+    val executable: Property<Executable> = project.objects.property(Executable::class.java)
 
     @get:OutputFile
-    val executable: Property<File> = project.objects.property(File::class.java)
+    @Optional
+    val executableFile: RegularFileProperty = project.objects.fileProperty()
 
     @get:OutputFile
-    val terraformRC: RegularFile = terraformSetupExt.get().terraformRC
+    val terraformRC: RegularFileProperty = project.objects.fileProperty()
 
     @get:OutputDirectory
-    val pluginCacheDir: DirectoryProperty = terraformSetupExt.get().pluginCacheDir
+    val pluginCacheDir: DirectoryProperty = project.objects.directoryProperty()
 
     init {
-        // group = "Terraform"
-        // description = "Setup Terraform environment"
-        executable.set(terraformSetupExt.get().getExecutablePath())
+        group = Convention.TERRAFORM_TASK_GROUP
+        description = "Generates Terraform rc file, creates plugin cache directory, and downloads binary"
+        pluginCacheDir.set(Convention.pluginCacheDir(project))
+        terraformRC.set(Convention.terraformRC(project))
+        // executableFile.set(Executable.TERRAFORM.executablePath())
     }
 
     @TaskAction
@@ -55,15 +61,14 @@ open class TerraformSetup: DefaultTask() {
         // TODO verify checksum, and verify signatures of downloaded file
     }
 
-    private fun createTerraformRcFile(): RegularFile {
-        terraformRC.asFile.bufferedWriter().use { writer ->
+    private fun createTerraformRcFile() {
+        terraformRC.get().asFile.bufferedWriter().use { writer ->
             this.toHCL(writer)
         }
-        return terraformRC
     }
 
     private fun createPluginCacheDir(): DirectoryProperty {
-        val rc = this.pluginCacheDir.get().asFile
+        val rc = pluginCacheDir.get().asFile
         rc.mkdirs()
         if (OperatingSystem.current().isUnix) {
             Files.setPosixFilePermissions(
@@ -80,8 +85,10 @@ open class TerraformSetup: DefaultTask() {
 
     // TODO use HCL library to write tfvar file
     private fun toHCL(writer: Writer): Writer {
-        writer.write("disable_checkpoint = ${terraformSetupExt.get().disableCheckPoint.get()}\n")
-        writer.write("disable_checkpoint_signature = ${terraformSetupExt.get().disableCheckPointSignature.get()}\n")
+        terraformRcMap.get().forEach {
+            // TODO should throw if value is a Map, or list. I don't know if that is parsed correctly
+            writer.write("${it.key} = ${it.value}\n")
+        }
         writer.write(
             "plugin_cache_dir = \"${
                 escapedFilePath(
@@ -90,28 +97,23 @@ open class TerraformSetup: DefaultTask() {
                 )
             }\"\n"
         )
-        writer.write("plugin_cache_may_break_dependency_lock_file = ${terraformSetupExt.get().pluginCacheMayBreakDependencyLockFile.get()}\n")
         return writer
     }
 
-    fun downloadAndExtractZipFile() {
-        val executable = terraformSetupExt.get().executable.get()
-        if (executable == null) {
-            throw IllegalArgumentException("Executable not set, please set executable property")
+    private fun downloadAndExtractZipFile() {
+        val executableObj = executable.get()
+        executableFile.set(executableObj.executablePath())
+        executableObj.executablePath().parentFile.mkdirs()
+        if (executableObj.version == Convention.TERRAFORM_DEFAULT) {
+            logger.warn("Using Terraform default version of ${Convention.TERRAFORM_DEFAULT}, you should set a version")
         }
-        val version = terraformSetupExt.get().executableVersion.get()
-        if (version == TERRAFORM_DEFAULT) {
-            logger.warn("using Terraform default version of $TERRAFORM_DEFAULT")
-        }
-        val url = executable.uriFromVersion(version)
-        val outputFile = terraformSetupExt.get().getExecutablePath()
-        outputFile.parentFile.mkdirs()
-        val result = downloadUncompressAndCheck(url, outputFile)
+        val url = executableObj.uriFromVersion()
+        val result = downloadUncompressAndCheck(url, executableFile.get().asFile)
         cleanupTempDirectory(result.second)
         logger.lifecycle("File from $url downloaded to: ${result.first.absolutePath}")
         if (OperatingSystem.current().isUnix) {
             Files.setPosixFilePermissions(
-                outputFile.toPath(),
+                executableFile.get().asFile.toPath(),
                 setOf(
                     OWNER_READ, OWNER_WRITE, OWNER_EXECUTE,
                     GROUP_READ, GROUP_WRITE, GROUP_EXECUTE,
@@ -119,10 +121,9 @@ open class TerraformSetup: DefaultTask() {
                 )
             )
         }
-        if (outputFile.absolutePath != result.first.absolutePath) {
-            throw IllegalArgumentException("Output file does not match downloaded file: ${outputFile.absolutePath} != ${result.first.absolutePath}")
+        if (executableFile.get().asFile.absolutePath != result.first.absolutePath) {
+            throw IllegalArgumentException("Output file does not match downloaded file: ${executableFile.get().asFile.absolutePath} != ${result.first.absolutePath}")
         }
-        this.executable.set(result.first)
     }
 
     // zip extraction functions
@@ -231,7 +232,7 @@ open class TerraformSetup: DefaultTask() {
                 val firstEntry = zipInput.nextEntry
                 firstEntry != null
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }

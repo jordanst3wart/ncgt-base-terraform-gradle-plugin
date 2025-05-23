@@ -9,7 +9,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.workers.WorkerExecutor
 import org.ysb33r.gradle.terraform.ExecSpec
 import org.ysb33r.gradle.terraform.RunCommand
-import org.ysb33r.gradle.terraform.TerraformExecSpec
 import org.ysb33r.gradle.terraform.TerraformExtension
 import org.ysb33r.gradle.terraform.TerraformSetupExtension
 import org.ysb33r.gradle.terraform.TerraformSourceSet
@@ -17,10 +16,10 @@ import org.ysb33r.gradle.terraform.config.ConfigExtension
 import org.ysb33r.gradle.terraform.config.Json
 import org.ysb33r.gradle.terraform.config.Lock
 import org.ysb33r.gradle.terraform.config.Parallel
+import org.ysb33r.gradle.terraform.internal.Convention
 import org.ysb33r.gradle.terraform.internal.Utils
 import org.ysb33r.gradle.terraform.internal.Utils.defaultEnvironment
 import org.ysb33r.gradle.terraform.internal.Utils.terraformLogFile
-import org.ysb33r.grolifant.api.core.ProjectOperations
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Callable
@@ -32,9 +31,6 @@ abstract class TerraformTask(): DefaultTask() {
 
     @Internal
     lateinit var tfCommand: String
-
-    @Internal
-    var projectOperations: ProjectOperations = ProjectOperations.find(project)
 
     @Internal
     var terraformExtension: TerraformExtension = project.extensions.getByType(TerraformExtension::class.java)
@@ -128,7 +124,8 @@ abstract class TerraformTask(): DefaultTask() {
      * @param withColor If set to [false], the task will always run without color output.
      */
     protected fun supportsColor(withColor: Boolean = true) {
-        val mode = projectOperations.consoleOutput
+        //val mode = projectOperations.consoleOutput
+        val mode = project.gradle.startParameter.consoleOutput
         if (mode == ConsoleOutput.Plain ||
             (mode == ConsoleOutput.Auto && System.getenv("TERM") == "dumb") ||
             !withColor
@@ -140,7 +137,7 @@ abstract class TerraformTask(): DefaultTask() {
     protected fun terraformEnvironment(): Map<String, String> {
         val environment = mutableMapOf(
             "TF_DATA_DIR" to sourceSet.get().dataDir.get().asFile.absolutePath,
-            "TF_CLI_CONFIG_FILE" to terraformSetup.terraformRC.asFile.absolutePath,
+            "TF_CLI_CONFIG_FILE" to Convention.terraformRC(project).asFile.absolutePath,
             "TF_LOG_PATH" to terraformLogFile(name, sourceSet.get().logDir).absolutePath,
             "TF_LOG" to terraformExtension.logLevel.get(),
         )
@@ -157,11 +154,8 @@ abstract class TerraformTask(): DefaultTask() {
     }
 
     protected fun buildExecSpec(): ExecSpec {
-        // check if downloaded terraform binary is available
-        // if not download it
-        // val tfExecSpec = TerraformExeciSpec(projectOperations, terraformExtension.getResolver())
-        // terraformExtension
-        val execSpec = ExecSpec(terraformExtension.resolvableExecutable.executable.absolutePath,
+        // TODO fix
+        val execSpec = ExecSpec(terraformSetup.executable.get().executablePath().toString(),
             tfCommand,
             defaultCommandParameters,
             terraformEnvironment())

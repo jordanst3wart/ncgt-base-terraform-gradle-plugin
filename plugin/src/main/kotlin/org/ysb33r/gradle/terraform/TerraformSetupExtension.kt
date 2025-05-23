@@ -1,11 +1,7 @@
 package org.ysb33r.gradle.terraform
 
 import org.gradle.api.Project
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFile
-import org.ysb33r.gradle.terraform.TerraformExtension.Companion.TERRAFORM_DEFAULT
 import org.ysb33r.gradle.terraform.internal.Executable
-import java.io.File
 
 /** Extension that describes a `terraformrc` file, cache directory, and downloads native binary.
  * find details about options here: https://developer.hashicorp.com/terraform/cli/config/config-file
@@ -15,30 +11,17 @@ open class TerraformSetupExtension(project: Project) {
         const val TERRAFORM_SETUP_TASK = "setupTerraform"
     }
 
-    val disableCheckPoint = project.objects.property(Boolean::class.java)
-    val disableCheckPointSignature = project.objects.property(Boolean::class.java)
-    val pluginCacheMayBreakDependencyLockFile = project.objects.property(Boolean::class.java)
+    val terraformRcMap = project.objects.mapProperty(String::class.java, Boolean::class.java)
     val executable = project.objects.property(Executable::class.java)
-    val executableVersion = project.objects.property(String::class.java)
-
-    val pluginCacheDir: DirectoryProperty = project.objects.directoryProperty()
-    val terraformRC: RegularFile = project.layout.projectDirectory.file(".gradle/.terraformrc")
 
     init {
-        pluginCacheDir.set(File(project.gradle.gradleUserHomeDir, "caches/terraform.d"))
-        disableCheckPoint.set(true)
-        disableCheckPointSignature.set(false)
-        pluginCacheMayBreakDependencyLockFile.set(false)
+        terraformRcMap.set(
+            mapOf(
+                "plugin_cache_may_break_dependency_lock_file" to true,
+                "disable_checkpoint" to true,
+                "disable_checkpoint_signature" to true
+            )
+        )
         executable.set(Executable.TERRAFORM)
-        executableVersion.set(TERRAFORM_DEFAULT)
-    }
-
-    fun getExecutablePath(): File {
-        if (executableVersion.isPresent) {
-            val version = executableVersion.get()
-            return executable.get().executablePath(version)
-        } else {
-            return executable.get().executablePath(TERRAFORM_DEFAULT)
-        }
     }
 }

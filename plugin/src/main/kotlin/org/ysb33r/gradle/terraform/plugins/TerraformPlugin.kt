@@ -14,7 +14,6 @@ import org.ysb33r.gradle.terraform.internal.Convention
 import org.ysb33r.gradle.terraform.tasks.TerraformTask
 import org.ysb33r.gradle.terraform.tasks.RemoteStateTask
 import org.ysb33r.gradle.terraform.tasks.TerraformFmtCheck
-import org.ysb33r.grolifant.api.core.ProjectOperations
 
 import org.gradle.language.base.plugins.LifecycleBasePlugin.CHECK_TASK_NAME
 import org.ysb33r.gradle.terraform.internal.Convention.sourceSetDisplayName
@@ -32,7 +31,6 @@ import org.ysb33r.gradle.terraform.tasks.TerraformValidate
 class TerraformPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        ProjectOperations.maybeCreateExtension(project)
         registerSetupTerraformTask(project)
 
         project.tasks.withType(RemoteStateTask::class.java).configureEach { t ->
@@ -64,7 +62,8 @@ class TerraformPlugin : Plugin<Project> {
             project.tasks.register(TerraformSetupExtension.TERRAFORM_SETUP_TASK, TerraformSetup::class.java) { task ->
                 task.group = Convention.TERRAFORM_TASK_GROUP
                 task.description = "Generates Terraform rc file, creates plugin cache directory, and downloads binary"
-                task.terraformSetupExt.set(terraformSetupExt)
+                task.terraformRcMap.set(terraformSetupExt.terraformRcMap)
+                task.executable.set(terraformSetupExt.executable)
             }
         }
 

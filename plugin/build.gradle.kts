@@ -12,7 +12,6 @@ plugins {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(gradleApi())
-    api("org.ysb33r.gradle:grolifant-herd:3.0.1")
 
     testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
     testImplementation("junit:junit:4.13.2")

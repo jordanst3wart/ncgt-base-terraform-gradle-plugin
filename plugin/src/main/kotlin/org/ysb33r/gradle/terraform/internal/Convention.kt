@@ -1,6 +1,7 @@
 package org.ysb33r.gradle.terraform.internal
 
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
 import org.gradle.api.tasks.TaskProvider
 import org.ysb33r.gradle.terraform.TerraformSourceSet
 import org.ysb33r.gradle.terraform.tasks.DefaultTerraformTasks
@@ -15,6 +16,7 @@ object Convention {
     const val TERRAFORM_SETUP_EXT = "terraformSetup"
     const val TERRAFORM_SOURCESETS = "terraformSourceSets"
     const val TERRAFORM_TASK_GROUP = "Terraform"
+    const val TERRAFORM_DEFAULT = "1.8.0"
 
     @JvmStatic
     fun taskName(sourceSetName: String, commandType: String): String {
@@ -92,5 +94,13 @@ object Convention {
             it.backendConfig.set(File(project.layout.buildDirectory.get().asFile, "${sourceSet.name}/tf/remoteState/backend-config.tf"))
             it.useBackendConfig.set(true)
         }
+    }
+
+    fun pluginCacheDir(project: Project): File {
+        return File(project.gradle.gradleUserHomeDir, "caches/terraform.d")
+    }
+
+    fun terraformRC(project: Project): RegularFile {
+        return project.layout.projectDirectory.file(".gradle/.terraformrc")
     }
 }

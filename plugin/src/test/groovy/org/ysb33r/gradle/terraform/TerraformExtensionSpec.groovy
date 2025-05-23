@@ -20,6 +20,7 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 
+// TODO this will need to change...
 class TerraformExtensionSpec extends Specification {
 
     Project project = ProjectBuilder.builder().build()
@@ -56,6 +57,7 @@ class TerraformExtensionSpec extends Specification {
         project.terraform.resolvableExecutable != null
     }
 
+    // TODO this is probably doing to fail soon
     def 'Cannot configure terraform with more than one option'() {
         setup:
         project.apply plugin : 'foo.bar.terraform'
